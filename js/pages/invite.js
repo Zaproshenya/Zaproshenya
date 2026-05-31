@@ -87,6 +87,27 @@
       </div>`;
     }
 
+    // Check if auth is required
+    if (invData.requireAuth && !ZAP.auth.getUser()) {
+      return `
+      <div class="invite-bg">
+        <div class="invite-envelope" style="max-width:420px">
+          <div class="envelope-top">
+            <span class="envelope-emoji">🔒</span>
+            <div class="envelope-type">Запрошення</div>
+            <div class="envelope-to">${ZAP.utils.esc(invData.to)}</div>
+          </div>
+          <div class="envelope-body" style="text-align:center">
+            <p style="color:var(--muted);margin-bottom:20px;font-size:1rem">
+              Щоб переглянути це запрошення, потрібно увійти в акаунт або зареєструватися.
+            </p>
+            <button class="btn btn-dark" style="width:auto;padding:12px 32px"
+              onclick="ZAP.router.go('login')">Увійти / Зареєструватися</button>
+          </div>
+        </div>
+      </div>`;
+    }
+
     const t = TYPE_MAP[invData.type] || TYPE_MAP.other;
 
     return `
@@ -279,6 +300,16 @@
     const user = ZAP.auth.getUser();
 
     if (!user && groupData.isPublic) {
+      // Check if auth required
+      if (groupData.requireAuth) {
+        return `
+        <div style="text-align:center;padding:16px 0">
+          <div style="font-size:1.5rem;margin-bottom:10px">🔒</div>
+          <p style="color:var(--muted);margin-bottom:12px">Для відповіді потрібно увійти в акаунт</p>
+          <button class="btn btn-dark" style="width:auto;padding:10px 28px"
+            onclick="ZAP.router.go('login')">Увійти</button>
+        </div>`;
+      }
       // Public group, no auth — enter name
       return `
       <div class="answer-wrap">

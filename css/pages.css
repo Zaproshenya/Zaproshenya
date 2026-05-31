@@ -192,9 +192,11 @@
 .participant-name { flex: 1; font-size: .9rem; }
 .participant-status { font-size: .75rem; }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .auth-header, .auth-body { padding-left: 20px; padding-right: 20px; }
   .profile-header { flex-direction: column; text-align: center; }
   .friend-card { flex-wrap: wrap; }
   .friend-actions { width: 100%; justify-content: flex-end; }
+  .user-profile-actions { flex-direction: column; }
+  .friend-search { flex-direction: column; }
 }

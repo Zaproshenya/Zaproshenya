@@ -5,6 +5,7 @@
 (function () {
   let mode = 'personal'; // 'personal' | 'group'
   let isPublic = true;
+  let requireAuth = false;
   let selectedFriends = [];
   let friends = [];
   let done = false;
@@ -74,6 +75,19 @@
       </div>
 
       ${mode === 'group' ? renderGroupOptions() : renderPersonalOptions()}
+
+      <!-- Auth required toggle -->
+      <div style="background:var(--warm);border-radius:12px;padding:16px;border:1px solid var(--border)">
+        <div class="toggle-wrap">
+          <button class="toggle ${requireAuth ? 'on' : ''}"
+            onclick="ZAP.pages.create.toggleRequireAuth()"></button>
+          <span class="toggle-label">
+            ${requireAuth
+              ? '🔒 Тільки для зареєстрованих — отримувач повинен увійти в акаунт'
+              : '🌐 Для всіх — будь-хто може переглянути запрошення'}
+          </span>
+        </div>
+      </div>
 
       <button id="sbtn" class="btn btn-dark btn-full" disabled onclick="ZAP.pages.create.submit()">
         Створити запрошення →
@@ -234,6 +248,7 @@
         to, type, date, time, place, msg,
         from: profile.name,
         creatorUid: user.uid,
+        requireAuth,
         status: 'pending',
         created: Date.now(),
       };
@@ -256,6 +271,7 @@
         creatorUid: user.uid,
         creatorName: profile.name,
         isPublic,
+        requireAuth,
         isGroup: true,
         members: {},
         invited: {},
@@ -282,11 +298,18 @@
     done = false;
     createdInv = null;
     selectedFriends = [];
+    requireAuth = false;
+    ZAP.render();
+  }
+
+  function toggleRequireAuth() {
+    requireAuth = !requireAuth;
     ZAP.render();
   }
 
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.create = {
     render, load, setMode, togglePublic, toggleFriend, chk, submit, reset,
+    toggleRequireAuth,
   };
 })();

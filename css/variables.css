@@ -119,3 +119,15 @@ body {
   0%   { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
+@keyframes slideUpModal {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+@keyframes notifSlideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+@keyframes notifSlideUp {
+  from { transform: translateY(0); opacity: 1; }
+  to   { transform: translateY(-100%); opacity: 0; }
+}

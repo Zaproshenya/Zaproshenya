@@ -85,7 +85,7 @@
     if (route.page === 'user-profile') {
       app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.utils.spinner() + '</div>';
       await ZAP.pages.userProfile.load(route.params.uid);
-      app.innerHTML = renderTopbar(route.page) + ZAP.pages.userProfile.render();
+      app.innerHTML = renderTopbar(route.page) + ZAP.pages.userProfile.render() + (user ? renderBottomNav(route.page) : '');
       return;
     }
 
@@ -177,26 +177,82 @@
     return `
     <nav class="bottom-nav">
       <button class="bn-item ${page === 'home' ? 'on' : ''}" onclick="ZAP.router.go('home')">
-        <div style="font-size:1.3rem;margin-bottom:2px">🏠</div>
+        <div style="font-size:1.25rem">🏠</div>
         <span>Мої</span>
       </button>
       <button class="bn-item ${page === 'friends' ? 'on' : ''}" onclick="ZAP.router.go('friends')">
-        <div style="font-size:1.3rem;margin-bottom:2px">👥</div>
+        <div style="font-size:1.25rem">👥</div>
         <span>Друзі</span>
       </button>
       <button class="bn-item ${page === 'create' ? 'on' : ''}" onclick="ZAP.router.go('create')">
         <div class="bn-fab">+</div>
       </button>
       <button class="bn-item ${page === 'notifications' ? 'on' : ''}" onclick="ZAP.router.go('notifications')" style="position:relative">
-        <div style="font-size:1.3rem;margin-bottom:2px">🔔</div>
-        ${unreadCount > 0 ? `<span class="notif-badge" style="position:absolute;top:-4px;right:-2px;font-size:.65rem;padding:1px 5px">${unreadCount}</span>` : ''}
+        <div style="font-size:1.25rem">🔔</div>
+        ${unreadCount > 0 ? `<span class="notif-badge" style="position:absolute;top:0;right:2px;font-size:.6rem;padding:1px 4px">${unreadCount}</span>` : ''}
         <span>Сповіщ.</span>
       </button>
       <button class="bn-item ${page === 'profile' || page === 'dashboard' ? 'on' : ''}" onclick="ZAP.router.go('${isAdminUser ? 'dashboard' : 'profile'}')">
-        <div style="font-size:1.3rem;margin-bottom:2px">${isAdminUser ? '📊' : '👤'}</div>
-        <span>${isAdminUser ? 'Дашборд' : 'Профіль'}</span>
+        <div style="font-size:1.25rem">${isAdminUser ? '📊' : '👤'}</div>
+        <span>${isAdminUser ? 'Панель' : 'Профіль'}</span>
       </button>
     </nav>`;
+  }
+
+  // ── In-App Notification Popup ──
+  function showNotifPopup(notif) {
+    // Remove existing popup if any
+    document.querySelectorAll('.notif-popup').forEach(el => {
+      el.classList.add('removing');
+      setTimeout(() => el.remove(), 300);
+    });
+
+    const iconMap = {
+      'friend-request': '👋',
+      'friend-accepted': '✅',
+      'invite': '📨',
+      'group-invite': '👥',
+      'invite-response': '💬',
+      'invite-reschedule': '📅',
+    };
+    const icon = iconMap[notif.type] || '🔔';
+
+    const popup = document.createElement('div');
+    popup.className = 'notif-popup';
+    popup.innerHTML = `
+      <div class="notif-popup-icon">${icon}</div>
+      <div class="notif-popup-body">
+        <div class="notif-popup-title">${ZAP.utils.esc(notif.title || 'Сповіщення')}</div>
+        <div class="notif-popup-text">${ZAP.utils.esc(notif.body || '')}</div>
+      </div>
+      <button class="notif-popup-close" onclick="event.stopPropagation();this.closest('.notif-popup').classList.add('removing');setTimeout(()=>this.closest('.notif-popup')?.remove(),300)">×</button>
+    `;
+    popup.onclick = () => {
+      popup.classList.add('removing');
+      setTimeout(() => popup.remove(), 300);
+      // Navigate based on type
+      if (notif.type === 'friend-request' || notif.type === 'friend-accepted') {
+        ZAP.router.go('friends');
+      } else if (notif.type === 'invite' && notif.inviteId) {
+        ZAP.router.go('invite', { id: notif.inviteId });
+      } else if (notif.type === 'group-invite' && notif.inviteId) {
+        ZAP.router.go('group-invite', { id: notif.inviteId });
+      } else {
+        ZAP.router.go('notifications');
+      }
+    };
+    document.body.appendChild(popup);
+
+    // Auto-remove after 5s
+    setTimeout(() => {
+      if (popup.parentElement) {
+        popup.classList.add('removing');
+        setTimeout(() => popup.remove(), 300);
+      }
+    }, 5000);
+
+    // Update badge count
+    updateUnreadCount();
   }
 
   // ── Notifications page ──
@@ -276,6 +332,12 @@
       await updateUnreadCount();
       // Periodic unread count update
       setInterval(updateUnreadCount, 30000);
+      // Start real-time notification listener with popup
+      ZAP.notifications.listenNotifications(user.uid, (notif) => {
+        showNotifPopup(notif);
+      });
+      // Request push permission
+      ZAP.notifications.requestPushPermission();
     }
     render();
   });

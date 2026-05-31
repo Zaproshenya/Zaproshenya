@@ -123,6 +123,10 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 .inv-card.status-pending   { border-left: 4px solid var(--gold); }
 .inv-card.status-reschedule{ border-left: 4px solid var(--gold); }
 
+@media (max-width: 768px) {
+  .inv-card { padding: 14px 16px; gap: 12px; }
+}
+
 /* ── Badges ── */
 .badge {
   display: inline-flex; align-items: center; gap: 5px;
@@ -293,7 +297,7 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   color: var(--gold); border-bottom-color: var(--gold); font-weight: 600;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .tabs {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
