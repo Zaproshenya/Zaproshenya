@@ -267,12 +267,18 @@
         created: Date.now(),
       };
 
-      await ZAP.db.createInvite(inv);
-
-      // If sending to a friend directly
-      if (selectedFriends.length === 1) {
-        await ZAP.db.sendInviteToFriend(inv, selectedFriends[0]);
+      // If sending to friends directly
+      if (selectedFriends.length > 0) {
+        for (const fUid of selectedFriends) {
+          const toName = friends.find(f => f.uid === fUid)?.name || to;
+          const friendInv = { ...inv, id: ZAP.utils.genId(), to: toName || 'Друг' };
+          await ZAP.db.sendInviteToFriend(friendInv, fUid);
+        }
         inv.sentToFriends = true;
+        createdInv = inv;
+      } else {
+        await ZAP.db.createInvite(inv);
+        createdInv = inv;
       }
 
       createdInv = inv;

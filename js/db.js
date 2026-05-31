@@ -43,13 +43,16 @@
     await db().ref('users/' + uid + '/role').set(newRole);
   }
 
-  async function banUser(uid, banned) {
+  async function banUser(uid, banned, until = null) {
     if (!db()) return;
     await db().ref('users/' + uid + '/banned').set(banned);
     if (banned) {
       await db().ref('users/' + uid + '/bannedAt').set(Date.now());
+      if (until) await db().ref('users/' + uid + '/bannedUntil').set(until);
+      else await db().ref('users/' + uid + '/bannedUntil').remove();
     } else {
       await db().ref('users/' + uid + '/bannedAt').remove();
+      await db().ref('users/' + uid + '/bannedUntil').remove();
     }
   }
 

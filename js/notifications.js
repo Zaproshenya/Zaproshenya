@@ -63,8 +63,15 @@
       const snap = await ZAP.dbRef.ref('notifications/' + uid).get();
       if (!snap.exists()) return;
       const updates = {};
-      snap.forEach(c => { updates[c.key + '/read'] = true; });
-      await ZAP.dbRef.ref('notifications/' + uid).update(updates);
+      snap.forEach(c => {
+        const type = c.val().type;
+        if (type !== 'invite' && type !== 'group-invite' && type !== 'friend-request') {
+          updates[c.key + '/read'] = true;
+        }
+      });
+      if (Object.keys(updates).length > 0) {
+        await ZAP.dbRef.ref('notifications/' + uid).update(updates);
+      }
     } catch (e) { console.warn('markAllNotifsRead:', e); }
   }
 

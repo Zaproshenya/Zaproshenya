@@ -510,11 +510,25 @@
 
   async function toggleBan(uid, ban) {
     const action = ban ? 'забанити' : 'розбанити';
-    if (!confirm(`Ви впевнені, що хочете ${action} цього користувача?`)) return;
+    let until = null;
+    
+    if (ban) {
+      const days = prompt('На скільки днів забанити? (Залиште порожнім для перманентного бану)');
+      if (days === null) return; // cancelled
+      if (days.trim() !== '' && !isNaN(Number(days))) {
+        until = Date.now() + (Number(days) * 24 * 60 * 60 * 1000);
+      }
+    } else {
+      if (!confirm(`Ви впевнені, що хочете розбанити цього користувача?`)) return;
+    }
+
     try {
-      await ZAP.db.banUser(uid, ban);
+      await ZAP.db.banUser(uid, ban, until);
       const u = users.find(u => u.uid === uid);
-      if (u) u.banned = ban;
+      if (u) {
+        u.banned = ban;
+        u.bannedUntil = until;
+      }
       ZAP.utils.toast(ban ? 'Користувача забанено' : 'Користувача розбанено', ban ? 'error' : 'success');
       ZAP.render();
     } catch (e) {

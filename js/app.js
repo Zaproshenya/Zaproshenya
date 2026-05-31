@@ -54,16 +54,24 @@
 
     // ── Check banned status ──
     if (profile?.banned) {
-      app.innerHTML = `
-        <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px">
-          <div style="text-align:center;max-width:400px">
-            <div style="font-size:3rem;margin-bottom:16px">🚫</div>
-            <h2 style="font-family:var(--font-heading);font-style:italic;margin-bottom:8px">Акаунт заблоковано</h2>
-            <p style="color:var(--muted);margin-bottom:20px">Ваш акаунт було тимчасово заблоковано модератором.</p>
-            <button class="btn btn-outline" onclick="ZAP.pages.profile.doLogout()">Вийти</button>
-          </div>
-        </div>`;
-      return;
+      if (profile.bannedUntil && Date.now() > profile.bannedUntil) {
+        // Auto-unban
+        ZAP.db.banUser(user.uid, false);
+        profile.banned = false;
+        profile.bannedUntil = null;
+      } else {
+        const untilText = profile.bannedUntil ? `до ${new Date(profile.bannedUntil).toLocaleDateString()}` : 'назавжди';
+        app.innerHTML = `
+          <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px">
+            <div style="text-align:center;max-width:400px">
+              <div style="font-size:3rem;margin-bottom:16px">🚫</div>
+              <h2 style="font-family:var(--font-heading);font-style:italic;margin-bottom:8px">Акаунт заблоковано</h2>
+              <p style="color:var(--muted);margin-bottom:20px">Ваш акаунт було заблоковано модератором <strong>${untilText}</strong>.</p>
+              <button class="btn btn-outline" onclick="ZAP.pages.profile.doLogout()">Вийти</button>
+            </div>
+          </div>`;
+        return;
+      }
     }
 
     // ── Admin required ──

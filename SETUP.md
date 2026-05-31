@@ -25,7 +25,7 @@
       ".indexOn": ["createdAt"],
       "$uid": {
         ".read": true,
-        ".write": "$uid === auth.uid"
+        ".write": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'"
       }
     },
     "logins": {
