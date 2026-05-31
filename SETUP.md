@@ -21,6 +21,8 @@
 {
   "rules": {
     "users": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')",
+      ".indexOn": ["createdAt"],
       "$uid": {
         ".read": true,
         ".write": "$uid === auth.uid"
@@ -70,14 +72,15 @@
     },
     "friend-requests": {
       "$uid": {
-        ".read": "$uid === auth.uid",
+        ".read": "auth != null",
         ".write": "auth != null"
       }
     },
     "notifications": {
       "$uid": {
         ".read": "$uid === auth.uid",
-        ".write": "auth != null"
+        ".write": "auth != null",
+        ".indexOn": ["createdAt", "read"]
       }
     },
     "group-invites": {
@@ -88,7 +91,8 @@
     },
     "reports": {
       ".read": "root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'",
-      ".write": "auth != null"
+      ".write": "auth != null",
+      ".indexOn": ["createdAt", "status"]
     }
   }
 }

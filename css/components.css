@@ -293,6 +293,27 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   color: var(--gold); border-bottom-color: var(--gold); font-weight: 600;
 }
 
+@media (max-width: 480px) {
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 8px;
+    border-bottom: none;
+  }
+  .tab {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 0;
+    text-align: center;
+  }
+  .tab.active {
+    border-bottom-color: var(--border) !important;
+    background: var(--warm);
+    color: var(--ink);
+  }
+}
+
 /* ── Toggle switch ── */
 .toggle-wrap {
   display: flex; align-items: center; gap: 10px;

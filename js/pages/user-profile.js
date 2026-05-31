@@ -22,14 +22,18 @@
         friendStatus = 'friend';
       } else {
         // Check pending requests
-        const sentSnap = await ZAP.dbRef.ref('friend-requests/' + uid + '/' + me.uid).get();
-        if (sentSnap.exists()) {
-          friendStatus = 'pending-sent';
-        } else {
-          const recvSnap = await ZAP.dbRef.ref('friend-requests/' + me.uid + '/' + uid).get();
-          if (recvSnap.exists()) {
-            friendStatus = 'pending-received';
+        try {
+          const sentSnap = await ZAP.dbRef.ref('friend-requests/' + uid + '/' + me.uid).get();
+          if (sentSnap.exists()) {
+            friendStatus = 'pending-sent';
+          } else {
+            const recvSnap = await ZAP.dbRef.ref('friend-requests/' + me.uid + '/' + uid).get();
+            if (recvSnap.exists()) {
+              friendStatus = 'pending-received';
+            }
           }
+        } catch (e) {
+          console.warn('Friend request check:', e.message);
         }
       }
     }

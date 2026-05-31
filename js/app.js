@@ -130,6 +130,7 @@
     app.innerHTML = `
       ${renderTopbar(route.page)}
       <div class="wrap">${pageContent}</div>
+      ${user ? renderBottomNav(route.page) : ''}
     `;
   }
 
@@ -168,6 +169,34 @@
         ` : ''}
       </div>
     </header>`;
+  }
+
+  // ── Bottom Navigation (Mobile) ──
+  function renderBottomNav(page) {
+    const isAdminUser = ZAP.auth.isAdmin() || ZAP.auth.isModerator();
+    return `
+    <nav class="bottom-nav">
+      <button class="bn-item ${page === 'home' ? 'on' : ''}" onclick="ZAP.router.go('home')">
+        <div style="font-size:1.3rem;margin-bottom:2px">🏠</div>
+        <span>Мої</span>
+      </button>
+      <button class="bn-item ${page === 'friends' ? 'on' : ''}" onclick="ZAP.router.go('friends')">
+        <div style="font-size:1.3rem;margin-bottom:2px">👥</div>
+        <span>Друзі</span>
+      </button>
+      <button class="bn-item ${page === 'create' ? 'on' : ''}" onclick="ZAP.router.go('create')">
+        <div class="bn-fab">+</div>
+      </button>
+      <button class="bn-item ${page === 'notifications' ? 'on' : ''}" onclick="ZAP.router.go('notifications')" style="position:relative">
+        <div style="font-size:1.3rem;margin-bottom:2px">🔔</div>
+        ${unreadCount > 0 ? `<span class="notif-badge" style="position:absolute;top:-4px;right:-2px;font-size:.65rem;padding:1px 5px">${unreadCount}</span>` : ''}
+        <span>Сповіщ.</span>
+      </button>
+      <button class="bn-item ${page === 'profile' || page === 'dashboard' ? 'on' : ''}" onclick="ZAP.router.go('${isAdminUser ? 'dashboard' : 'profile'}')">
+        <div style="font-size:1.3rem;margin-bottom:2px">${isAdminUser ? '📊' : '👤'}</div>
+        <span>${isAdminUser ? 'Дашборд' : 'Профіль'}</span>
+      </button>
+    </nav>`;
   }
 
   // ── Notifications page ──
