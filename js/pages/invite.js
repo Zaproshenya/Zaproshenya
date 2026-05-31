@@ -357,6 +357,10 @@
     if (ZAP.dbRef) {
       await ZAP.dbRef.ref('statuses/' + invId).set(status);
     }
+    
+    // Clean up notification
+    const user = ZAP.auth.getUser();
+    if (user) await ZAP.notifications.deleteNotificationsByPayload(user.uid, 'invite', 'inviteId', invId);
 
     // Notify creator
     if (invData?.creatorUid) {
@@ -393,6 +397,10 @@
 
     await ZAP.db.saveReschedule(invId, { date, time });
 
+    // Clean up notification
+    const user = ZAP.auth.getUser();
+    if (user) await ZAP.notifications.deleteNotificationsByPayload(user.uid, 'invite', 'inviteId', invId);
+
     // Notify creator
     if (invData?.creatorUid) {
       const responderName = ZAP.auth.getProfile()?.name || invData.to || 'Хтось';
@@ -427,6 +435,9 @@
 
     await ZAP.db.joinGroupInvite(groupData.id, participant);
 
+    // Clean up notification
+    if (user) await ZAP.notifications.deleteNotificationsByPayload(user.uid, 'group-invite', 'inviteId', groupData.id);
+
     ZAP.utils.boom();
     answered = true;
     answerStatus = 'accepted';
@@ -445,6 +456,9 @@
     };
 
     await ZAP.db.joinGroupInvite(groupData.id, participant);
+
+    // Clean up notification
+    if (user) await ZAP.notifications.deleteNotificationsByPayload(user.uid, 'group-invite', 'inviteId', groupData.id);
 
     answered = true;
     answerStatus = 'declined';

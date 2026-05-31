@@ -5,8 +5,9 @@
 (function () {
   // Special logins → auto-assign roles
   const SPECIAL_ROLES = {
-    'dimitrio':  'founder',
-    'artemiuh':  'tech-admin',
+    'dinospike':  'founder',
+    'yarikyt445': 'founder',
+    'yarikyt445-a11y': 'founder',
   };
 
   // ── State ──
@@ -18,11 +19,13 @@
 
   function isAdmin() {
     const role = currentProfile?.role;
-    return role === 'founder' || role === 'tech-admin';
+    const special = currentProfile ? SPECIAL_ROLES[currentProfile.login] : null;
+    return role === 'founder' || role === 'tech-admin' || special === 'founder' || special === 'tech-admin';
   }
 
   function isModerator() {
-    return isAdmin() || currentProfile?.role === 'moderator';
+    const special = currentProfile ? SPECIAL_ROLES[currentProfile.login] : null;
+    return isAdmin() || currentProfile?.role === 'moderator' || special === 'moderator';
   }
 
   // ── Register ──

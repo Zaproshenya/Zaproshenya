@@ -68,6 +68,28 @@
     } catch (e) { console.warn('markAllNotifsRead:', e); }
   }
 
+  async function deleteNotification(uid, notifId) {
+    if (!ZAP.dbRef || !uid || !notifId) return;
+    try {
+      await ZAP.dbRef.ref('notifications/' + uid + '/' + notifId).remove();
+    } catch (e) { console.warn('deleteNotification:', e); }
+  }
+
+  async function deleteNotificationsByPayload(uid, type, payloadKey, payloadVal) {
+    if (!ZAP.dbRef || !uid) return;
+    try {
+      const snap = await ZAP.dbRef.ref('notifications/' + uid).orderByChild('type').equalTo(type).get();
+      if (!snap.exists()) return;
+      const updates = {};
+      snap.forEach(c => {
+        if (c.val()[payloadKey] === payloadVal) {
+          updates[c.key] = null;
+        }
+      });
+      await ZAP.dbRef.ref('notifications/' + uid).update(updates);
+    } catch (e) { console.warn('deleteNotificationsByPayload:', e); }
+  }
+
   function getUnreadCount(uid) {
     return new Promise(resolve => {
       if (!ZAP.dbRef || !uid) return resolve(0);
@@ -103,7 +125,7 @@
 
   ZAP.notifications = {
     requestPushPermission, sendPush,
-    addNotification, getNotifications,
+    addNotification, getNotifications, deleteNotification, deleteNotificationsByPayload,
     markNotifRead, markAllNotifsRead, getUnreadCount,
     listenNotifications, stopListeningNotifications,
   };

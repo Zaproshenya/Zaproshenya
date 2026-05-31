@@ -166,7 +166,9 @@
             ${avatarHTML(profile, 'sm')}
             <span class="topbar-username">${esc(profile.name)}</span>
           </div>
-        ` : ''}
+        ` : `
+          <button class="btn btn-outline btn-sm" onclick="ZAP.router.go('login')" style="padding:6px 12px">Увійти</button>
+        `}
       </div>
     </header>`;
   }

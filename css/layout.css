@@ -58,7 +58,7 @@
 /* ── Invite page background ── */
 .invite-bg {
   min-height: 100vh;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; flex-direction: column;
   padding: 24px 16px;
   background:
     radial-gradient(ellipse at 20% 20%, rgba(201,146,42,.07) 0%, transparent 60%),
@@ -66,6 +66,7 @@
     var(--paper);
 }
 .invite-envelope {
+  margin: auto;
   max-width: 480px; width: 100%;
   background: var(--card);
   border-radius: var(--radius-xl);
@@ -291,7 +292,7 @@
 
   /* ── Mobile: hide topbar nav, show bottom nav ── */
   .topbar { padding: 0 16px; }
-  .topbar-right { display: none !important; }
+  .topbar-right > .nb, .topbar-right > .pill-wrap { display: none !important; }
   .wrap { padding: 24px 16px 90px; }
   .page-title { font-size: 1.7rem; }
   .topbar-username { display: none; }

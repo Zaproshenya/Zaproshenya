@@ -5,7 +5,7 @@
 /* ── Auth pages (login/register) ── */
 .auth-bg {
   min-height: 100vh;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; flex-direction: column;
   padding: 24px 16px;
   background:
     radial-gradient(ellipse at 30% 30%, rgba(201,146,42,.06) 0%, transparent 50%),
@@ -13,6 +13,7 @@
     var(--paper);
 }
 .auth-card {
+  margin: auto;
   max-width: 420px; width: 100%;
   background: var(--card);
   border-radius: var(--radius-xl);

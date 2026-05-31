@@ -81,9 +81,7 @@
           </div>
         </div>`;
       }).join('')
-    }
-
-    ${modalInv ? renderModal(modalInv) : ''}`;
+    }`;
   }
 
   function renderModal(inv) {
@@ -156,16 +154,18 @@
     </div>`;
   }
 
-  function setFilter(f) {
-    filter = f;
-    ZAP.render();
-  }
-
   async function openModal(id) {
     const inv = invites.find(i => i.id === id);
     if (!inv) return;
-    modalInv = inv;
-    ZAP.render();
+    
+    // Remove existing if any
+    const existing = document.getElementById('home-modal-container');
+    if (existing) existing.remove();
+
+    const container = document.createElement('div');
+    container.id = 'home-modal-container';
+    container.innerHTML = renderModal(inv);
+    document.body.appendChild(container);
 
     // Load reschedule info if needed
     if (inv.status === 'reschedule') {
@@ -180,7 +180,12 @@
   }
 
   function closeModal() {
-    modalInv = null;
+    const existing = document.getElementById('home-modal-container');
+    if (existing) existing.remove();
+  }
+
+  function setFilter(f) {
+    filter = f;
     ZAP.render();
   }
 

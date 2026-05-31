@@ -20,7 +20,7 @@
     // Load friend invites from notifications
     const notifs = await ZAP.notifications.getNotifications(user.uid);
     friendInvites = notifs.filter(n =>
-      (n.type === 'invite' || n.type === 'group-invite') && !n.read
+      (n.type === 'invite' || n.type === 'group-invite')
     );
 
     loaded = true;
@@ -228,6 +228,7 @@
       await ZAP.db.acceptFriendRequest(me.uid, fromUid);
       requests = requests.filter(r => r.fromUid !== fromUid);
       friends = await ZAP.db.getFriends(me.uid);
+      await ZAP.notifications.deleteNotificationsByPayload(me.uid, 'friend-request', 'fromUid', fromUid);
       ZAP.utils.toast('Друга додано ✓', 'success');
       ZAP.render();
     } catch (e) {
@@ -240,6 +241,7 @@
     if (!me) return;
     await ZAP.db.declineFriendRequest(me.uid, fromUid);
     requests = requests.filter(r => r.fromUid !== fromUid);
+    await ZAP.notifications.deleteNotificationsByPayload(me.uid, 'friend-request', 'fromUid', fromUid);
     ZAP.render();
   }
 

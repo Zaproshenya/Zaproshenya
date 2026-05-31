@@ -10,6 +10,7 @@
   let friends = [];
   let done = false;
   let createdInv = null;
+  let formState = {};
 
   async function load() {
     const user = ZAP.auth.getUser();
@@ -42,36 +43,36 @@
       ${mode === 'group' ? `
         <div>
           <label class="lbl">Назва зустрічі</label>
-          <input id="f-title" placeholder="Наприклад: Вечірка на день народження"/>
+          <input id="f-title" placeholder="Наприклад: Вечірка на день народження" value="${ZAP.utils.esc(formState.title || '')}" oninput="ZAP.pages.create.chk()"/>
         </div>
       ` : `
         <div>
           <label class="lbl">Кому</label>
-          <input id="f-to" placeholder="Ім'я отримувача" oninput="ZAP.pages.create.chk()"/>
+          <input id="f-to" placeholder="Ім'я отримувача" value="${ZAP.utils.esc(formState.to || '')}" oninput="ZAP.pages.create.chk()"/>
         </div>
       `}
 
       <div>
         <label class="lbl">Ваше повідомлення</label>
         <textarea id="f-msg" placeholder="Напишіть своїми словами — що хочете, куди запрошуєте…"
-          style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:#fff;font-size:1rem"></textarea>
+          style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:#fff;font-size:1rem" oninput="ZAP.pages.create.chk()">${ZAP.utils.esc(formState.msg || '')}</textarea>
       </div>
 
       <div>
         <label class="lbl">Тип події</label>
-        <select id="f-type">
-          ${TYPES.map(o => `<option value="${o.v}">${o.e} ${o.l}</option>`).join('')}
+        <select id="f-type" onchange="ZAP.pages.create.chk()">
+          ${TYPES.map(o => `<option value="${o.v}" ${formState.type === o.v ? 'selected' : ''}>${o.e} ${o.l}</option>`).join('')}
         </select>
       </div>
 
       <div class="grid2">
-        <div><label class="lbl">Дата</label><input type="date" id="f-date" min="${today}" oninput="ZAP.pages.create.chk()"/></div>
-        <div><label class="lbl">Час</label><input type="time" id="f-time" oninput="ZAP.pages.create.chk()"/></div>
+        <div><label class="lbl">Дата</label><input type="date" id="f-date" min="${today}" value="${formState.date || ''}" oninput="ZAP.pages.create.chk()"/></div>
+        <div><label class="lbl">Час</label><input type="time" id="f-time" value="${formState.time || ''}" oninput="ZAP.pages.create.chk()"/></div>
       </div>
 
       <div>
         <label class="lbl">Місце</label>
-        <input id="f-place" placeholder="Адреса, назва кафе, парк…"/>
+        <input id="f-place" placeholder="Адреса, назва кафе, парк…" value="${ZAP.utils.esc(formState.place || '')}" oninput="ZAP.pages.create.chk()"/>
       </div>
 
       ${mode === 'group' ? renderGroupOptions() : renderPersonalOptions()}
@@ -186,19 +187,32 @@
     </div>`;
   }
 
+  function saveFormState() {
+    formState.title = document.getElementById('f-title')?.value || '';
+    formState.to = document.getElementById('f-to')?.value || '';
+    formState.msg = document.getElementById('f-msg')?.value || '';
+    formState.type = document.getElementById('f-type')?.value || '';
+    formState.date = document.getElementById('f-date')?.value || '';
+    formState.time = document.getElementById('f-time')?.value || '';
+    formState.place = document.getElementById('f-place')?.value || '';
+  }
+
   function setMode(m) {
+    saveFormState();
     mode = m;
     selectedFriends = [];
     ZAP.render();
   }
 
   function togglePublic() {
+    saveFormState();
     isPublic = !isPublic;
     if (isPublic) selectedFriends = [];
     ZAP.render();
   }
 
   function toggleFriend(uid, ctx) {
+    saveFormState();
     if (ctx === 'personal') {
       // For personal, only one friend
       selectedFriends = selectedFriends.includes(uid) ? [] : [uid];
@@ -299,10 +313,12 @@
     createdInv = null;
     selectedFriends = [];
     requireAuth = false;
+    formState = {};
     ZAP.render();
   }
 
   function toggleRequireAuth() {
+    saveFormState();
     requireAuth = !requireAuth;
     ZAP.render();
   }
@@ -310,6 +326,6 @@
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.create = {
     render, load, setMode, togglePublic, toggleFriend, chk, submit, reset,
-    toggleRequireAuth,
+    toggleRequireAuth, saveFormState,
   };
 })();

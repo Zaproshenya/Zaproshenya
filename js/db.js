@@ -254,6 +254,13 @@
     if (!snap.exists()) return [];
     const list = [];
     snap.forEach(c => list.push(c.val()));
+    
+    // Fetch avatars for friends
+    for (const f of list) {
+      const pf = await getProfile(f.uid);
+      if (pf && pf.avatarBase64) f.avatarBase64 = pf.avatarBase64;
+      if (pf && pf.name) f.name = pf.name; // always get latest name too
+    }
     return list;
   }
 
@@ -305,43 +312,40 @@
 
   async function getStats() {
     if (!db()) return {};
-    try {
-      const [usersSnap, invitesSnap, groupSnap, reportsSnap] = await Promise.all([
-        db().ref('users').get(),
-        db().ref('invites').get(),
-        db().ref('group-invites').get(),
-        db().ref('reports').orderByChild('status').equalTo('pending').get(),
-      ]);
+    
+    let usersSnap = null, invitesSnap = null, groupSnap = null, reportsSnap = null;
+    let statusesSnap = null;
+    
+    try { usersSnap = await db().ref('users').get(); } catch (e) { console.warn('users stats:', e); }
+    try { invitesSnap = await db().ref('invites').get(); } catch (e) { console.warn('invites stats:', e); }
+    try { groupSnap = await db().ref('group-invites').get(); } catch (e) { console.warn('groups stats:', e); }
+    try { reportsSnap = await db().ref('reports').orderByChild('status').equalTo('pending').get(); } catch (e) { console.warn('reports stats:', e); }
+    try { statusesSnap = await db().ref('statuses').get(); } catch (e) { console.warn('statuses stats:', e); }
 
-      const users = [];
-      if (usersSnap.exists()) usersSnap.forEach(c => users.push(c.val()));
+    const users = [];
+    if (usersSnap && usersSnap.exists()) usersSnap.forEach(c => users.push(c.val()));
 
-      let totalInvites = 0, accepted = 0;
-      if (invitesSnap.exists()) invitesSnap.forEach(() => totalInvites++);
-      if (groupSnap.exists()) groupSnap.forEach(() => totalInvites++);
+    let totalInvites = 0, accepted = 0;
+    if (invitesSnap && invitesSnap.exists()) invitesSnap.forEach(() => totalInvites++);
+    if (groupSnap && groupSnap.exists()) groupSnap.forEach(() => totalInvites++);
 
-      // Count active users (last 7 days)
-      const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-      const activeUsers = users.filter(u => u.lastSeen > weekAgo).length;
+    // Count active users (last 7 days)
+    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const activeUsers = users.filter(u => u.lastSeen > weekAgo).length;
 
-      // Accepted invites
-      const statusesSnap = await db().ref('statuses').get();
-      if (statusesSnap.exists()) {
-        statusesSnap.forEach(c => { if (c.val() === 'accepted') accepted++; });
-      }
-
-      return {
-        totalUsers: users.length,
-        totalInvites,
-        acceptedInvites: accepted,
-        activeUsers,
-        pendingReports: reportsSnap.exists() ? reportsSnap.numChildren() : 0,
-        users,
-      };
-    } catch (e) {
-      console.warn('getStats:', e);
-      return {};
+    // Accepted invites
+    if (statusesSnap && statusesSnap.exists()) {
+      statusesSnap.forEach(c => { if (c.val() === 'accepted') accepted++; });
     }
+
+    return {
+      totalUsers: users.length,
+      totalInvites,
+      acceptedInvites: accepted,
+      activeUsers,
+      pendingReports: (reportsSnap && reportsSnap.exists()) ? reportsSnap.numChildren() : 0,
+      users,
+    };
   }
 
   // ═══════════════════════════════════════════════════════
