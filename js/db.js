@@ -254,12 +254,14 @@
     if (!snap.exists()) return [];
     const list = [];
     snap.forEach(c => list.push(c.val()));
-    
-    // Fetch avatars for friends
+
+    // Fetch fresh profile data (avatar + name) for each friend
     for (const f of list) {
       const pf = await getUserByUid(f.uid);
-      if (pf && pf.avatarBase64) f.avatarBase64 = pf.avatarBase64;
-      if (pf && pf.name) f.name = pf.name; // always get latest name too
+      if (pf) {
+        if (pf.avatar) f.avatar = pf.avatar;
+        if (pf.name) f.name = pf.name;
+      }
     }
     return list;
   }
@@ -312,10 +314,10 @@
 
   async function getStats() {
     if (!db()) return {};
-    
+
     let usersSnap = null, invitesSnap = null, groupSnap = null, reportsSnap = null;
     let statusesSnap = null;
-    
+
     try { usersSnap = await db().ref('users').get(); } catch (e) { console.warn('users stats:', e); }
     try { invitesSnap = await db().ref('invites').get(); } catch (e) { console.warn('invites stats:', e); }
     try { groupSnap = await db().ref('group-invites').get(); } catch (e) { console.warn('groups stats:', e); }

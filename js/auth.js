@@ -5,9 +5,9 @@
 (function () {
   // Special logins → auto-assign roles
   const SPECIAL_ROLES = {
-    'dinospike':  'founder',
+    'dinospike': 'founder',
     'yarikyt445': 'founder',
-    'yarikyt445-a11y': 'founder',
+    'dimitrio': 'founder',
   };
 
   // ── State ──
@@ -178,6 +178,19 @@
 
     // Save URL (Base64 string) in profile inside Realtime DB
     await updateProfile(currentUser.uid, { avatar: base64Url });
+
+    // Оновити аватар у всіх друзів
+    try {
+      const friendsSnap = await ZAP.dbRef.ref('friends/' + currentUser.uid).get();
+      if (friendsSnap.exists()) {
+        const updates = {};
+        friendsSnap.forEach(child => {
+          updates['friends/' + child.key + '/' + currentUser.uid + '/avatar'] = base64Url;
+        });
+        if (Object.keys(updates).length > 0) await ZAP.dbRef.ref().update(updates);
+      }
+    } catch (e) { console.warn('avatar sync:', e); }
+
     return base64Url;
   }
 
@@ -192,7 +205,7 @@
         img.onload = () => {
           let w = img.width, h = img.height;
           if (w > h) { if (w > maxSize) { h = h * maxSize / w; w = maxSize; } }
-          else       { if (h > maxSize) { w = w * maxSize / h; h = maxSize; } }
+          else { if (h > maxSize) { w = w * maxSize / h; h = maxSize; } }
           canvas.width = w; canvas.height = h;
           canvas.getContext('2d').drawImage(img, 0, 0, w, h);
           resolve(canvas.toDataURL('image/jpeg', 0.85)); // Returns Base64 string
@@ -244,7 +257,7 @@
         currentProfile = await loadProfile(user.uid);
         // Update lastSeen
         if (currentProfile) {
-          ZAP.dbRef.ref('users/' + user.uid + '/lastSeen').set(Date.now()).catch(() => {});
+          ZAP.dbRef.ref('users/' + user.uid + '/lastSeen').set(Date.now()).catch(() => { });
         }
         // Start listening for notifications
         ZAP.notifications.listenNotifications(user.uid, () => {

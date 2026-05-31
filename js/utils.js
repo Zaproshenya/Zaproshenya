@@ -42,17 +42,17 @@
     const el = Object.assign(document.createElement('textarea'), { value: text });
     el.style.cssText = 'position:fixed;opacity:0';
     document.body.appendChild(el); el.focus(); el.select();
-    try { document.execCommand('copy'); } catch {}
+    try { document.execCommand('copy'); } catch { }
     document.body.removeChild(el);
   }
 
   // ── Badge HTML ──
   function badge(status) {
     const MAP = {
-      pending:    ['badge-pending',    '⏳', 'Очікує'],
-      accepted:   ['badge-accepted',   '✓',  'Прийнято'],
-      declined:   ['badge-declined',   '✕',  'Відхилено'],
-      reschedule: ['badge-reschedule', '↕',  'Перенесення'],
+      pending: ['badge-pending', '⏳', 'Очікує'],
+      accepted: ['badge-accepted', '✓', 'Прийнято'],
+      declined: ['badge-declined', '✕', 'Відхилено'],
+      reschedule: ['badge-reschedule', '↕', 'Перенесення'],
     };
     const [cls, icon, label] = MAP[status] || MAP.pending;
     return `<span class="badge ${cls}">${icon} ${label}</span>`;
@@ -61,10 +61,10 @@
   // ── Role badge ──
   function roleBadge(role) {
     const MAP = {
-      founder:      ['badge-role badge-founder',    '👑', 'Засновник'],
+      founder: ['badge-role badge-founder', '👑', 'Засновник'],
       'tech-admin': ['badge-role badge-tech-admin', '⚙️', 'Тех-адмін'],
-      moderator:    ['badge-role badge-moderator',  '🛡️', 'Модератор'],
-      user:         ['badge-role badge-user',       '',   'Користувач'],
+      moderator: ['badge-role badge-moderator', '🛡️', 'Модератор'],
+      user: ['badge-role badge-user', '', 'Користувач'],
     };
     const [cls, icon, label] = MAP[role] || MAP.user;
     return `<span class="badge ${cls}">${icon ? icon + ' ' : ''}${label}</span>`;
@@ -134,8 +134,9 @@
   // ── Avatar HTML ──
   function avatarHTML(user, size = '') {
     const cls = size ? `avatar avatar-${size}` : 'avatar';
-    if (user?.avatar) {
-      return `<div class="${cls}"><img src="${esc(user.avatar)}" alt="${esc(user.name)}"/></div>`;
+    const src = user?.avatar || user?.avatarBase64 || null;
+    if (src) {
+      return `<div class="${cls}"><img src="${esc(src)}" alt="${esc(user.name)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/></div>`;
     }
     const initials = (user?.name || '?').charAt(0).toUpperCase();
     return `<div class="${cls}">${initials}</div>`;
@@ -148,14 +149,14 @@
 
   // ── Invite types ──
   const TYPES = [
-    { v: 'date',     l: 'Побачення',        e: '🌹' },
-    { v: 'walk',     l: 'Прогулянка',       e: '🍃' },
-    { v: 'birthday', l: 'День народження',  e: '🎂' },
-    { v: 'party',    l: 'Свято / Вечірка',  e: '🥂' },
-    { v: 'cinema',   l: 'Кіно',             e: '🎬' },
-    { v: 'coffee',   l: 'Кава',             e: '☕' },
-    { v: 'travel',   l: 'Подорож',          e: '✈️' },
-    { v: 'other',    l: 'Інше',             e: '✨' },
+    { v: 'date', l: 'Побачення', e: '🌹' },
+    { v: 'walk', l: 'Прогулянка', e: '🍃' },
+    { v: 'birthday', l: 'День народження', e: '🎂' },
+    { v: 'party', l: 'Свято / Вечірка', e: '🥂' },
+    { v: 'cinema', l: 'Кіно', e: '🎬' },
+    { v: 'coffee', l: 'Кава', e: '☕' },
+    { v: 'travel', l: 'Подорож', e: '✈️' },
+    { v: 'other', l: 'Інше', e: '✨' },
   ];
   const TYPE_MAP = Object.fromEntries(TYPES.map(t => [t.v, t]));
 
