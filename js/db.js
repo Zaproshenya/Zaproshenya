@@ -216,9 +216,6 @@
 
   async function acceptFriendRequest(myUid, fromUid) {
     if (!db()) return;
-    // Захист від дублювання: перевіряємо чи вже є в друзях
-    const alreadyFriends = await db().ref('friends/' + myUid + '/' + fromUid).get();
-    if (alreadyFriends.exists()) return; // Вже оброблено — виходимо мовчки
     const myProfile = await getUserByUid(myUid);
     const theirProfile = await getUserByUid(fromUid);
 

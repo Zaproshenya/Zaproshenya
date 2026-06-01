@@ -376,19 +376,11 @@
       let actionBtn = '';
 
       if (n.type === 'friend-request' && n.fromUid) {
-        if (n.handled) {
-          // Запит вже оброблено — показуємо статус замість кнопок
-          actionBtn = `<span class="notif-status-done">✓ Запит прийнято</span>`;
-        } else {
-          actionBtn = `
-            <button class="btn btn-gold btn-sm"
-              onclick="ZAP.app.acceptFriendNotif('${n.id}','${n.fromUid}',this)">Прийняти</button>
-            <button class="btn btn-outline btn-sm"
-              onclick="ZAP.app.declineFriendNotif('${n.id}','${n.fromUid}',this)">Відхилити</button>
-          `;
-        }
-      }
-      else if ((n.type === 'invite' || n.type === 'group-invite') && n.inviteId) {
+        actionBtn = `
+          <button class="btn btn-gold btn-sm" onclick="ZAP.pages.friends.acceptReq('${n.fromUid}');this.closest('.notif-item').remove()">Прийняти</button>
+          <button class="btn btn-outline btn-sm" onclick="ZAP.pages.friends.declineReq('${n.fromUid}');this.closest('.notif-item').remove()">Відхилити</button>
+        `;
+      } else if ((n.type === 'invite' || n.type === 'group-invite') && n.inviteId) {
         const routePage = n.type === 'group-invite' ? 'group-invite' : 'invite';
         actionBtn = `<button class="btn btn-gold btn-sm" onclick="ZAP.router.go('${routePage}',{id:'${n.inviteId}'})">Переглянути</button>`;
       } else if (n.type === 'friend-accepted' && n.fromUid) {
@@ -435,63 +427,10 @@
     if (badge) badge.textContent = unreadCount > 0 ? unreadCount : '';
     if (unreadCount === 0 && badge) badge.remove();
   }
-  // ── Accept friend request from notification ──
-  async function acceptFriendNotif(notifId, fromUid, btn) {
-    const me = ZAP.auth.getUser();
-    if (!me || !notifId) return;
-
-    // Одразу блокуємо кнопки щоб запобігти повторному кліку
-    const actionsEl = btn.closest('.notif-actions');
-    if (actionsEl) {
-      actionsEl.querySelectorAll('button').forEach(b => b.disabled = true);
-    }
-
-    try {
-      await ZAP.pages.friends.acceptReq(fromUid);
-
-      // Фіксуємо стан у Firebase — handled:true
-      await ZAP.notifications.markNotifHandled(me.uid, notifId);
-
-      // Замінюємо кнопки на текст-статус без перерендеру всієї сторінки
-      if (actionsEl) {
-        actionsEl.innerHTML = '<span class="notif-status-done">✓ Запит прийнято</span>';
-      }
-    } catch (e) {
-      // Якщо помилка — розблоковуємо кнопки назад
-      if (actionsEl) {
-        actionsEl.querySelectorAll('button').forEach(b => b.disabled = false);
-      }
-      ZAP.utils.toast(e.message || 'Помилка', 'error');
-    }
-  }
-
-  // ── Decline friend request from notification ──
-  async function declineFriendNotif(notifId, fromUid, btn) {
-    const me = ZAP.auth.getUser();
-    if (!me || !notifId) return;
-
-    const actionsEl = btn.closest('.notif-actions');
-    if (actionsEl) {
-      actionsEl.querySelectorAll('button').forEach(b => b.disabled = true);
-    }
-
-    try {
-      await ZAP.pages.friends.declineReq(fromUid);
-      await ZAP.notifications.markNotifHandled(me.uid, notifId);
-
-      if (actionsEl) {
-        actionsEl.innerHTML = '<span class="notif-status-done" style="color:var(--muted)">✕ Запит відхилено</span>';
-      }
-    } catch (e) {
-      if (actionsEl) {
-        actionsEl.querySelectorAll('button').forEach(b => b.disabled = false);
-      }
-    }
-  }
 
   // ── Init ──
   ZAP.render = render;
-  ZAP.app = { deleteNotification, acceptFriendNotif, declineFriendNotif };
+  ZAP.app = { deleteNotification };
 
   ZAP.auth.onAuthReady(async (user) => {
     authReady = true;
@@ -499,12 +438,12 @@
       await updateUnreadCount();
       // Periodic unread count update
       setInterval(updateUnreadCount, 30000);
-
+      
       // Presence heartbeat: update lastSeen every 45s
       setInterval(() => {
         const u = ZAP.auth.getUser();
         if (u && ZAP.dbRef) {
-          ZAP.dbRef.ref('users/' + u.uid + '/lastSeen').set(Date.now()).catch(() => { });
+          ZAP.dbRef.ref('users/' + u.uid + '/lastSeen').set(Date.now()).catch(() => {});
         }
       }, 45000);
 
