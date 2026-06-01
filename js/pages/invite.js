@@ -526,7 +526,8 @@
       date: groupData?.date || '',
       time: groupData?.time || '',
       place: groupData?.place || '',
-      creatorName: groupData?.creatorName || ''
+      creatorName: groupData?.creatorName || '',
+      creatorUid: groupData?.creatorUid || ''
     } : {
       to: invData?.to || '',
       msg: invData?.msg || '',
@@ -534,7 +535,9 @@
       time: invData?.time || '',
       place: invData?.place || '',
       type: invData?.type || '',
-      creatorName: invData?.from || ''
+      creatorName: invData?.from || '',
+      creatorUid: invData?.creatorUid || '',
+      recipientUid: user?.uid || null
     };
 
     await ZAP.db.createReport({

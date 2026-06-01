@@ -177,6 +177,70 @@
       `}
     </div>
 
+    <!-- Extra Stats Section -->
+    <div class="grid2" style="margin-bottom: 28px;">
+      <!-- Invites Breakdown -->
+      <div class="table-card">
+        <div class="table-header">
+          <h3>Формати запрошень</h3>
+        </div>
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:6px">
+              <span>👤 Персональні запрошення</span>
+              <span style="font-weight:600">${stats?.personalInvitesCount || 0}</span>
+            </div>
+            <div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden">
+              <div style="background:var(--ink);height:100%;width:${stats?.totalInvites ? ((stats.personalInvitesCount || 0) / stats.totalInvites) * 100 : 0}%"></div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:6px">
+              <span>👥 Групові події</span>
+              <span style="font-weight:600">${stats?.groupInvitesCount || 0}</span>
+            </div>
+            <div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden">
+              <div style="background:var(--gold);height:100%;width:${stats?.totalInvites ? ((stats.groupInvitesCount || 0) / stats.totalInvites) * 100 : 0}%"></div>
+            </div>
+          </div>
+          <div style="border-top: 1px solid var(--border); padding-top: 12px; margin-top: 4px;">
+            <div style="display:flex;justify-content:space-between;font-size:.9rem;color:var(--muted)">
+              <span>Середня активність:</span>
+              <span style="font-weight:500;color:var(--ink)">
+                ${stats?.totalUsers ? (stats.totalInvites / stats.totalUsers).toFixed(1) : 0} запр./користувача
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Popular Types -->
+      <div class="table-card">
+        <div class="table-header">
+          <h3>Найпопулярніші події</h3>
+        </div>
+        <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 10px;">
+          ${Object.entries(stats?.typeCounts || {})
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 4)
+            .map(([type, count]) => {
+              const t = ZAP.utils.TYPE_MAP[type] || ZAP.utils.TYPE_MAP.other || { e: '📅', l: 'Інше' };
+              const percent = stats?.totalInvites ? (count / stats.totalInvites) * 100 : 0;
+              return `
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:4px">
+                  <span>${t.e} ${t.l}</span>
+                  <span style="color:var(--muted)">${count} (${percent.toFixed(0)}%)</span>
+                </div>
+                <div style="background:var(--border);border-radius:4px;height:6px;overflow:hidden">
+                  <div style="background:var(--green);height:100%;width:${percent}%"></div>
+                </div>
+              </div>`;
+            }).join('') || `<div style="text-align:center;padding:24px 0;color:var(--muted);font-style:italic">Немає створених подій</div>`}
+        </div>
+      </div>
+    </div>
+
     <!-- Recent users -->
     <div class="table-card">
       <div class="table-header">
@@ -185,20 +249,28 @@
       <div class="table-scroll-wrap">
       <table class="data-table">
         <thead><tr>
-          <th>Користувач</th><th>Логін</th><th>Роль</th><th>Дата</th>
+          <th>Користувач</th><th>Логін</th><th>Роль</th><th>ID користувача</th><th>Зареєстрований</th><th>Остання активність</th><th>Статус</th>
         </tr></thead>
         <tbody>
-          ${users.slice(0, 5).map(u => `
+          ${users.slice(0, 5).map(u => {
+            const statusBadge = u.banned
+              ? `<span class="badge badge-declined">🚫 Бан</span>`
+              : '<span class="badge badge-accepted">✓ Активний</span>';
+
+            return `
             <tr>
               <td style="display:flex;align-items:center;gap:8px">
                 ${ZAP.utils.avatarHTML(u, 'sm')}
-                ${ZAP.utils.esc(u.name)}
+                <span style="font-weight:500">${ZAP.utils.esc(u.name)}</span>
               </td>
               <td style="color:var(--muted)">@${ZAP.utils.esc(u.login)}</td>
               <td>${ZAP.utils.roleBadge(u.role)}</td>
+              <td style="font-family:monospace;font-size:.82rem;color:var(--muted)">${ZAP.utils.esc(u.uniqueId || '—')}</td>
               <td style="font-size:.82rem;color:var(--muted)">${ZAP.utils.timeAgo(u.createdAt)}</td>
-            </tr>
-          `).join('')}
+              <td style="font-size:.82rem;color:var(--muted)">${u.lastSeen ? ZAP.utils.timeAgo(u.lastSeen) : 'Ніколи'}</td>
+              <td>${statusBadge}</td>
+            </tr>`;
+          }).join('')}
         </tbody>
       </table>
       </div>
@@ -360,8 +432,15 @@
       const dateText = tc.date || 'Не вказано';
       const timeText = tc.time ? `, ${tc.time}` : '';
       const placeText = tc.place ? ` · 📍 ${ZAP.utils.esc(tc.place)}` : '';
-      const creator = tc.creatorName ? ` від <strong>${ZAP.utils.esc(tc.creatorName)}</strong>` : '';
-      const toText = tc.to ? ` для <strong>${ZAP.utils.esc(tc.to)}</strong>` : ' (Групове)';
+
+      const creatorUid = tc.creatorUid || '';
+      const recipientUid = tc.recipientUid || (r.reporterUid && r.targetType === 'invite' ? r.reporterUid : '');
+
+      const creatorIdText = creatorUid ? ` (ID: ${ZAP.utils.esc(creatorUid)})` : '';
+      const creator = tc.creatorName ? ` від <strong>${ZAP.utils.esc(tc.creatorName)}</strong>${creatorIdText}` : '';
+
+      const toIdText = recipientUid ? ` (ID: ${ZAP.utils.esc(recipientUid)})` : '';
+      const toText = tc.to ? ` для <strong>${ZAP.utils.esc(tc.to)}</strong>${toIdText}` : ' (Групове)';
 
       invitePreview = `
         <div class="complaint-invite-preview">
@@ -384,7 +463,7 @@
       <div class="complaint-body">
         <div class="complaint-reason">${ZAP.utils.esc(r.reason)}</div>
         <div class="complaint-meta">
-          Від: ${ZAP.utils.esc(r.reporterName || 'Анонім')} ·
+          Від: ${ZAP.utils.esc(r.reporterName || 'Анонім')} ${r.reporterUid ? `(ID: ${ZAP.utils.esc(r.reporterUid)})` : ''} ·
           Тип: ${r.targetType === 'invite' ? '📨 Запрошення' : '👥 Групове'} ·
           ${ZAP.utils.timeAgo(r.createdAt)}
           ${r.comment ? `<br>💬 ${ZAP.utils.esc(r.comment)}` : ''}

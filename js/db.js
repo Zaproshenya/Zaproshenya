@@ -331,8 +331,30 @@
     if (usersSnap && usersSnap.exists()) usersSnap.forEach(c => { users.push(c.val()); });
 
     let totalInvites = 0, accepted = 0;
-    if (invitesSnap && invitesSnap.exists()) invitesSnap.forEach(() => { totalInvites++; });
-    if (groupSnap && groupSnap.exists()) groupSnap.forEach(() => { totalInvites++; });
+    let personalInvitesCount = 0;
+    let groupInvitesCount = 0;
+    const typeCounts = {};
+
+    if (invitesSnap && invitesSnap.exists()) {
+      invitesSnap.forEach(c => {
+        totalInvites++;
+        personalInvitesCount++;
+        const inv = c.val();
+        if (inv && inv.type) {
+          typeCounts[inv.type] = (typeCounts[inv.type] || 0) + 1;
+        }
+      });
+    }
+    if (groupSnap && groupSnap.exists()) {
+      groupSnap.forEach(c => {
+        totalInvites++;
+        groupInvitesCount++;
+        const inv = c.val();
+        if (inv && inv.type) {
+          typeCounts[inv.type] = (typeCounts[inv.type] || 0) + 1;
+        }
+      });
+    }
 
     // Count active users (last 7 days)
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
@@ -350,6 +372,9 @@
       activeUsers,
       pendingReports: (reportsSnap && reportsSnap.exists()) ? reportsSnap.numChildren() : 0,
       users,
+      personalInvitesCount,
+      groupInvitesCount,
+      typeCounts,
     };
   }
 
