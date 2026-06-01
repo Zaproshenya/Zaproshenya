@@ -208,8 +208,11 @@
 @media (max-width: 768px) {
   .auth-header, .auth-body { padding-left: 20px; padding-right: 20px; }
   .profile-header { flex-direction: column; text-align: center; }
-  .friend-card { flex-wrap: wrap; }
-  .friend-actions { width: 100%; justify-content: flex-end; }
+  /* Friend card: keep inline — avatar + name + action buttons all in one row */
+  .friend-card { gap: 10px; padding: 10px 12px; }
+  .friend-info { min-width: 0; }
+  .friend-name { font-size: .88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .friend-actions { flex-shrink: 0; gap: 6px; }
   .user-profile-actions { flex-direction: column; }
   .friend-search { flex-direction: column; }
 }

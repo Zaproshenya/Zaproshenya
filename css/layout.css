@@ -184,6 +184,8 @@
 .sidebar-content {
   flex: 1; margin-left: var(--sidebar-w);
   min-height: 100vh; background: var(--paper);
+  /* Prevent child content from causing horizontal overflow on mobile */
+  overflow-x: hidden;
 }
 .sidebar-content .wrap { max-width: 1100px; }
 
@@ -286,7 +288,11 @@
   }
   .sidebar.open { transform: translateX(0); }
   .sidebar-overlay.open { display: block; }
+  /* Dashboard: content takes full width when sidebar is hidden */
   .sidebar-content { margin-left: 0; }
+  .app-with-sidebar { display: block; }
+  /* Dashboard wrap: padding bottom so content clears the bottom bar */
+  .sidebar-content .wrap { padding-bottom: 32px; }
   .hamburger { display: block; }
   .grid3 { grid-template-columns: 1fr 1fr; }
 
