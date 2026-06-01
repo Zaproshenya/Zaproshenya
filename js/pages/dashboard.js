@@ -590,7 +590,109 @@
   function searchUsers(q) {
     userSearch = q;
     userPage = 0;
-    ZAP.render();
+
+    const filtered = userSearch
+      ? users.filter(u =>
+          (u.login || '').toLowerCase().includes(userSearch.toLowerCase()) ||
+          (u.name || '').toLowerCase().includes(userSearch.toLowerCase()))
+      : users;
+
+    const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+    const paged = filtered.slice(userPage * PAGE_SIZE, (userPage + 1) * PAGE_SIZE);
+    const myProfile = ZAP.auth.getProfile();
+    const myRank = getRank(myProfile?.role);
+
+    // 1. Update total count header
+    const headerTitle = document.querySelector('.table-header h3');
+    if (headerTitle) {
+      headerTitle.textContent = `Всього: ${filtered.length}`;
+    }
+
+    // 2. Update table rows
+    const tbody = document.querySelector('.data-table tbody');
+    if (tbody) {
+      tbody.innerHTML = paged.map(u => {
+        const targetRank = getRank(u.role);
+        const canBan = myRank > targetRank;
+
+        let banStatusText = '';
+        if (u.banned) {
+          if (u.bannedUntil) {
+            const msLeft = u.bannedUntil - Date.now();
+            if (msLeft > 0) {
+              const daysLeft = Math.ceil(msLeft / (24 * 60 * 60 * 1000));
+              const hoursLeft = Math.ceil(msLeft / (60 * 60 * 1000));
+              banStatusText = daysLeft > 1 ? `🚫 Бан · ${daysLeft} дн.` : `🚫 Бан · ${hoursLeft} год.`;
+            } else {
+              banStatusText = '🚫 Бан (закінчується)';
+            }
+          } else {
+            banStatusText = '🚫 Назавжди';
+          }
+        }
+
+        return `
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px;cursor:pointer"
+              onclick="ZAP.router.go('user-profile',{uid:'${u.uid}'})">
+              ${ZAP.utils.avatarHTML(u, 'sm')}
+              <div>
+                <div style="font-weight:500">${ZAP.utils.esc(u.name)}</div>
+                <div style="font-size:.72rem;color:var(--muted)">${ZAP.utils.esc(u.uniqueId)}</div>
+              </div>
+            </div>
+          </td>
+          <td style="color:var(--muted);font-size:.88rem">@${ZAP.utils.esc(u.login)}</td>
+          <td>
+            <select class="role-select" onchange="ZAP.pages.dashboard.changeRole('${u.uid}',this.value)"
+              ${!ZAP.auth.isAdmin() ? 'disabled' : ''}>
+              ${['user','moderator','tech-admin','founder'].map(r =>
+                `<option value="${r}" ${u.role === r ? 'selected' : ''}>${
+                  {user:'Користувач',moderator:'Модератор','tech-admin':'Тех-адмін',founder:'Засновник'}[r]
+                }</option>`
+              ).join('')}
+            </select>
+          </td>
+          <td>
+            ${u.banned
+              ? `<span class="badge badge-declined" title="${u.bannedUntil ? new Date(u.bannedUntil).toLocaleString('uk-UA') : 'Перманентно'}">${banStatusText}</span>`
+              : '<span class="badge badge-accepted">✓ Активний</span>'}
+          </td>
+          <td>
+            ${u.banned
+              ? (canBan ? `<button class="btn btn-sm btn-gold" onclick="ZAP.pages.dashboard.toggleBan('${u.uid}',false)">Розбанити</button>` : '<span style="color:var(--muted);font-size:.8rem">—</span>')
+              : (canBan ? `<button class="btn btn-sm btn-outline" style="color:var(--red);border-color:var(--red)"
+                  onclick="ZAP.pages.dashboard.toggleBan('${u.uid}',true)">Бан</button>` : '<span style="color:var(--muted);font-size:.8rem">—</span>')}
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    // 3. Update pagination
+    let paginationDiv = document.querySelector('.pagination');
+    if (totalPages > 1) {
+      const paginationHTML = Array.from({length: totalPages}, (_, i) => `
+        <button class="page-btn ${i === userPage ? 'active' : ''}"
+          onclick="ZAP.pages.dashboard.setUserPage(${i})">${i + 1}</button>
+      `).join('');
+      
+      if (paginationDiv) {
+        paginationDiv.innerHTML = paginationHTML;
+      } else {
+        const tableCard = document.querySelector('.table-card');
+        if (tableCard) {
+          paginationDiv = document.createElement('div');
+          paginationDiv.className = 'pagination';
+          paginationDiv.innerHTML = paginationHTML;
+          tableCard.appendChild(paginationDiv);
+        }
+      }
+    } else {
+      if (paginationDiv) {
+        paginationDiv.remove();
+      }
+    }
   }
 
   function setUserPage(p) {
