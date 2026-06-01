@@ -29,7 +29,6 @@
       'friends': 'Друзі',
       'notifications': 'Сповіщення',
       'dashboard': 'Дашборд',
-      'crm': 'CRM System',
       'user-profile': 'Профіль користувача',
       'invite': 'Перегляд запрошення',
       'group-invite': 'Групове запрошення',
@@ -48,7 +47,6 @@
         'friends': 'Переглядає список друзів',
         'notifications': 'Переглядає сповіщення',
         'dashboard': 'Керує адмін-дашбордом',
-        'crm': 'Керує CRM-системою',
         'user-profile': 'Переглядає профіль користувача',
         'invite': 'Переглядає запрошення',
         'group-invite': 'Переглядає групове запрошення',
@@ -207,10 +205,6 @@
         pageContent = await renderNotifications();
         break;
 
-      case 'crm':
-        pageContent = await renderCRM();
-        break;
-
       default:
         pageContent = ZAP.pages.home.render();
     }
@@ -248,7 +242,6 @@
         </div>
         ${isAdminUser ? `
           <button class="nb ${page === 'dashboard' ? 'on' : ''}" onclick="ZAP.router.go('dashboard')">📊</button>
-          <button class="nb ${page === 'crm' ? 'on' : ''}" onclick="ZAP.router.go('crm')">🎯 CRM</button>
         ` : ''}
         ${profile ? `
           <div class="topbar-user" onclick="ZAP.router.go('profile')">
@@ -283,21 +276,10 @@
         ${unreadCount > 0 ? `<span class="notif-badge" style="position:absolute;top:0;right:2px;font-size:.6rem;padding:1px 4px">${unreadCount}</span>` : ''}
         <span>Сповіщ.</span>
       </button>
-      ${isAdminUser ? `
-        <button class="bn-item ${page === 'dashboard' ? 'on' : ''}" onclick="ZAP.router.go('dashboard')">
-          <div style="font-size:1.25rem">📊</div>
-          <span>Панель</span>
-        </button>
-        <button class="bn-item ${page === 'crm' ? 'on' : ''}" onclick="ZAP.router.go('crm')">
-          <div style="font-size:1.25rem">🎯</div>
-          <span>CRM</span>
-        </button>
-      ` : `
-        <button class="bn-item ${page === 'profile' ? 'on' : ''}" onclick="ZAP.router.go('profile')">
-          <div style="font-size:1.25rem">👤</div>
-          <span>Профіль</span>
-        </button>
-      `}
+      <button class="bn-item ${page === 'profile' || page === 'dashboard' ? 'on' : ''}" onclick="ZAP.router.go('${isAdminUser ? 'dashboard' : 'profile'}')">
+        <div style="font-size:1.25rem">${isAdminUser ? '📊' : '👤'}</div>
+        <span>${isAdminUser ? 'Панель' : 'Профіль'}</span>
+      </button>
     </nav>`;
   }
 
@@ -430,297 +412,6 @@
         <button class="notif-delete-btn" title="Видалити" onclick="ZAP.app.deleteNotification('${n.id}', this)">×</button>
       </div>`;
     }).join('')}`;
-  }
-
-  // ── CRM Data Store --
-  let CRM_DATA = null;
-
-  // ── CRM Page --
-  async function renderCRM() {
-    const user = ZAP.auth.getUser();
-    if (!user) return '';
-
-    // Load CRM data
-    if (!CRM_DATA) {
-      try {
-        const response = await fetch('data/tasks.json?t=' + Date.now());
-        CRM_DATA = await response.json();
-      } catch (e) {
-        console.error('CRM: Failed to load data/tasks.json', e);
-        return `
-          <h1 class="page-title">🎯 CRM</h1>
-          <div style="text-align:center;padding:60px;color:var(--muted);">
-            <div style="font-size:2rem;margin-bottom:16px;">⚠️</div>
-            <p>Файл <code>data/tasks.json</code> відсутній</p>
-          </div>
-        `;
-      }
-    }
-
-    const columns = CRM_DATA.columns || {};
-    const stats = CRM_DATA.stats || {};
-    const priorityLabels = { 'critical': '🔴', 'high': '🟠', 'medium': '🟡', 'low': '🟢' };
-
-    return `
-      <h1 class="page-title">🎯 CRM</h1>
-      <button class="btn btn-gold" onclick="crmOpenModal()" style="margin-bottom:20px;">+ Нове завдання</button>
-      
-      <div style="display:flex;gap:15px;margin-bottom:25px;flex-wrap:wrap;">
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 20px;font-size:.9rem;">
-          <strong style="color:var(--muted);">Всього:</strong> <span>${stats.total || 0}</span>
-        </div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 20px;font-size:.9rem;">
-          <strong style="color:var(--muted);">Done:</strong> <span>${stats.byStatus?.done || 0}</span>
-        </div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 20px;font-size:.9rem;">
-          <strong style="color:var(--muted);">In Progress:</strong> <span>${stats.byStatus?.['in-progress'] || 0}</span>
-        </div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 20px;font-size:.9rem;">
-          <strong style="color:var(--muted);">To Do:</strong> <span>${stats.byStatus?.todo || 0}</span>
-        </div>
-      </div>
-      
-      <div style="display:flex;gap:20px;overflow-x:auto;padding-bottom:20px;" id="crm-kanban">
-        ${Object.entries(columns).map(([id, col]) => {
-          const tasks = CRM_DATA.tasks?.filter(t => t.column === id) || [];
-          const color = col.color || '#6c757d';
-          
-          return `
-            <div class="crm-column" style="flex:1;min-width:300px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px;" 
-                 data-column="${id}" 
-                 ondrop="crmHandleDrop(event, '${id}')"
-                 ondragover="event.preventDefault()">
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:15px;padding-bottom:10px;border-bottom:2px solid ${color};">
-                <div style="width:12px;height:12px;border-radius:50%;background:${color};"></div>
-                <h3 style="font-size:1rem;font-weight:600;">${col.name}</h3>
-                <span style="background:${color}20;color:${color};font-size:.7rem;padding:2px 8px;border-radius:10px;font-weight:600;">${tasks.length}</span>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:12px;min-height:80px;" id="crm-col-${id}">
-                ${tasks.length === 0 ? '<div style="color:var(--muted);text-align:center;padding:40px 10px;font-style:italic;">Немає завдань</div>' : ''}
-                ${tasks.map(task => {
-                  const priorityLabel = priorityLabels[task.priority || 'medium'] || '🟡';
-                  return `
-                    <div class="crm-task" 
-                         style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:16px;cursor:grab;min-height:80px;"
-                         draggable="true" 
-                         data-id="${task.id}"
-                         onclick="crmOpenTaskModal('${task.id}')"
-                         ondragstart="crmDragStart(event, '${task.id}')"
-                         ondragend="crmDragEnd(event)">
-                      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-                        <span style="font-family:monospace;font-size:.8rem;color:var(--muted);">${task.id}</span>
-                        <span style="font-size:.8rem;">${priorityLabel}</span>
-                      </div>
-                      <div style="font-weight:600;font-size:.95rem;margin-bottom:8px;">${ZAP.utils.esc(task.title)}</div>
-                      ${task.description ? `<div style="font-size:.85rem;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${ZAP.utils.esc(task.description)}</div>` : ''}
-                    </div>
-                  `;
-                }).join('')}
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-      
-      <!-- Task Modal -->
-      <div id="crm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:20px;" onclick="crmCloseModal(event)">
-        <div style="background:#fff;border-radius:12px;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;padding:24px;" onclick="event.stopPropagation()">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid var(--border);">
-            <h2 id="crm-modal-title" style="font-size:1.3rem;font-weight:600;">Нове завдання</h2>
-            <button onclick="crmCloseModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted);">×</button>
-          </div>
-          <form id="crm-task-form" onsubmit="crmSaveTask(event)">
-            <input type="hidden" id="crm-task-id">
-            <div style="margin-bottom:16px;">
-              <label style="display:block;font-size:.85rem;font-weight:500;margin-bottom:6px;color:var(--text);">Заголовок *</label>
-              <input type="text" id="crm-task-title" required 
-                     style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:.95rem;font-family:inherit;">
-            </div>
-            <div style="margin-bottom:16px;">
-              <label style="display:block;font-size:.85rem;font-weight:500;margin-bottom:6px;color:var(--text);">Опис</label>
-              <textarea id="crm-task-desc" rows="4" 
-                        style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:.95rem;font-family:inherit;resize:vertical;"></textarea>
-            </div>
-            <div style="display:flex;gap:12px;margin-bottom:16px;">
-              <div style="flex:1;">
-                <label style="display:block;font-size:.85rem;font-weight:500;margin-bottom:6px;color:var(--text);">Пріоритет</label>
-                <select id="crm-task-priority" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:.95rem;">
-                  <option value="critical">🔴 Критично</option>
-                  <option value="high">🟠 Високий</option>
-                  <option value="medium" selected>🟡 Середній</option>
-                  <option value="low">🟢 Низький</option>
-                </select>
-              </div>
-              <div style="flex:1;">
-                <label style="display:block;font-size:.85rem;font-weight:500;margin-bottom:6px;color:var(--text);">Колонка</label>
-                <select id="crm-task-column" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:.95rem;">
-                  ${Object.entries(columns).map(([id, col]) => `<option value="${id}">${col.name}</option>`).join('')}
-                </select>
-              </div>
-            </div>
-            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:15px;border-top:1px solid var(--border);">
-              <button type="button" onclick="crmCloseModal()" 
-                      style="padding:10px 20px;background:var(--muted);color:#fff;border:none;border-radius:6px;font-size:.9rem;font-weight:500;cursor:pointer;">Скасувати</button>
-              <button type="submit" 
-                      style="padding:10px 20px;background:var(--gold);color:#fff;border:none;border-radius:6px;font-size:.9rem;font-weight:500;cursor:pointer;">Зберегти</button>
-            </div>
-          </form>
-        </div>
-      </div>
-      
-      <script>
-        // Drag and Drop
-        function crmDragStart(e, taskId) {
-          e.dataTransfer.setData('text/plain', taskId);
-          e.target.style.opacity = '0.5';
-        }
-        
-        function crmDragEnd(e) {
-          e.target.style.opacity = '1';
-        }
-        
-        function crmHandleDrop(e, columnId) {
-          e.preventDefault();
-          const taskId = e.dataTransfer.getData('text/plain');
-          if (!taskId) return;
-          
-          const task = CRM_DATA.tasks.find(t => t.id === taskId);
-          if (task) {
-            task.column = columnId;
-            task.status = columnId;
-            task.updatedAt = new Date().toISOString();
-            crmUpdateStats();
-            crmSaveToLocalStorage();
-            ZAP.router.go('crm');
-          }
-        }
-        
-        // Modal functions
-        function crmOpenModal() {
-          document.getElementById('crm-modal').style.display = 'flex';
-          document.getElementById('crm-modal-title').textContent = 'Нове завдання';
-          document.getElementById('crm-task-id').value = '';
-          document.getElementById('crm-task-title').value = '';
-          document.getElementById('crm-task-desc').value = '';
-          document.getElementById('crm-task-priority').value = 'medium';
-          document.getElementById('crm-task-column').value = 'todo';
-        }
-        
-        function crmOpenTaskModal(taskId) {
-          const task = CRM_DATA.tasks.find(t => t.id === taskId);
-          if (!task) return;
-          
-          document.getElementById('crm-modal').style.display = 'flex';
-          document.getElementById('crm-modal-title').textContent = 'Редагувати завдання';
-          document.getElementById('crm-task-id').value = task.id;
-          document.getElementById('crm-task-title').value = task.title || '';
-          document.getElementById('crm-task-desc').value = task.description || '';
-          document.getElementById('crm-task-priority').value = task.priority || 'medium';
-          document.getElementById('crm-task-column').value = task.column || 'todo';
-        }
-        
-        function crmCloseModal(e) {
-          if (e && e.target.id !== 'crm-modal') return;
-          document.getElementById('crm-modal').style.display = 'none';
-        }
-        
-        function crmSaveTask(e) {
-          e.preventDefault();
-          
-          const taskId = document.getElementById('crm-task-id').value;
-          const title = document.getElementById('crm-task-title').value.trim();
-          const desc = document.getElementById('crm-task-desc').value.trim();
-          const priority = document.getElementById('crm-task-priority').value;
-          const column = document.getElementById('crm-task-column').value;
-          
-          if (!title) {
-            alert('Введіть заголовок');
-            return;
-          }
-          
-          const taskData = {
-            id: taskId || `TASK-${String(CRM_DATA.tasks?.length + 1).padStart(3, '0')}`,
-            title: title,
-            description: desc || null,
-            priority: priority,
-            column: column,
-            status: column,
-            createdAt: taskId ? CRM_DATA.tasks.find(t => t.id === taskId)?.createdAt : new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          };
-          
-          if (taskId) {
-            // Update existing
-            const idx = CRM_DATA.tasks.findIndex(t => t.id === taskId);
-            if (idx !== -1) CRM_DATA.tasks[idx] = taskData;
-          } else {
-            // Add new
-            if (!CRM_DATA.tasks) CRM_DATA.tasks = [];
-            CRM_DATA.tasks.push(taskData);
-          }
-          
-          crmUpdateStats();
-          crmSaveToLocalStorage();
-          crmCloseModal();
-          ZAP.router.go('crm');
-        }
-        
-        function crmUpdateStats() {
-          CRM_DATA.stats = {
-            total: CRM_DATA.tasks?.length || 0,
-            byStatus: {},
-            byPriority: {},
-            byAssignee: {}
-          };
-          (CRM_DATA.tasks || []).forEach(t => {
-            CRM_DATA.stats.byStatus[t.column || t.status] = (CRM_DATA.stats.byStatus[t.column || t.status] || 0) + 1;
-            CRM_DATA.stats.byPriority[t.priority] = (CRM_DATA.stats.byPriority[t.priority] || 0) + 1;
-          });
-          CRM_DATA.lastUpdated = new Date().toISOString();
-        }
-        
-        function crmSaveToLocalStorage() {
-          localStorage.setItem('crm_data_backup', JSON.stringify(CRM_DATA));
-          console.log('CRM data saved to localStorage');
-        }
-        
-        function crmLoadFromLocalStorage() {
-          const saved = localStorage.getItem('crm_data_backup');
-          if (saved) {
-            try {
-              CRM_DATA = JSON.parse(saved);
-              console.log('CRM data loaded from localStorage');
-            } catch (e) {
-              console.error('Failed to parse CRM backup', e);
-            }
-          }
-        }
-        
-        // Load backup from localStorage if available
-        crmLoadFromLocalStorage();
-      </script>
-    `;
-              }
-            });
-        }
-        
-        // Allow drop
-        document.querySelectorAll('.crm-column').forEach(col => {
-          col.addEventListener('dragover', e => e.preventDefault());
-        });
-      </script>
-      `;
-    } catch (e) {
-      console.error('CRM Error:', e);
-      return `
-        <h1 class="page-title">🎯 CRM System</h1>
-        <div style="text-align:center;padding:60px;color:var(--muted);">
-          <div style="font-size:2rem;margin-bottom:16px;">⚠️</div>
-          <p>Не вдалося завантажити дані CRM</p>
-          <p style="font-size:.85rem;margin-top:8px;">Файл <code>data/tasks.json</code> відсутній або пошкоджений</p>
-        </div>
-      `;
-    }
   }
 
   // ── Update unread count periodically ──

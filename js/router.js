@@ -28,7 +28,7 @@
     }
 
     // Simple pages
-    const simple = ['create', 'login', 'register', 'profile', 'friends', 'dashboard', 'notifications', 'crm'];
+    const simple = ['create', 'login', 'register', 'profile', 'friends', 'dashboard', 'notifications'];
     if (simple.includes(h)) return { page: h, params: {} };
 
     return { page: 'home', params: {} };
@@ -49,9 +49,9 @@
   }
 
   // Pages that require authentication
-  const AUTH_REQUIRED = ['home', 'create', 'profile', 'friends', 'dashboard', 'notifications', 'crm'];
+  const AUTH_REQUIRED = ['home', 'create', 'profile', 'friends', 'dashboard', 'notifications'];
   // Pages that require admin/founder role
-  const ADMIN_REQUIRED = ['dashboard', 'crm'];
+  const ADMIN_REQUIRED = ['dashboard'];
 
   function isAuthRequired(page) {
     return AUTH_REQUIRED.includes(page);
