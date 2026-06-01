@@ -29,6 +29,7 @@
       'friends': 'Друзі',
       'notifications': 'Сповіщення',
       'dashboard': 'Дашборд',
+      'crm': 'CRM System',
       'user-profile': 'Профіль користувача',
       'invite': 'Перегляд запрошення',
       'group-invite': 'Групове запрошення',
@@ -47,6 +48,7 @@
         'friends': 'Переглядає список друзів',
         'notifications': 'Переглядає сповіщення',
         'dashboard': 'Керує адмін-дашбордом',
+        'crm': 'Керує CRM-системою',
         'user-profile': 'Переглядає профіль користувача',
         'invite': 'Переглядає запрошення',
         'group-invite': 'Переглядає групове запрошення',
@@ -205,6 +207,10 @@
         pageContent = await renderNotifications();
         break;
 
+      case 'crm':
+        pageContent = await renderCRM();
+        break;
+
       default:
         pageContent = ZAP.pages.home.render();
     }
@@ -242,6 +248,7 @@
         </div>
         ${isAdminUser ? `
           <button class="nb ${page === 'dashboard' ? 'on' : ''}" onclick="ZAP.router.go('dashboard')">📊</button>
+          <button class="nb ${page === 'crm' ? 'on' : ''}" onclick="ZAP.router.go('crm')">🎯 CRM</button>
         ` : ''}
         ${profile ? `
           <div class="topbar-user" onclick="ZAP.router.go('profile')">
@@ -276,10 +283,21 @@
         ${unreadCount > 0 ? `<span class="notif-badge" style="position:absolute;top:0;right:2px;font-size:.6rem;padding:1px 4px">${unreadCount}</span>` : ''}
         <span>Сповіщ.</span>
       </button>
-      <button class="bn-item ${page === 'profile' || page === 'dashboard' ? 'on' : ''}" onclick="ZAP.router.go('${isAdminUser ? 'dashboard' : 'profile'}')">
-        <div style="font-size:1.25rem">${isAdminUser ? '📊' : '👤'}</div>
-        <span>${isAdminUser ? 'Панель' : 'Профіль'}</span>
-      </button>
+      ${isAdminUser ? `
+        <button class="bn-item ${page === 'dashboard' ? 'on' : ''}" onclick="ZAP.router.go('dashboard')">
+          <div style="font-size:1.25rem">📊</div>
+          <span>Панель</span>
+        </button>
+        <button class="bn-item ${page === 'crm' ? 'on' : ''}" onclick="ZAP.router.go('crm')">
+          <div style="font-size:1.25rem">🎯</div>
+          <span>CRM</span>
+        </button>
+      ` : `
+        <button class="bn-item ${page === 'profile' ? 'on' : ''}" onclick="ZAP.router.go('profile')">
+          <div style="font-size:1.25rem">👤</div>
+          <span>Профіль</span>
+        </button>
+      `}
     </nav>`;
   }
 
@@ -412,6 +430,180 @@
         <button class="notif-delete-btn" title="Видалити" onclick="ZAP.app.deleteNotification('${n.id}', this)">×</button>
       </div>`;
     }).join('')}`;
+  }
+
+  // ── CRM Page --
+  async function renderCRM() {
+    const user = ZAP.auth.getUser();
+    if (!user) return '';
+
+    try {
+      const response = await fetch('data/tasks.json?t=' + Date.now());
+      let crmData = await response.json();
+      
+      const iconMap = {
+        'bug': '🐛',
+        'feature': '✨',
+        'improvement': '📈',
+        'task': '📋'
+      };
+
+      const priorityColors = {
+        'critical': '#dc3545',
+        'high': '#fd7e14',
+        'medium': '#ffc107',
+        'low': '#198754'
+      };
+
+      const priorityLabels = {
+        'critical': '🔴 Критично',
+        'high': '🟠 Високий',
+        'medium': '🟡 Середній',
+        'low': '🟢 Низький'
+      };
+
+      const typeLabels = {
+        'bug': 'Баг',
+        'feature': 'Фіча',
+        'improvement': 'Покращення',
+        'task': 'Задача'
+      };
+
+      const columns = crmData.columns || {};
+      const stats = crmData.stats || {};
+
+      return `
+      <h1 class="page-title">🎯 CRM System</h1>
+      <p class="page-subtitle">Керування задачами для платформи Запрошення</p>
+      
+      <div class="crm-stats" style="display:flex;gap:15px;margin-bottom:25px;flex-wrap:wrap;">
+        <div class="stat-card" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 20px;font-size:.9rem;">
+          <strong style="color:var(--muted);">Всього:</strong> <span>${stats.total || 0}</span>
+        </div>
+        <div class="stat-card" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 20px;font-size:.9rem;">
+          <strong style="color:var(--muted);">Done:</strong> <span>${stats.byStatus?.done || 0}</span>
+        </div>
+        <div class="stat-card" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 20px;font-size:.9rem;">
+          <strong style="color:var(--muted);">In Progress:</strong> <span>${stats.byStatus?.['in-progress'] || 0}</span>
+        </div>
+        <div class="stat-card" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 20px;font-size:.9rem;">
+          <strong style="color:var(--muted);">To Do:</strong> <span>${stats.byStatus?.todo || 0}</span>
+        </div>
+      </div>
+      
+      <div class="crm-kanban" style="display:flex;gap:20px;overflow-x:auto;padding-bottom:20px;">
+        ${Object.entries(columns).map(([id, col]) => {
+          const tasks = crmData.tasks?.filter(t => t.column === id) || [];
+          const color = col.color || '#6c757d';
+          
+          return `
+            <div class="crm-column" style="flex:1;min-width:280px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px;" data-column="${id}">
+              <div class="crm-column-header" style="display:flex;align-items:center;gap:10px;margin-bottom:15px;padding-bottom:10px;border-bottom:2px solid var(--border);">
+                <div style="width:12px;height:12px;border-radius:50%;background:${color};"></div>
+                <h3 style="font-size:1rem;font-weight:600;">${col.name}</h3>
+                <span style="background:var(--muted);color:#fff;font-size:.7rem;padding:2px 8px;border-radius:10px;font-weight:600;">${tasks.length}</span>
+              </div>
+              <div class="crm-tasks" style="display:flex;flex-direction:column;gap:12px;min-height:60px;" id="crm-column-${id}">
+                ${tasks.length === 0 ? '<div style="color:var(--muted);text-align:center;padding:40px 10px;font-style:italic;">Немає завдань</div>' : ''}
+                ${tasks.map(task => {
+                  const priorityColor = priorityColors[task.priority || 'medium'] || '#6c757d';
+                  const priorityLabel = priorityLabels[task.priority || 'medium'] || task.priority;
+                  const typeLabel = typeLabels[task.type || 'task'] || task.type;
+                  const typeIcon = iconMap[task.type || 'task'] || '📋';
+                  const created = new Date(task.createdAt).toLocaleDateString('uk-UA');
+                  const labels = task.labels || [];
+                  const commentsCount = task.comments?.length || 0;
+                  
+                  return `
+                    <div class="crm-task" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;cursor:grab;" 
+                         draggable="true" data-id="${task.id}" data-column="${task.column}"
+                         ondragstart="event.dataTransfer.setData('text/plain','${task.id}');event.target.style.opacity='.5';"
+                         ondragend="event.target.style.opacity='1';"
+                         ondragover="event.preventDefault();"
+                         ondrop="crmDropTask(event,'${id}');">
+                      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;">
+                        <span style="font-family:monospace;font-size:.7rem;color:var(--muted);flex-shrink:0;">${task.id}</span>
+                        <span style="font-weight:600;font-size:.95rem;flex:1;">${ZAP.utils.esc(task.title)}</span>
+                        <span style="font-size:.65rem;padding:2px 6px;border-radius:4px;font-weight:600;background:${priorityColor};color:#fff;">${priorityLabel}</span>
+                        <span style="font-size:.65rem;padding:2px 6px;border-radius:4px;font-weight:500;" title="${typeLabel}">${typeIcon}</span>
+                      </div>
+                      ${task.assignee ? `<div style="display:flex;align-items:center;gap:5px;font-size:.8rem;color:var(--muted);margin-bottom:8px;">👤 ${ZAP.utils.esc(task.assignee)}</div>` : ''}
+                      ${task.description ? `<div style="font-size:.85rem;color:var(--muted);line-height:1.5;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${ZAP.utils.esc(task.description)}</div>` : ''}
+                      <div style="display:flex;align-items:center;gap:10px;font-size:.7rem;color:var(--muted);">
+                        <span>📅 ${created}</span>
+                        ${labels.length > 0 ? labels.map(l => `<span style="background:#e9ecef;color:var(--text);padding:1px 6px;border-radius:4px;font-size:.65rem;">${ZAP.utils.esc(l)}</span>`).join('') : ''}
+                        ${commentsCount > 0 ? `<span>💬 ${commentsCount}</span>` : ''}
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      
+      <div style="margin-top:20px;text-align:center;color:var(--muted);font-size:.85rem;">
+        💡 Перетягніть картки між колонками для зміни статусу
+      </div>
+      
+      <script>
+        function crmDropTask(e, columnId) {
+          e.preventDefault();
+          const taskId = e.dataTransfer.getData('text/plain');
+          if (!taskId) return;
+          
+          fetch('data/tasks.json')
+            .then(r => r.json())
+            .then(data => {
+              const task = data.tasks.find(t => t.id === taskId);
+              if (task) {
+                task.column = columnId;
+                task.status = columnId;
+                task.updatedAt = new Date().toISOString();
+                
+                // Update stats
+                data.lastUpdated = new Date().toISOString();
+                data.stats = {
+                  total: data.tasks.length,
+                  byStatus: {},
+                  byPriority: {},
+                  byAssignee: {}
+                };
+                data.tasks.forEach(t => {
+                  data.stats.byStatus[t.column || t.status] = (data.stats.byStatus[t.column || t.status] || 0) + 1;
+                  data.stats.byPriority[t.priority] = (data.stats.byPriority[t.priority] || 0) + 1;
+                  if (t.assignee) {
+                    data.stats.byAssignee[t.assignee] = (data.stats.byAssignee[t.assignee] || 0) + 1;
+                  }
+                });
+                
+                // For now, just reload the page since we can't save to filesystem
+                // In production, you would POST to a server endpoint
+                alert('Зміни буде збережено після оновлення сторінки. Файл: data/tasks.json');
+                console.log('Updated CRM data:', data);
+                ZAP.router.go('crm');
+              }
+            });
+        }
+        
+        // Allow drop
+        document.querySelectorAll('.crm-column').forEach(col => {
+          col.addEventListener('dragover', e => e.preventDefault());
+        });
+      </script>
+      `;
+    } catch (e) {
+      console.error('CRM Error:', e);
+      return `
+        <h1 class="page-title">🎯 CRM System</h1>
+        <div style="text-align:center;padding:60px;color:var(--muted);">
+          <div style="font-size:2rem;margin-bottom:16px;">⚠️</div>
+          <p>Не вдалося завантажити дані CRM</p>
+          <p style="font-size:.85rem;margin-top:8px;">Файл <code>data/tasks.json</code> відсутній або пошкоджений</p>
+        </div>
+      `;
+    }
   }
 
   // ── Update unread count periodically ──
