@@ -141,6 +141,94 @@
       </div>
     </div>
 
+    <!-- Advanced Stats Grid -->
+    <div class="grid2" style="margin-bottom: 28px;">
+      <!-- System Roles & Bans -->
+      <div class="table-card">
+        <div class="table-header">
+          <h3>Аудиторія та безпека</h3>
+        </div>
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+          <div style="display:flex;justify-content:space-between;font-size:.9rem">
+            <span style="color:var(--muted)">👑 Засновники</span>
+            <span style="font-weight:600;color:var(--ink)">${stats?.roleCounts?.founder || 0}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.9rem">
+            <span style="color:var(--muted)">🛠 Тех-адміністратори</span>
+            <span style="font-weight:600;color:var(--ink)">${stats?.roleCounts?.techAdmin || 0}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.9rem">
+            <span style="color:var(--muted)">🛡 Модератори</span>
+            <span style="font-weight:600;color:var(--ink)">${stats?.roleCounts?.moderator || 0}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.9rem">
+            <span style="color:var(--muted)">👥 Звичайні користувачі</span>
+            <span style="font-weight:600;color:var(--ink)">${stats?.roleCounts?.user || 0}</span>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:space-between;font-size:.9rem">
+            <span style="color:var(--red);font-weight:500">🚫 Заблоковані користувачі</span>
+            <span style="font-weight:600;color:var(--red)">${stats?.bannedCount || 0}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invite Statuses & Social Connections -->
+      <div class="table-card">
+        <div class="table-header">
+          <h3>Статуси зустрічей та взаємодія</h3>
+        </div>
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+          <div style="display:flex;justify-content:space-between;font-size:.9rem">
+            <span style="color:var(--muted)">✅ Прийняті запрошення</span>
+            <span style="font-weight:600;color:var(--green)">${stats?.acceptedInvites || 0}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.9rem">
+            <span style="color:var(--muted)">❌ Відхилені запрошення</span>
+            <span style="font-weight:600;color:var(--red)">${stats?.declinedInvites || 0}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.9rem">
+            <span style="color:var(--muted)">📅 Перенесені події</span>
+            <span style="font-weight:600;color:var(--gold)">${stats?.rescheduleInvites || 0}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.9rem">
+            <span style="color:var(--muted)">⏳ В очікуванні відповіді</span>
+            <span style="font-weight:600;color:var(--ink)">
+              ${(stats?.totalInvites || 0) - (stats?.acceptedInvites || 0) - (stats?.declinedInvites || 0) - (stats?.rescheduleInvites || 0)}
+            </span>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:space-between;font-size:.9rem">
+            <span style="color:var(--ink);font-weight:500">🤝 Всього зв'язків дружби</span>
+            <span style="font-weight:600;color:var(--ink)">${stats?.totalFriendsConnections || 0}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Moderation Reports Breakdown -->
+      <div class="table-card" style="grid-column: span 2;">
+        <div class="table-header">
+          <h3>Статистика модерації скарг</h3>
+        </div>
+        <div style="padding: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; text-align: center;">
+          <div>
+            <div style="font-size:1.6rem;font-weight:700;color:var(--muted)">${stats?.reportsCount?.total || 0}</div>
+            <div style="font-size:.8rem;color:var(--muted)">Всього скарг</div>
+          </div>
+          <div>
+            <div style="font-size:1.6rem;font-weight:700;color:var(--red)">${stats?.reportsCount?.pending || 0}</div>
+            <div style="font-size:.8rem;color:var(--red)">Очікують розгляду</div>
+          </div>
+          <div>
+            <div style="font-size:1.6rem;font-weight:700;color:var(--green)">${stats?.reportsCount?.resolved || 0}</div>
+            <div style="font-size:.8rem;color:var(--green)">Вирішено (Схвалено)</div>
+          </div>
+          <div>
+            <div style="font-size:1.6rem;font-weight:700;color:var(--gold)">${stats?.reportsCount?.dismissed || 0}</div>
+            <div style="font-size:.8rem;color:var(--gold)">Відхилено</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Online users and their actions -->
     <div class="table-card" style="margin-bottom: 28px;">
       <div class="table-header">
@@ -427,6 +515,10 @@
 
   function renderReportCard(r, isResolved) {
     let invitePreview = '';
+    
+    // Helper to find profile in loaded users array
+    const getUserProfile = (uid) => users.find(u => u.uid === uid) || null;
+
     if (r.targetContent) {
       const tc = r.targetContent;
       const dateText = tc.date || 'Не вказано';
@@ -436,10 +528,17 @@
       const creatorUid = tc.creatorUid || '';
       const recipientUid = tc.recipientUid || (r.reporterUid && r.targetType === 'invite' ? r.reporterUid : '');
 
-      const creatorIdText = creatorUid ? ` (ID: ${ZAP.utils.esc(creatorUid)})` : '';
+      const creatorProfile = getUserProfile(creatorUid);
+      const recipientProfile = getUserProfile(recipientUid);
+
+      const creatorIdText = creatorProfile 
+        ? ` (<strong>${ZAP.utils.esc(creatorProfile.uniqueId)}</strong>, @${ZAP.utils.esc(creatorProfile.login)})`
+        : (creatorUid ? ` (ID: ${ZAP.utils.esc(creatorUid)})` : '');
       const creator = tc.creatorName ? ` від <strong>${ZAP.utils.esc(tc.creatorName)}</strong>${creatorIdText}` : '';
 
-      const toIdText = recipientUid ? ` (ID: ${ZAP.utils.esc(recipientUid)})` : '';
+      const toIdText = recipientProfile
+        ? ` (<strong>${ZAP.utils.esc(recipientProfile.uniqueId)}</strong>, @${ZAP.utils.esc(recipientProfile.login)})`
+        : (recipientUid ? ` (ID: ${ZAP.utils.esc(recipientUid)})` : '');
       const toText = tc.to ? ` для <strong>${ZAP.utils.esc(tc.to)}</strong>${toIdText}` : ' (Групове)';
 
       invitePreview = `
@@ -457,13 +556,18 @@
       `;
     }
 
+    const reporterProfile = getUserProfile(r.reporterUid);
+    const reporterIdText = reporterProfile 
+      ? ` (<strong>${ZAP.utils.esc(reporterProfile.uniqueId)}</strong>, @${ZAP.utils.esc(reporterProfile.login)})`
+      : (r.reporterUid ? ` (ID: ${ZAP.utils.esc(r.reporterUid)})` : '');
+
     return `
     <div class="complaint-card ${isResolved ? 'resolved' : ''}">
       <div class="complaint-icon">⚠️</div>
       <div class="complaint-body">
         <div class="complaint-reason">${ZAP.utils.esc(r.reason)}</div>
         <div class="complaint-meta">
-          Від: ${ZAP.utils.esc(r.reporterName || 'Анонім')} ${r.reporterUid ? `(ID: ${ZAP.utils.esc(r.reporterUid)})` : ''} ·
+          Від: ${ZAP.utils.esc(r.reporterName || 'Анонім')}${reporterIdText} ·
           Тип: ${r.targetType === 'invite' ? '📨 Запрошення' : '👥 Групове'} ·
           ${ZAP.utils.timeAgo(r.createdAt)}
           ${r.comment ? `<br>💬 ${ZAP.utils.esc(r.comment)}` : ''}

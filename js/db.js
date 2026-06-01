@@ -319,18 +319,19 @@
     if (!db()) return {};
 
     let usersSnap = null, invitesSnap = null, groupSnap = null, reportsSnap = null;
-    let statusesSnap = null;
+    let statusesSnap = null, friendsSnap = null;
 
     try { usersSnap = await db().ref('users').get(); } catch (e) { console.warn('users stats:', e); }
     try { invitesSnap = await db().ref('invites').get(); } catch (e) { console.warn('invites stats:', e); }
     try { groupSnap = await db().ref('group-invites').get(); } catch (e) { console.warn('groups stats:', e); }
-    try { reportsSnap = await db().ref('reports').orderByChild('status').equalTo('pending').get(); } catch (e) { console.warn('reports stats:', e); }
+    try { reportsSnap = await db().ref('reports').get(); } catch (e) { console.warn('reports stats:', e); }
     try { statusesSnap = await db().ref('statuses').get(); } catch (e) { console.warn('statuses stats:', e); }
+    try { friendsSnap = await db().ref('friends').get(); } catch (e) { console.warn('friends stats:', e); }
 
     const users = [];
     if (usersSnap && usersSnap.exists()) usersSnap.forEach(c => { users.push(c.val()); });
 
-    let totalInvites = 0, accepted = 0;
+    let totalInvites = 0;
     let personalInvitesCount = 0;
     let groupInvitesCount = 0;
     const typeCounts = {};
@@ -360,17 +361,81 @@
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const activeUsers = users.filter(u => u.lastSeen > weekAgo).length;
 
-    // Accepted invites
+    // Status counts
+    let acceptedInvites = 0;
+    let declinedInvites = 0;
+    let rescheduleInvites = 0;
     if (statusesSnap && statusesSnap.exists()) {
-      statusesSnap.forEach(c => { if (c.val() === 'accepted') accepted++; });
+      statusesSnap.forEach(c => {
+        const val = c.val();
+        if (val === 'accepted') acceptedInvites++;
+        else if (val === 'declined') declinedInvites++;
+        else if (val === 'reschedule' || val === 'rescheduled') rescheduleInvites++;
+      });
     }
+
+    // Roles and ban count
+    let founderCount = 0;
+    let techAdminCount = 0;
+    let moderatorCount = 0;
+    let regularUserCount = 0;
+    let bannedCount = 0;
+
+    users.forEach(u => {
+      if (u.banned) bannedCount++;
+      if (u.role === 'founder') founderCount++;
+      else if (u.role === 'tech-admin') techAdminCount++;
+      else if (u.role === 'moderator') moderatorCount++;
+      else regularUserCount++;
+    });
+
+    // Reports breakdown
+    let pendingReports = 0;
+    let resolvedReports = 0;
+    let dismissedReports = 0;
+    if (reportsSnap && reportsSnap.exists()) {
+      reportsSnap.forEach(c => {
+        const val = c.val();
+        if (val.status === 'pending') pendingReports++;
+        else if (val.status === 'resolved') resolvedReports++;
+        else if (val.status === 'dismissed') dismissedReports++;
+      });
+    }
+
+    // Friend connections
+    let totalFriendsConnections = 0;
+    if (friendsSnap && friendsSnap.exists()) {
+      friendsSnap.forEach(userNode => {
+        const val = userNode.val();
+        if (val) {
+          totalFriendsConnections += Object.keys(val).length;
+        }
+      });
+    }
+    // Divide by 2 because friendships are bidirectionally saved (A is friend of B, B is friend of A)
+    totalFriendsConnections = Math.floor(totalFriendsConnections / 2);
 
     return {
       totalUsers: users.length,
       totalInvites,
-      acceptedInvites: accepted,
+      acceptedInvites,
+      declinedInvites,
+      rescheduleInvites,
       activeUsers,
-      pendingReports: (reportsSnap && reportsSnap.exists()) ? reportsSnap.numChildren() : 0,
+      bannedCount,
+      roleCounts: {
+        founder: founderCount,
+        techAdmin: techAdminCount,
+        moderator: moderatorCount,
+        user: regularUserCount
+      },
+      reportsCount: {
+        pending: pendingReports,
+        resolved: resolvedReports,
+        dismissed: dismissedReports,
+        total: pendingReports + resolvedReports + dismissedReports
+      },
+      totalFriendsConnections,
       users,
       personalInvitesCount,
       groupInvitesCount,

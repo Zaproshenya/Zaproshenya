@@ -5,6 +5,36 @@
 (function () {
   let editing = null; // 'name' | 'login' | 'password' | null
   let saving = false;
+  let stats = null;
+
+  async function load() {
+    const user = ZAP.auth.getUser();
+    if (!user) return;
+
+    try {
+      const invites = await ZAP.db.getUserInvites(user.uid);
+      const friends = await ZAP.db.getFriends(user.uid);
+
+      const personalCount = invites.filter(inv => !inv.isGroup).length;
+      const groupCount = invites.filter(inv => inv.isGroup).length;
+
+      const acceptedCount = invites.filter(inv => inv.status === 'accepted').length;
+      const declinedCount = invites.filter(inv => inv.status === 'declined').length;
+      const pendingCount = invites.filter(inv => inv.status === 'pending').length;
+
+      stats = {
+        totalInvites: invites.length,
+        personalCount,
+        groupCount,
+        acceptedCount,
+        declinedCount,
+        pendingCount,
+        totalFriends: friends.length
+      };
+    } catch (e) {
+      console.warn('Profile load stats:', e);
+    }
+  }
 
   function render() {
     const profile = ZAP.auth.getProfile();
@@ -89,6 +119,29 @@
         <div class="profile-field-label">Дата реєстрації</div>
         <div class="profile-field-value">${ZAP.utils.formatDate(new Date(profile.createdAt).toISOString().split('T')[0])}</div>
       </div>
+      ${stats ? `
+        <div class="profile-field">
+          <div class="profile-field-label">Створені запрошення</div>
+          <div class="profile-field-value" style="font-weight:600">${stats.totalInvites}</div>
+        </div>
+        <div class="profile-field">
+          <div class="profile-field-label">Типи (Персональні / Групове)</div>
+          <div class="profile-field-value" style="color:var(--muted)">
+            👤 ${stats.personalCount} / 👥 ${stats.groupCount}
+          </div>
+        </div>
+        <div class="profile-field">
+          <div class="profile-field-label">Статуси відповідей</div>
+          <div class="profile-field-value" style="display:flex;gap:6px">
+            <span class="badge badge-accepted" style="font-size:0.75rem">✓ ${stats.acceptedCount} прийнято</span>
+            <span class="badge badge-declined" style="font-size:0.75rem">✕ ${stats.declinedCount} відхилено</span>
+          </div>
+        </div>
+        <div class="profile-field">
+          <div class="profile-field-label">Кількість друзів</div>
+          <div class="profile-field-value" style="font-weight:600">👥 ${stats.totalFriends}</div>
+        </div>
+      ` : ''}
     </div>
 
     <!-- Danger zone -->
@@ -323,7 +376,7 @@
 
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.profile = {
-    render, startEdit, cancelEdit,
+    render, load, startEdit, cancelEdit,
     saveName, saveLogin, savePassword,
     uploadAvatar, confirmDelete, doDelete, doLogout,
   };

@@ -186,6 +186,10 @@
         break;
 
       case 'profile':
+        if (isPageChange) {
+          app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.utils.spinner() + '</div>';
+          await ZAP.pages.profile.load();
+        }
         pageContent = ZAP.pages.profile.render();
         break;
 
