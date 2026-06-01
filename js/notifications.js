@@ -133,7 +133,7 @@
   ZAP.notifications = {
     requestPushPermission, sendPush,
     addNotification, getNotifications, deleteNotification, deleteNotificationsByPayload,
-    markNotifRead, markAllNotifsRead, getUnreadCount,
+    markNotifRead, markAllNotifsRead, markNotifHandled, getUnreadCount,
     listenNotifications, stopListeningNotifications,
   };
 })();
