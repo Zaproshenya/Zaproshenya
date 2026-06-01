@@ -18,22 +18,22 @@ button { cursor: pointer; font-family: var(--font-body); transition: all .2s var
 .btn-dark:disabled { background: var(--warm); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
 
 .btn-yes {
-  background: var(--green); color: #fff; border-radius: 14px;
-  padding: 15px; font-family: var(--font-heading); font-style: italic;
-  font-size: 1.1rem; width: 100%; border: none;
+  background: var(--green); color: #fff; border-radius: clamp(10px, 2vw, 14px);
+  padding: clamp(12px, 3vw, 15px); font-family: var(--font-heading); font-style: italic;
+  font-size: clamp(0.9rem, 2.5vw, 1.2rem); width: 100%; border: none;
 }
 .btn-yes:hover { background: #236040; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(45,122,79,.3); }
 
 .btn-no {
   background: none; color: var(--red); border: 1.5px solid rgba(192,57,43,.3);
-  border-radius: 14px; padding: 14px; font-size: 1rem; width: 100%;
+  border-radius: clamp(10px, 2vw, 14px); padding: clamp(11px, 2.8vw, 14px); font-size: clamp(0.85rem, 2.2vw, 1.1rem); width: 100%;
 }
 .btn-no:hover { background: var(--red-bg); }
 
 .btn-reschedule {
   background: rgba(201,146,42,.1); color: var(--gold);
-  border: 1.5px solid rgba(201,146,42,.35); border-radius: 14px;
-  padding: 13px; font-size: .95rem; width: 100%;
+  border: 1.5px solid rgba(201,146,42,.35); border-radius: clamp(10px, 2vw, 14px);
+  padding: clamp(10px, 2.5vw, 13px); font-size: clamp(0.8rem, 2vw, 1rem); width: 100%;
   font-family: var(--font-body);
 }
 .btn-reschedule:hover { background: rgba(201,146,42,.18); }
@@ -73,9 +73,9 @@ button { cursor: pointer; font-family: var(--font-body); transition: all .2s var
 
 /* ── Inputs ── */
 input, textarea, select {
-  font-family: var(--font-body); font-size: 1rem;
+  font-family: var(--font-body); font-size: clamp(0.85rem, 2.2vw, 1.1rem);
   background: #fff; border: 1.5px solid var(--border);
-  color: var(--ink); width: 100%; padding: 11px 14px;
+  color: var(--ink); width: 100%; padding: clamp(8px, 2vw, 11px) clamp(10px, 2.5vw, 14px);
   border-radius: var(--radius-sm); outline: none;
   transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
 }
@@ -99,12 +99,12 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 
 /* ── Labels ── */
 .lbl {
-  display: block; font-size: .72rem; letter-spacing: .1em;
-  color: var(--muted); margin-bottom: 6px;
+  display: block; font-size: clamp(0.6rem, 1.6vw, 0.75rem); letter-spacing: .1em;
+  color: var(--muted); margin-bottom: clamp(4px, 1vw, 6px);
   text-transform: uppercase; font-weight: 500;
 }
 .form-error {
-  color: var(--red); font-size: .82rem; margin-top: 5px;
+  color: var(--red); font-size: clamp(0.7rem, 2vw, 0.9rem); margin-top: clamp(3px, 0.8vw, 5px);
   display: none; animation: fadeIn .2s ease;
 }
 .form-error.show { display: block; }
@@ -244,16 +244,16 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 
 /* ── Detail row ── */
 .detail-row {
-  display: flex; align-items: center; gap: 12px;
-  padding: 9px 0; border-bottom: 1px solid rgba(0,0,0,.05);
+  display: flex; align-items: center; gap: clamp(8px, 2vw, 12px);
+  padding: clamp(6px, 1.5vw, 9px) 0; border-bottom: 1px solid rgba(0,0,0,.05);
 }
 .detail-row:last-child { border-bottom: none; }
-.detail-icon { font-size: 1.1rem; width: 28px; text-align: center; flex-shrink: 0; }
+.detail-icon { font-size: clamp(0.9rem, 2.5vw, 1.2rem); width: clamp(24px, 6vw, 28px); text-align: center; flex-shrink: 0; }
 .detail-label {
-  font-size: .72rem; color: var(--muted); text-transform: uppercase;
-  letter-spacing: .08em; font-weight: 500; min-width: 52px;
+  font-size: clamp(0.6rem, 1.8vw, 0.75rem); color: var(--muted); text-transform: uppercase;
+  letter-spacing: .08em; font-weight: 500; min-width: clamp(40px, 10vw, 52px);
 }
-.detail-value { font-size: 1rem; color: var(--ink); font-weight: 500; }
+.detail-value { font-size: clamp(0.85rem, 2.2vw, 1.1rem); color: var(--ink); font-weight: 500; }
 
 /* ── Firebase dot ── */
 .fb-dot {
@@ -356,8 +356,8 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 
 /* ── Reschedule form ── */
 .reschedule-form {
-  background: var(--warm); border-radius: 14px; padding: 18px;
-  margin-top: 14px; border: 1px solid var(--border);
+  background: var(--warm); border-radius: clamp(10px, 2vw, 14px); padding: clamp(14px, 3.5vw, 18px);
+  margin-top: clamp(10px, 2.5vw, 14px); border: 1px solid var(--border);
   animation: fadeUp .3s ease both;
 }
 

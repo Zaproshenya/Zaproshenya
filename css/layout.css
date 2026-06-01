@@ -68,7 +68,8 @@
 }
 .invite-envelope {
   margin: auto;
-  max-width: 480px; width: 100%;
+  max-width: min(480px, 95vw);
+  width: 95%;
   background: var(--card);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
@@ -76,64 +77,64 @@
   animation: pop .5s cubic-bezier(.34,1.56,.64,1) both;
   display: flex;
   flex-direction: column;
-  max-height: 100%;
+  max-height: min(95vh, 600px);
 }
 .envelope-top {
   background: linear-gradient(135deg, #1a120a 0%, #2d2010 100%);
-  padding: 32px 32px 28px;
+  padding: clamp(20px, 6vw, 32px) clamp(20px, 6vw, 32px) clamp(18px, 4vw, 28px);
   text-align: center; position: relative;
 }
 .envelope-top::after {
   content: ''; position: absolute; bottom: -1px; left: 0; right: 0;
-  height: 20px; background: var(--card);
+  height: clamp(14px, 2.5vw, 20px); background: var(--card);
   clip-path: ellipse(55% 100% at 50% 100%);
 }
 .envelope-emoji {
-  font-size: 3rem; display: block; margin-bottom: 8px;
+  font-size: clamp(2.5rem, 8vw, 3.5rem); display: block; margin-bottom: clamp(6px, 1.5vw, 10px);
   animation: heartbeat 2s ease-in-out infinite;
 }
 .envelope-type {
-  font-size: .68rem; letter-spacing: .18em;
+  font-size: clamp(0.55rem, 1.3vw, 0.75rem); letter-spacing: .18em;
   color: rgba(255,255,255,.5); text-transform: uppercase;
-  font-weight: 500; margin-bottom: 6px;
+  font-weight: 500; margin-bottom: clamp(4px, 1vw, 8px);
 }
 .envelope-to {
   font-family: var(--font-heading); font-style: italic;
-  font-size: 2rem; color: #fff; font-weight: 400;
+  font-size: clamp(1.5rem, 5vw, 2.2rem); color: #fff; font-weight: 400;
 }
 .envelope-body { 
-  padding: 28px 32px 70px; 
+  padding: clamp(18px, 4vw, 28px) clamp(24px, 6vw, 32px) clamp(50px, 12vw, 80px); 
   overflow-y: auto;
   flex: 1;
 }
-.answer-wrap { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
+.answer-wrap { display: flex; flex-direction: column; gap: clamp(8px, 2vw, 12px); margin-top: clamp(16px, 4vw, 24px); }
 
 /* ── Message block ── */
 .msg-block {
-  background: var(--warm); border-radius: 12px;
-  padding: 18px 20px; margin-bottom: 22px;
+  background: var(--warm); border-radius: clamp(8px, 1.5vw, 12px);
+  padding: clamp(14px, 3vw, 18px) clamp(16px, 4vw, 20px); margin-bottom: clamp(16px, 4vw, 22px);
   border-left: 3px solid var(--gold); position: relative;
 }
 .msg-block::before {
   content: '\201C'; font-family: var(--font-heading);
-  font-size: 3.5rem; color: var(--gold); opacity: .25;
-  position: absolute; top: -8px; left: 12px; line-height: 1;
+  font-size: clamp(2.5rem, 7vw, 3.5rem); color: var(--gold); opacity: .25;
+  position: absolute; top: clamp(-6px, -1.5vw, -8px); left: clamp(8px, 2vw, 12px); line-height: 1;
 }
 .msg-text {
   font-family: var(--font-heading); font-style: italic;
-  font-size: 1.1rem; line-height: 1.7; color: var(--ink); padding-left: 8px;
+  font-size: clamp(0.9rem, 2.5vw, 1.2rem); line-height: 1.7; color: var(--ink); padding-left: clamp(6px, 1.5vw, 8px);
 }
 
 /* ── Result screen ── */
-.result-screen { text-align: center; padding: 12px 0 4px; }
+.result-screen { text-align: center; padding: clamp(8px, 2vw, 12px) 0 clamp(2px, 0.5vw, 4px); }
 .result-icon {
-  font-size: 3.5rem; margin-bottom: 10px; display: block;
+  font-size: clamp(2.5rem, 7vw, 3.5rem); margin-bottom: clamp(6px, 1.5vw, 10px); display: block;
   animation: pop .5s cubic-bezier(.34,1.56,.64,1) both;
 }
 .result-title {
-  font-family: var(--font-heading); font-size: 1.7rem; margin-bottom: 8px;
+  font-family: var(--font-heading); font-size: clamp(1.3rem, 4vw, 1.8rem); margin-bottom: clamp(4px, 1vw, 8px);
 }
-.result-sub { color: var(--muted); font-size: .95rem; line-height: 1.5; }
+.result-sub { color: var(--muted); font-size: clamp(0.8rem, 2.2vw, 1rem); line-height: 1.5; }
 
 /* ── Page header ── */
 .page-title {
@@ -313,11 +314,11 @@
   .bottom-nav { display: flex; }
 
   /* Invite envelope mobile */
-  .invite-bg { padding: 16px 10px; align-items: flex-start; padding-top: 24px; }
+  .invite-bg { padding: clamp(12px, 3vw, 16px) clamp(8px, 2vw, 10px); align-items: flex-start; padding-top: clamp(16px, 4vw, 24px); }
   .invite-envelope { border-radius: var(--radius-lg); }
-  .envelope-top { padding: 24px 20px 22px; }
-  .envelope-to { font-size: 1.6rem; }
-  .envelope-body { padding: 20px 16px 70px; overflow-y: auto; flex: 1; }
+  .envelope-top { padding: clamp(18px, 5vw, 24px) clamp(16px, 4vw, 20px) clamp(16px, 4vw, 22px); }
+  .envelope-to { font-size: clamp(1.3rem, 4.5vw, 1.8rem); }
+  .envelope-body { padding: clamp(14px, 4vw, 20px) clamp(12px, 3vw, 16px) clamp(50px, 12vw, 70px); overflow-y: auto; flex: 1; }
 
   /* Modal mobile */
   .overlay { padding: 12px; align-items: flex-end; }
