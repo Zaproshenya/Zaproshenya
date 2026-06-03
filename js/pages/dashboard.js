@@ -424,7 +424,9 @@
                   const hoursLeft = Math.ceil(msLeft / (60 * 60 * 1000));
                   banStatusText = daysLeft > 1 ? `🚫 Бан · ${daysLeft} дн.` : `🚫 Бан · ${hoursLeft} год.`;
                 } else {
-                  banStatusText = '🚫 Бан (закінчується)';
+                  ZAP.db.banUser(u.uid, false);
+                  u.banned = false;
+                  u.bannedUntil = null;
                 }
               } else {
                 banStatusText = '🚫 Назавжди';
@@ -807,7 +809,9 @@
               const hoursLeft = Math.ceil(msLeft / (60 * 60 * 1000));
               banStatusText = daysLeft > 1 ? `🚫 Бан · ${daysLeft} дн.` : `🚫 Бан · ${hoursLeft} год.`;
             } else {
-              banStatusText = '🚫 Бан (закінчується)';
+              ZAP.db.banUser(u.uid, false);
+              u.banned = false;
+              u.bannedUntil = null;
             }
           } else {
             banStatusText = '🚫 Назавжди';
