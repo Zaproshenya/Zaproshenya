@@ -66,6 +66,16 @@
   color: var(--gold); background: none; border: none;
   font-size: .85rem; cursor: pointer; text-decoration: underline;
 }
+.terms-check {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .85rem; color: var(--muted); cursor: pointer;
+  margin-top: 4px;
+}
+.terms-check input[type="checkbox"] {
+  width: 16px; height: 16px; accent-color: var(--gold);
+  cursor: pointer; flex-shrink: 0;
+}
+.terms-check a { color: var(--gold); text-decoration: underline; }
 
 /* ── Profile page ── */
 .profile-header {

@@ -79,6 +79,10 @@
           onkeydown="if(event.key==='Enter')ZAP.pages.login.doRegister()"/>
       </div>
       <div class="form-error" id="reg-error"></div>
+      <label class="terms-check">
+        <input type="checkbox" id="reg-terms"/>
+        <span>Я приймаю <a href="/terms" target="_blank">умови користування</a></span>
+      </label>
       <button class="btn btn-dark btn-full" id="reg-btn"
         onclick="ZAP.pages.login.doRegister()" ${loading ? 'disabled' : ''}>
         ${loading ? '⏳ Зачекайте...' : 'Створити акаунт →'}
@@ -143,6 +147,11 @@
 
     if (!name || !login || !pass || !pass2) {
       showError('reg-error', 'Заповніть всі поля');
+      return;
+    }
+    const terms = document.getElementById('reg-terms')?.checked;
+    if (!terms) {
+      showError('reg-error', 'Прийміть умови користування');
       return;
     }
     if (pass !== pass2) {
