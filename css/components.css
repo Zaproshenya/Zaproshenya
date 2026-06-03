@@ -155,6 +155,14 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 .pill.on { background: var(--gold); color: #fff; border-color: var(--gold); }
 .pill:hover:not(.on) { border-color: var(--gold); color: var(--gold); }
 .pill-wrap { position: relative; display: inline-block; }
+.pill-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 9px; font-size: .7rem; font-weight: 600;
+  background: rgba(0,0,0,.08); margin-left: 6px;
+  line-height: 1;
+}
+.pill.on .pill-count { background: rgba(255,255,255,.3); color: #fff; }
 
 /* ── Notification badge ── */
 .notif-badge {

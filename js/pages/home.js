@@ -33,6 +33,14 @@
     const f = filter;
     const shown = f === 'all' ? invites : invites.filter(i => i.status === f);
 
+    const counts = {
+      all: invites.length,
+      pending: invites.filter(i => i.status === 'pending').length,
+      accepted: invites.filter(i => i.status === 'accepted').length,
+      declined: invites.filter(i => i.status === 'declined').length,
+      reschedule: invites.filter(i => i.status === 'reschedule').length,
+    };
+
     return `
     <h1 class="page-title">Мої запрошення</h1>
     <p class="page-subtitle">Статуси оновлюються автоматично ✦</p>
@@ -42,7 +50,7 @@
         .map(([v, l]) => `
           <div class="pill-wrap">
             <button class="pill ${f === v ? 'on' : ''}"
-              onclick="ZAP.pages.home.setFilter('${v}')">${l}</button>
+              onclick="ZAP.pages.home.setFilter('${v}')">${l}${counts[v] > 0 ? `<span class="pill-count">${counts[v]}</span>` : ''}</button>
           </div>`).join('')}
     </div>
 
