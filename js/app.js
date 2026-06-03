@@ -286,7 +286,7 @@
 
   // ── Footer (SEO + links) ──
   function renderFooter(page) {
-    if (page === 'invite' || page === 'group-invite' || page === 'login' || page === 'register') return '';
+    if (page !== 'profile') return '';
     return `
     <footer class="seo-footer">
       <div class="seo-footer-links">
