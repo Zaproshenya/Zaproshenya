@@ -290,11 +290,11 @@
     return `
     <footer class="seo-footer">
       <div class="seo-footer-links">
-        <a href="/about" onclick="event.preventDefault();ZAP.router.go('about')">Про додаток</a>
+        <a href="/about">Про додаток</a>
         <span>·</span>
-        <a href="/privacy" onclick="event.preventDefault();ZAP.router.go('privacy')">Конфіденційність</a>
+        <a href="/privacy">Конфіденційність</a>
         <span>·</span>
-        <a href="/terms" onclick="event.preventDefault();ZAP.router.go('terms')">Умови</a>
+        <a href="/terms">Умови</a>
       </div>
       <p class="seo-footer-copy">✦ Запрошення — безкоштовний додаток для створення запрошень</p>
     </footer>`;
