@@ -334,3 +334,31 @@
   .wrap { padding: 20px 14px 90px; }
   .page-title { font-size: 1.5rem; }
 }
+
+/* ── SEO Footer ── */
+.seo-footer {
+  text-align: center;
+  padding: 32px 24px 24px;
+  border-top: 1px solid var(--border);
+  margin-top: 40px;
+}
+.seo-footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.seo-footer-links a {
+  color: var(--gold);
+  text-decoration: none;
+  font-size: .88rem;
+  transition: opacity .2s;
+}
+.seo-footer-links a:hover { opacity: .7; }
+.seo-footer-links span { color: var(--muted); font-size: .8rem; }
+.seo-footer-copy {
+  color: var(--muted);
+  font-size: .78rem;
+}

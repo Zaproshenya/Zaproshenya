@@ -162,6 +162,17 @@
               </button>
             </div>
           ` : ''}
+          
+          <div style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);text-align:center">
+            <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px;flex-wrap:wrap">
+              <a href="/about" onclick="event.preventDefault();window.location.href='/about'" style="color:var(--gold);text-decoration:none;font-size:.85rem">Про додаток</a>
+              <span style="color:var(--muted);font-size:.8rem">·</span>
+              <a href="/privacy" onclick="event.preventDefault();window.location.href='/privacy'" style="color:var(--gold);text-decoration:none;font-size:.85rem">Конфіденційність</a>
+              <span style="color:var(--muted);font-size:.8rem">·</span>
+              <a href="/terms" onclick="event.preventDefault();window.location.href='/terms'" style="color:var(--gold);text-decoration:none;font-size:.85rem">Умови</a>
+            </div>
+            <p style="color:var(--muted);font-size:.75rem">✦ Запрошення — безкоштовний додаток для створення запрошень</p>
+          </div>
         </div>
       </div>
     </div>`;
@@ -307,6 +318,17 @@
               </button>
             </div>
           ` : ''}
+          
+          <div style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);text-align:center">
+            <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px;flex-wrap:wrap">
+              <a href="/about" onclick="event.preventDefault();window.location.href='/about'" style="color:var(--gold);text-decoration:none;font-size:.85rem">Про додаток</a>
+              <span style="color:var(--muted);font-size:.8rem">·</span>
+              <a href="/privacy" onclick="event.preventDefault();window.location.href='/privacy'" style="color:var(--gold);text-decoration:none;font-size:.85rem">Конфіденційність</a>
+              <span style="color:var(--muted);font-size:.8rem">·</span>
+              <a href="/terms" onclick="event.preventDefault();window.location.href='/terms'" style="color:var(--gold);text-decoration:none;font-size:.85rem">Умови</a>
+            </div>
+            <p style="color:var(--muted);font-size:.75rem">✦ Запрошення — безкоштовний додаток для створення запрошень</p>
+          </div>
         </div>
       </div>
     </div>`;

@@ -23,7 +23,7 @@
 
     // Dynamic page title
     const pageTitles = {
-      'home': 'Мої запрошення',
+      'home': '',
       'create': 'Створити запрошення',
       'profile': 'Профіль',
       'friends': 'Друзі',
@@ -36,7 +36,7 @@
       'register': 'Реєстрація',
     };
     const titleSuffix = pageTitles[route.page] || '';
-    document.title = titleSuffix ? `Запрошення | ${titleSuffix}` : 'Запрошення';
+    document.title = titleSuffix ? `Запрошення ✦ — ${titleSuffix}` : 'Запрошення ✦ — Безкоштовний додаток для запрошень';
 
     // Set real-time user action
     if (user && profile && ZAP.dbRef) {
@@ -157,7 +157,7 @@
         app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.utils.spinner() + '</div>';
         await ZAP.pages.userProfile.load(route.params.uid);
       }
-      app.innerHTML = renderTopbar(route.page) + ZAP.pages.userProfile.render() + (user ? renderBottomNav(route.page) : '');
+      app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.pages.userProfile.render() + '</div>' + renderFooter(route.page) + (user ? renderBottomNav(route.page) : '');
       return;
     }
 
@@ -212,6 +212,7 @@
     app.innerHTML = `
       ${renderTopbar(route.page)}
       <div class="wrap">${pageContent}</div>
+      ${renderFooter(route.page)}
       ${user ? renderBottomNav(route.page) : ''}
     `;
   }
@@ -281,6 +282,22 @@
         <span>${isAdminUser ? 'Панель' : 'Профіль'}</span>
       </button>
     </nav>`;
+  }
+
+  // ── Footer (SEO + links) ──
+  function renderFooter(page) {
+    if (page === 'invite' || page === 'group-invite' || page === 'login' || page === 'register') return '';
+    return `
+    <footer class="seo-footer">
+      <div class="seo-footer-links">
+        <a href="/about" onclick="event.preventDefault();ZAP.router.go('about')">Про додаток</a>
+        <span>·</span>
+        <a href="/privacy" onclick="event.preventDefault();ZAP.router.go('privacy')">Конфіденційність</a>
+        <span>·</span>
+        <a href="/terms" onclick="event.preventDefault();ZAP.router.go('terms')">Умови</a>
+      </div>
+      <p class="seo-footer-copy">✦ Запрошення — безкоштовний додаток для створення запрошень</p>
+    </footer>`;
   }
 
   // ── In-App Notification Popup ──
