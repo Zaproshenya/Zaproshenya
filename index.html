@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Запрошення ✦ — Створюйте та надсилайте запрошення на зустрічі</title>
 <meta name="description" content="Створюйте та надсилайте запрошення на зустрічі. Система з реєстрацією, друзями та груповими запрошеннями."/>
 <meta name="robots" content="index, follow"/>
@@ -21,21 +21,49 @@
 <meta name="twitter:description" content="Створюйте та надсилайте запрошення на зустрічі"/>
 <meta name="twitter:image" content="https://files.catbox.moe/0m8wur.png"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>"/>
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#1a120a"/>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "Запрошення",
-  "url": "https://zaproshenya.vercel.app/",
-  "description": "Створюйте та надсилайте запрошення на зустрічі. Система з реєстрацією, друзями та груповими запрошеннями.",
-  "applicationCategory": "SocialNetworkingApplication",
-  "operatingSystem": "Web",
-  "inLanguage": "uk",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "UAH"
-  }
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "name": "Запрошення",
+      "url": "https://zaproshenya.vercel.app/",
+      "description": "Створюйте та надсилайте запрошення на зустрічі. Система з реєстрацією, друзями та груповими запрошеннями.",
+      "applicationCategory": "SocialNetworkingApplication",
+      "operatingSystem": "Web",
+      "inLanguage": "uk",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "UAH"
+      },
+      "featureList": [
+        "Створення персональних запрошень",
+        "Групові запрошення",
+        "Система друзів",
+        "Перенесення зустрічей",
+        "Сповіщення в реальному часі",
+        "Безкоштовне використання"
+      ],
+      "screenshot": "https://files.catbox.moe/0m8wur.png"
+    },
+    {
+      "@type": "Organization",
+      "name": "Запрошення",
+      "url": "https://zaproshenya.vercel.app/",
+      "logo": "https://files.catbox.moe/0m8wur.png",
+      "description": "Безкоштовний веб-додаток для створення та надсилання запрошень на зустрічі",
+      "sameAs": [],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "availableLanguage": "Ukrainian"
+      }
+    }
+  ]
 }
 </script>
 
@@ -58,17 +86,84 @@
 </head>
 <body>
 
+<!-- Static SEO content — visible to crawlers, hidden when JS loads -->
+<div id="seo-content" style="font-family:'DM Sans',sans-serif;color:#2d2010;background:#faf6f0;min-height:100vh;padding:40px 24px">
+  <header style="max-width:720px;margin:0 auto 48px;text-align:center">
+    <h1 style="font-family:'Playfair Display',serif;font-style:italic;font-size:2.5rem;margin-bottom:12px;line-height:1.2">Запрошення ✦</h1>
+    <p style="font-size:1.15rem;color:#6b5c4d;line-height:1.6">Створюйте та надсилайте запрошення на зустрічі. Швидко, зручно, безкоштовно.</p>
+  </header>
+  <main style="max-width:720px;margin:0 auto">
+    <section style="margin-bottom:40px">
+      <h2 style="font-family:'Playfair Display',serif;font-style:italic;font-size:1.6rem;margin-bottom:16px">Як це працює</h2>
+      <ul style="list-style:none;padding:0;display:grid;gap:16px">
+        <li style="display:flex;align-items:flex-start;gap:14px;padding:16px 20px;background:#fff;border-radius:14px;border:1px solid #e8e0d5">
+          <span style="font-size:1.6rem;flex-shrink:0">✦</span>
+          <div><strong>Створіть запрошення</strong> — оберіть тип зустрічі, вкажіть дату, час, місце та повідомлення</div>
+        </li>
+        <li style="display:flex;align-items:flex-start;gap:14px;padding:16px 20px;background:#fff;border-radius:14px;border:1px solid #e8e0d5">
+          <span style="font-size:1.6rem;flex-shrink:0">🔗</span>
+          <div><strong>Поділіться посиланням</strong> — надішліть отримувачу персональне посилання на запрошення</div>
+        </li>
+        <li style="display:flex;align-items:flex-start;gap:14px;padding:16px 20px;background:#fff;border-radius:14px;border:1px solid #e8e0d5">
+          <span style="font-size:1.6rem;flex-shrink:0">✓</span>
+          <div><strong>Отримайте відповідь</strong> — отримувач може прийняти, відхилити або запропонувати інший час</div>
+        </li>
+      </ul>
+    </section>
+    <section style="margin-bottom:40px">
+      <h2 style="font-family:'Playfair Display',serif;font-style:italic;font-size:1.6rem;margin-bottom:16px">Можливості</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+        <div style="padding:20px;background:#fff;border-radius:14px;border:1px solid #e8e0d5">
+          <h3 style="font-size:1rem;margin-bottom:8px">👤 Реєстрація та профілі</h3>
+          <p style="font-size:.9rem;color:#6b5c4d;margin:0">Створюйте акаунти, додавайте друзів та керуйте налаштуваннями</p>
+        </div>
+        <div style="padding:20px;background:#fff;border-radius:14px;border:1px solid #e8e0d5">
+          <h3 style="font-size:1rem;margin-bottom:8px">👥 Групові запрошення</h3>
+          <p style="font-size:.9rem;color:#6b5c4d;margin:0">Запрошуйте кількох людей одночасно та відстежуйте їх відповіді</p>
+        </div>
+        <div style="padding:20px;background:#fff;border-radius:14px;border:1px solid #e8e0d5">
+          <h3 style="font-size:1rem;margin-bottom:8px">📅 Перенесення зустрічей</h3>
+          <p style="font-size:.9rem;color:#6b5c4d;margin:0">Отримувачі можуть запропонувати інший час, якщо не підходить запропонований</p>
+        </div>
+        <div style="padding:20px;background:#fff;border-radius:14px;border:1px solid #e8e0d5">
+          <h3 style="font-size:1rem;margin-bottom:8px">🔔 Сповіщення</h3>
+          <p style="font-size:.9rem;color:#6b5c4d;margin:0">Отримуйте повідомлення про нові запрошення та відповіді в реальному часі</p>
+        </div>
+      </div>
+    </section>
+    <section style="margin-bottom:40px">
+      <h2 style="font-family:'Playfair Display',serif;font-style:italic;font-size:1.6rem;margin-bottom:16px">Для кого це</h2>
+      <p style="font-size:.95rem;color:#6b5c4d;line-height:1.7">
+        "Запрошення" — це зручний інструмент для організації зустрічей з друзями, колегами чи родичами.
+        Створюйте запрошення на дні народження, корпоративи, зустрічі за кавою або будь-які інші події.
+        Отримувачі можуть миттєво відповісти, а ви — бачити статус кожного запрошення.
+      </p>
+    </section>
+    <footer style="text-align:center;padding:24px 0;border-top:1px solid #e8e0d5;color:#9a8b7a;font-size:.85rem">
+      <p>✦ Запрошення — безкоштовний додаток для створення запрошень на зустрічі</p>
+      <p style="margin-top:8px">
+        <a href="/about" style="color:#c9922a;text-decoration:none">Про додаток</a> ·
+        <a href="/privacy" style="color:#c9922a;text-decoration:none">Конфіденційність</a> ·
+        <a href="/terms" style="color:#c9922a;text-decoration:none">Умови</a>
+      </p>
+    </footer>
+  </main>
+</div>
+
 <div id="app"></div>
 <div id="toast-container"></div>
+
 <noscript>
-  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:sans-serif;text-align:center">
-    <div>
-      <h1 style="font-size:1.5rem;margin-bottom:12px">Запрошення ✦</h1>
-      <p style="color:#666;margin-bottom:16px">Для роботи цього сайту потрібен JavaScript.</p>
-      <p style="color:#999;font-size:0.9rem">Увімкніть JavaScript у налаштуваннях вашого браузера.</p>
-    </div>
-  </div>
+  <style>#seo-content{display:none!important}</style>
 </noscript>
+
+<script>
+  // Hide SEO content when JS loads — the SPA takes over
+  document.addEventListener('DOMContentLoaded', function() {
+    var seo = document.getElementById('seo-content');
+    if (seo) seo.style.display = 'none';
+  });
+</script>
 
 <!-- JS — order matters -->
 <script src="js/firebase-config.js"></script>
