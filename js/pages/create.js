@@ -67,8 +67,8 @@
       </div>
 
       <div class="grid2">
-        <div><label class="lbl">Дата</label><input type="date" id="f-date" min="${today}" value="${formState.date || ''}" oninput="ZAP.pages.create.chk()"/></div>
-        <div><label class="lbl">Час</label><input type="time" id="f-time" value="${formState.time || ''}" oninput="ZAP.pages.create.chk()"/></div>
+        <div><label class="lbl" for="f-date">Дата</label><input type="date" id="f-date" min="${today}" value="${formState.date || ''}" oninput="ZAP.pages.create.chk()"/></div>
+        <div><label class="lbl" for="f-time">Час</label><input type="time" id="f-time" value="${formState.time || ''}" oninput="ZAP.pages.create.chk()"/></div>
       </div>
 
       <div>
