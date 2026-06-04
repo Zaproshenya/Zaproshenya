@@ -91,7 +91,7 @@
     if (invData.requireAuth && !ZAP.auth.getUser()) {
       return `
       <div class="invite-bg">
-        <div class="invite-envelope" style="max-width:360px">
+        <div class="invite-envelope" style="max-width:320px">
           <div class="envelope-top">
             <span class="envelope-emoji">${icon('lock', 24)}</span>
             <div class="envelope-type">Запрошення</div>
@@ -246,7 +246,7 @@
 
     return `
     <div class="invite-bg">
-      <div class="invite-envelope" style="max-width:440px">
+      <div class="invite-envelope" style="max-width:400px">
         <div class="envelope-top">
           <span class="envelope-emoji">${t.e}</span>
           <div class="envelope-type">Групове запрошення</div>

@@ -253,15 +253,15 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 /* ── Detail row ── */
 .detail-row {
   display: flex; align-items: center; gap: 10px;
-  padding: 7px 0; border-bottom: 1px solid rgba(0,0,0,.05);
+  padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,.05);
 }
 .detail-row:last-child { border-bottom: none; }
 .detail-icon { font-size: 1.1rem; width: 28px; text-align: center; flex-shrink: 0; }
 .detail-label {
-  font-size: .72rem; color: var(--muted); text-transform: uppercase;
-  letter-spacing: .08em; font-weight: 500; min-width: 52px;
+  font-size: .68rem; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .08em; font-weight: 500; min-width: 48px;
 }
-.detail-value { font-size: .92rem; color: var(--ink); font-weight: 500; }
+.detail-value { font-size: .88rem; color: var(--ink); font-weight: 500; }
 
 /* ── Firebase dot ── */
 .fb-dot {

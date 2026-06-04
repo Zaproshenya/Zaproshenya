@@ -243,14 +243,14 @@
         <button class="nb ${page === 'home' ? 'on' : ''}" onclick="ZAP.router.go('home')">${icon('house',18)} Мої</button>
         <button class="nb ${page === 'create' ? 'on' : ''}" onclick="ZAP.router.go('create')">+ Нове</button>
         <div class="pill-wrap">
-          <button class="nb ${page === 'friends' ? 'on' : ''}" onclick="ZAP.router.go('friends')">${icon('users',18)}</button>
+          <button class="nb ${page === 'friends' ? 'on' : ''}" onclick="ZAP.router.go('friends')" aria-label="Друзі">${icon('users',18)}</button>
         </div>
         <div class="pill-wrap">
-          <button class="nb ${page === 'notifications' ? 'on' : ''}" onclick="ZAP.router.go('notifications')">${icon('bell',18)}</button>
+          <button class="nb ${page === 'notifications' ? 'on' : ''}" onclick="ZAP.router.go('notifications')" aria-label="Сповіщення">${icon('bell',18)}</button>
           ${unreadCount > 0 ? `<span class="notif-badge">${unreadCount}</span>` : ''}
         </div>
         ${isAdminUser ? `
-          <button class="nb ${page === 'dashboard' ? 'on' : ''}" onclick="ZAP.router.go('dashboard')">${icon('chart-bar',18)}</button>
+          <button class="nb ${page === 'dashboard' ? 'on' : ''}" onclick="ZAP.router.go('dashboard')" aria-label="Дашборд">${icon('chart-bar',18)}</button>
         ` : ''}
         ${profile ? `
           <div class="topbar-user" onclick="ZAP.router.go('profile')">
