@@ -82,7 +82,7 @@
         ${isMe ? `
           <div style="margin-top:12px">
             <button class="btn btn-outline btn-sm" onclick="ZAP.router.go('profile')">
-              ⚙ Налаштування
+              ${ZAP.utils.icon('gear', 14)} Налаштування
             </button>
           </div>
         ` : ''}

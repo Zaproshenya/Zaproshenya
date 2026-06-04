@@ -200,7 +200,7 @@
     const results = {
       accepted: `
         <span class="result-icon">${icon('confetti', 32)}</span>
-        <div class="result-title" style="color:var(--green)">Ура! Так! 🌟</div>
+        <div class="result-title" style="color:var(--green)">Ура! Так! ${icon('star', 14)}</div>
         <div class="result-sub">Ви погодились! Відправник дізнається автоматично ${icon('check', 14)}</div>`,
       declined: `
         <span class="result-icon">${icon('heart-crack', 32)}</span>

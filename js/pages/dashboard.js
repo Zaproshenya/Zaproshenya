@@ -157,7 +157,7 @@
             <span style="font-weight:600;color:var(--ink)">${stats?.roleCounts?.founder || 0}</span>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:.9rem">
-            <span style="color:var(--muted)">🛠 Тех-адміністратори</span>
+            <span style="color:var(--muted)">${icon('wrench', 14)} Тех-адміністратори</span>
             <span style="font-weight:600;color:var(--ink)">${stats?.roleCounts?.techAdmin || 0}</span>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:.9rem">
@@ -200,7 +200,7 @@
             </span>
           </div>
           <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:space-between;font-size:.9rem">
-            <span style="color:var(--ink);font-weight:500">🤝 Всього зв'язків дружби</span>
+            <span style="color:var(--ink);font-weight:500">${icon('users', 14)} Всього зв'язків дружби</span>
             <span style="font-weight:600;color:var(--ink)">${stats?.totalFriendsConnections || 0}</span>
           </div>
         </div>
@@ -315,7 +315,7 @@
             .sort((a, b) => b[1] - a[1])
             .slice(0, 4)
             .map(([type, count]) => {
-              const t = ZAP.utils.TYPE_MAP[type] || ZAP.utils.TYPE_MAP.other || { e: '📅', l: 'Інше' };
+              const t = ZAP.utils.TYPE_MAP[type] || ZAP.utils.TYPE_MAP.other || { e: '✨', l: 'Інше' };
               const percent = stats?.totalInvites ? (count / stats.totalInvites) * 100 : 0;
               return `
               <div>
@@ -554,7 +554,7 @@
       invitePreview = `
         <div class="complaint-invite-preview">
           <div class="cip-header">
-            <span>📋 Вміст запрошення${toText}${creator}</span>
+            <span>${icon('clipboard-text', 14)} Вміст запрошення${toText}${creator}</span>
           </div>
           <div class="cip-content">
             ${tc.msg ? `<p class="cip-msg">« ${ZAP.utils.esc(tc.msg)} »</p>` : '<p class="cip-msg" style="font-style:italic;color:var(--muted)">Без тексту повідомлення</p>'}

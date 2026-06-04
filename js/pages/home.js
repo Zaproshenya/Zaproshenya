@@ -74,7 +74,7 @@
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
               <span style="font-weight:600;font-size:1rem">${esc(inv.to || inv.title || 'Групове')}</span>
               ${badge(inv.status)}
-              ${inv.isGroup ? '<span class="badge badge-pending">👥 Група</span>' : ''}
+              ${inv.isGroup ? `<span class="badge badge-pending">${icon('users', 14)} Група</span>` : ''}
             </div>
             <div style="color:var(--muted);font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
               ${t.l} · ${esc(inv.date)} ${esc(inv.time || '')}

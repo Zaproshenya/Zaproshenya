@@ -144,7 +144,7 @@
           onclick="ZAP.pages.create.togglePublic()"
           role="switch" aria-checked="${isPublic}" aria-label="Публічне або приватне запрошення"></button>
         <span class="toggle-label">
-          ${isPublic ? '🌍 Публічне — будь-хто може приєднатися за посиланням' : `${icon('lock', 14)} Приватне — тільки для обраних друзів`}
+          ${isPublic ? `${icon('globe-hemisphere-west', 14)} Публічне — будь-хто може приєднатися за посиланням` : `${icon('lock', 14)} Приватне — тільки для обраних друзів`}
         </span>
       </div>
 

@@ -169,7 +169,7 @@
       // Send notification
       await ZAP.notifications.addNotification(fuid, {
         type: 'group-invite',
-        title: '📨 Групове запрошення',
+        title: 'Групове запрошення',
         body: `${invData.creatorName} запрошує вас: ${invData.title || ZAP.utils.TYPE_MAP[invData.type]?.l || 'Зустріч'}`,
         inviteId: invId,
         fromUid: invData.creatorUid,
@@ -206,7 +206,7 @@
     // Notification
     await ZAP.notifications.addNotification(toUid, {
       type: 'friend-request',
-      title: '👋 Запит на дружбу',
+      title: 'Запит на дружбу',
       body: `${fromName} хоче додати вас у друзі`,
       fromUid, fromName,
     });
@@ -492,7 +492,7 @@
     // Send notification
     await ZAP.notifications.addNotification(friendUid, {
       type: 'invite',
-      title: '📨 Нове запрошення',
+      title: 'Нове запрошення',
       body: `${inv.from || 'Хтось'} запрошує вас: ${ZAP.utils.TYPE_MAP[inv.type]?.l || 'Зустріч'}`,
       inviteId: inv.id,
       fromUid: inv.creatorUid,

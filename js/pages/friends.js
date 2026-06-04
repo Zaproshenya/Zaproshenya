@@ -179,14 +179,14 @@
     if (searchResult === 'not-found') {
       return `
       <div style="background:var(--red-bg);border-radius:10px;padding:14px 18px;margin-bottom:20px;animation:fadeUp .3s ease">
-        <p style="font-size:.9rem;color:var(--red)">❌ Користувача з таким ID не знайдено</p>
+        <p style="font-size:.9rem;color:var(--red)">${icon('x-circle', 14)} Користувача з таким ID не знайдено</p>
       </div>`;
     }
 
     if (searchResult === 'self') {
       return `
       <div style="background:var(--warm);border-radius:10px;padding:14px 18px;margin-bottom:20px;animation:fadeUp .3s ease">
-        <p style="font-size:.9rem;color:var(--muted)">😅 Це ваш власний ID</p>
+        <p style="font-size:.9rem;color:var(--muted)">${icon('user-circle', 14)} Це ваш власний ID</p>
       </div>`;
     }
 
