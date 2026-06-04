@@ -67,7 +67,7 @@
 }
 .invite-envelope {
   margin: auto;
-  max-width: 480px; width: 100%;
+  max-width: 400px; width: 100%;
   background: var(--card);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
@@ -78,7 +78,7 @@
 }
 .envelope-top {
   background: linear-gradient(135deg, #1a120a 0%, #2d2010 100%);
-  padding: 32px 32px 28px;
+  padding: 24px 24px 20px;
   text-align: center; position: relative;
 }
 .envelope-top::after {
@@ -97,17 +97,17 @@
 }
 .envelope-to {
   font-family: var(--font-heading); font-style: italic;
-  font-size: 2rem; color: #fff; font-weight: 400;
+  font-size: 1.8rem; color: #fff; font-weight: 400;
 }
 .envelope-body {
-  padding: 28px 32px;
+  padding: 22px 24px;
 }
 .answer-wrap { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
 
 /* ── Message block ── */
 .msg-block {
   background: var(--warm); border-radius: 12px;
-  padding: 18px 20px; margin-bottom: 22px;
+  padding: 14px 16px; margin-bottom: 18px;
   border-left: 3px solid var(--gold); position: relative;
 }
 .msg-block::before {
@@ -117,7 +117,7 @@
 }
 .msg-text {
   font-family: var(--font-heading); font-style: italic;
-  font-size: 1.1rem; line-height: 1.7; color: var(--ink); padding-left: 8px;
+  font-size: 1rem; line-height: 1.7; color: var(--ink); padding-left: 8px;
 }
 
 /* ── Result screen ── */

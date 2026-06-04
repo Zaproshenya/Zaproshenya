@@ -346,7 +346,7 @@
           ${users.slice(0, 5).map(u => {
             const statusBadge = u.banned
               ? `<span class="badge badge-declined">${icon('prohibit', 20)} Бан</span>`
-              : '<span class="badge badge-accepted">✓ Активний</span>';
+              : `<span class="badge badge-accepted">${icon('check-circle',16)} Активний</span>`;
 
             return `
             <tr>
@@ -465,7 +465,7 @@
               <td>
                 ${u.banned
                   ? `<span class="badge badge-declined" title="${u.bannedUntil ? new Date(u.bannedUntil).toLocaleString('uk-UA') : 'Перманентно'}">${banStatusText}</span>`
-                  : '<span class="badge badge-accepted">✓ Активний</span>'}
+                  : `<span class="badge badge-accepted">${icon('check-circle',16)} Активний</span>`}
               </td>
               <td>
                 ${u.banned
@@ -510,7 +510,7 @@
       </div>
     ` : `
       <div style="background:var(--green-bg);border-radius:12px;padding:18px;margin-bottom:24px;text-align:center">
-        <p style="color:var(--green);font-size:.95rem">✓ Немає нових скарг</p>
+        <p style="color:var(--green);font-size:.95rem">${icon('check-circle',16)} Немає нових скарг</p>
       </div>
     `}
 
@@ -587,7 +587,7 @@
           <div class="complaint-actions">
             <button class="btn btn-sm btn-red"
               onclick="ZAP.pages.dashboard.resolveReport('${r.id}','resolved')">
-              ✓ Вирішено
+              ${icon('check',14)} Вирішено
             </button>
             <button class="btn btn-sm btn-outline"
               onclick="ZAP.pages.dashboard.resolveReport('${r.id}','dismissed')">
@@ -602,7 +602,7 @@
           </div>
         ` : `
           <div style="margin-top:6px;font-size:.78rem;color:var(--muted)">
-            ${r.status === 'resolved' ? '✓ Вирішено' : '✕ Відхилено'}
+            ${r.status === 'resolved' ? `${icon('check',14)} Вирішено` : `${icon('x',14)} Відхилено`}
             ${r.resolvedAt ? ' · ' + ZAP.utils.timeAgo(r.resolvedAt) : ''}
           </div>
         `}
@@ -854,7 +854,7 @@
           <td>
             ${u.banned
               ? `<span class="badge badge-declined" title="${u.bannedUntil ? new Date(u.bannedUntil).toLocaleString('uk-UA') : 'Перманентно'}">${banStatusText}</span>`
-              : '<span class="badge badge-accepted">✓ Активний</span>'}
+              : `<span class="badge badge-accepted">${icon('check-circle',16)} Активний</span>`}
           </td>
           <td>
             ${u.banned
@@ -902,7 +902,7 @@
       await ZAP.db.updateUserRole(uid, newRole);
       const u = users.find(u => u.uid === uid);
       if (u) u.role = newRole;
-      ZAP.utils.toast('Роль змінено ✓', 'success');
+      ZAP.utils.toast('Роль змінено', 'success');
     } catch (e) {
       ZAP.utils.toast('Помилка: ' + e.message, 'error');
     }
@@ -956,7 +956,7 @@
       await ZAP.db.resolveReport(reportId, action, ZAP.auth.getUser()?.uid);
       const r = reports.find(r => r.id === reportId);
       if (r) r.status = action;
-      ZAP.utils.toast(action === 'resolved' ? 'Скаргу вирішено ✓' : 'Скаргу відхилено', 'success');
+      ZAP.utils.toast(action === 'resolved' ? 'Скаргу вирішено' : 'Скаргу відхилено', 'success');
       ZAP.render();
     } catch (e) {
       ZAP.utils.toast('Помилка: ' + e.message, 'error');
@@ -975,7 +975,7 @@
       await ZAP.db.resolveReport(reportId, 'resolved', ZAP.auth.getUser()?.uid);
       const r = reports.find(r => r.id === reportId);
       if (r) r.status = 'resolved';
-      ZAP.utils.toast('Запрошення видалено, скаргу вирішено ✓', 'success');
+      ZAP.utils.toast('Запрошення видалено, скаргу вирішено', 'success');
       ZAP.render();
     } catch (e) {
       ZAP.utils.toast('Помилка: ' + e.message, 'error');
