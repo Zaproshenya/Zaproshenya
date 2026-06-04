@@ -136,7 +136,7 @@
     const cls = size ? `avatar avatar-${size}` : 'avatar';
     const src = user?.avatar || user?.avatarBase64 || null;
     if (src) {
-      return `<div class="${cls}"><img src="${esc(src)}" alt="${esc(user.name)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/></div>`;
+      return `<div class="${cls}"><img src="${esc(src)}" alt="" aria-hidden="true" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/></div>`;
     }
     const initials = (user?.name || '?').charAt(0).toUpperCase();
     return `<div class="${cls}">${initials}</div>`;
@@ -211,7 +211,7 @@
         <div class="modal" onclick="event.stopPropagation()" style="max-width:380px">
           <p style="font-size:1rem;margin-bottom:16px;line-height:1.5">${esc(message)}</p>
           <div class="form-group">
-            <input id="cup-input" placeholder="${esc(placeholder || '')}" autofocus/>
+            <input id="cup-input" placeholder="${esc(placeholder || '')}" aria-label="${esc(message)}" autofocus/>
           </div>
           <div style="display:flex;gap:10px;margin-top:4px">
             <button class="btn btn-dark btn-full" id="cup-ok">ОК</button>

@@ -61,7 +61,7 @@
 
       <div>
         <label class="lbl">Тип події</label>
-        <select id="f-type" onchange="ZAP.pages.create.chk()">
+        <select id="f-type" onchange="ZAP.pages.create.chk()" aria-label="Тип події">
           ${TYPES.map(o => `<option value="${o.v}" ${formState.type === o.v ? 'selected' : ''}>${o.e} ${o.l}</option>`).join('')}
         </select>
       </div>
@@ -82,7 +82,8 @@
       <div style="background:var(--warm);border-radius:12px;padding:16px;border:1px solid var(--border)">
         <div class="toggle-wrap">
           <button class="toggle ${requireAuth ? 'on' : ''}"
-            onclick="ZAP.pages.create.toggleRequireAuth()"></button>
+            onclick="ZAP.pages.create.toggleRequireAuth()"
+            role="switch" aria-checked="${requireAuth}" aria-label="Обмежити доступ лише для зареєстрованих"></button>
           <span class="toggle-label">
             ${requireAuth
               ? '🔒 Тільки для зареєстрованих — отримувач повинен увійти в акаунт'
@@ -113,6 +114,7 @@
         <input type="text" placeholder="🔍 Пошук друга..."
           value="${ZAP.utils.esc(friendFilter)}"
           oninput="ZAP.pages.create.filterFriends(this.value)"
+          aria-label="Пошук друга за іменем або ID"
           style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:.85rem;margin-bottom:10px;background:var(--card)"/>
       ` : ''}
       <div style="display:flex;flex-wrap:wrap;gap:8px">
@@ -138,7 +140,8 @@
     <div style="background:var(--warm);border-radius:12px;padding:16px;border:1px solid var(--border)">
       <div class="toggle-wrap" style="margin-bottom:14px">
         <button class="toggle ${isPublic ? 'on' : ''}"
-          onclick="ZAP.pages.create.togglePublic()"></button>
+          onclick="ZAP.pages.create.togglePublic()"
+          role="switch" aria-checked="${isPublic}" aria-label="Публічне або приватне запрошення"></button>
         <span class="toggle-label">
           ${isPublic ? '🌍 Публічне — будь-хто може приєднатися за посиланням' : '🔒 Приватне — тільки для обраних друзів'}
         </span>

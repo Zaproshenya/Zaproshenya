@@ -129,13 +129,13 @@
     <div class="chart-grid">
       <div class="chart-card">
         <div class="chart-card-title">
-          <h3>Активність</h3>
+          <h2>Активність</h2>
         </div>
         <canvas id="chart-activity" class="chart-canvas"></canvas>
       </div>
       <div class="chart-card">
         <div class="chart-card-title">
-          <h3>Ролі</h3>
+          <h2>Ролі</h2>
         </div>
         <canvas id="chart-roles" class="chart-canvas"></canvas>
       </div>
@@ -146,7 +146,7 @@
       <!-- System Roles & Bans -->
       <div class="table-card">
         <div class="table-header">
-          <h3>Аудиторія та безпека</h3>
+          <h2>Аудиторія та безпека</h2>
         </div>
         <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
           <div style="display:flex;justify-content:space-between;font-size:.9rem">
@@ -175,7 +175,7 @@
       <!-- Invite Statuses & Social Connections -->
       <div class="table-card">
         <div class="table-header">
-          <h3>Статуси зустрічей та взаємодія</h3>
+          <h2>Статуси зустрічей та взаємодія</h2>
         </div>
         <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
           <div style="display:flex;justify-content:space-between;font-size:.9rem">
@@ -206,7 +206,7 @@
       <!-- Moderation Reports Breakdown -->
       <div class="table-card" style="grid-column: span 2;">
         <div class="table-header">
-          <h3>Статистика модерації скарг</h3>
+          <h2>Статистика модерації скарг</h2>
         </div>
         <div style="padding: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; text-align: center;">
           <div>
@@ -232,7 +232,7 @@
     <!-- Online users and their actions -->
     <div class="table-card" style="margin-bottom: 28px;">
       <div class="table-header">
-        <h3>У мережі зараз (${onlineCount})</h3>
+        <h2>У мережі зараз (${onlineCount})</h2>
       </div>
       ${onlineCount === 0 ? `
         <div style="text-align:center;padding:24px 0;color:var(--muted);font-style:italic;font-size:0.95rem">
@@ -270,7 +270,7 @@
       <!-- Invites Breakdown -->
       <div class="table-card">
         <div class="table-header">
-          <h3>Формати запрошень</h3>
+          <h2>Формати запрошень</h2>
         </div>
         <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
           <div>
@@ -305,7 +305,7 @@
       <!-- Popular Types -->
       <div class="table-card">
         <div class="table-header">
-          <h3>Найпопулярніші події</h3>
+          <h2>Найпопулярніші події</h2>
         </div>
         <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 10px;">
           ${Object.entries(stats?.typeCounts || {})
@@ -332,7 +332,7 @@
     <!-- Recent users -->
     <div class="table-card">
       <div class="table-header">
-        <h3>Останні реєстрації</h3>
+        <h2>Останні реєстрації</h2>
       </div>
       <div class="table-scroll-wrap">
       <table class="data-table">
@@ -398,10 +398,11 @@
 
     <div class="table-card">
       <div class="table-header">
-        <h3>Всього: ${filtered.length}</h3>
+        <h2>Всього: ${filtered.length}</h2>
         <input class="table-search" placeholder="🔍 Пошук по логіну або імені..."
           value="${ZAP.utils.esc(userSearch)}"
-          oninput="ZAP.pages.dashboard.searchUsers(this.value)"/>
+          oninput="ZAP.pages.dashboard.searchUsers(this.value)"
+          aria-label="Пошук користувачів"/>
       </div>
 
       <div class="table-scroll-wrap">
@@ -448,6 +449,7 @@
               <td style="color:var(--muted);font-size:.88rem">@${ZAP.utils.esc(u.login)}</td>
               <td>
                 <select class="role-select" onchange="ZAP.pages.dashboard.changeRole('${u.uid}',this.value)"
+                  aria-label="Роль користувача ${ZAP.utils.esc(u.name)}"
                   ${!ZAP.auth.isAdmin() ? 'disabled' : ''}>
                   ${['user','moderator','tech-admin','founder'].map(r =>
                     `<option value="${r}" ${u.role === r ? 'selected' : ''}>${
@@ -833,6 +835,7 @@
           <td style="color:var(--muted);font-size:.88rem">@${ZAP.utils.esc(u.login)}</td>
           <td>
             <select class="role-select" onchange="ZAP.pages.dashboard.changeRole('${u.uid}',this.value)"
+              aria-label="Роль користувача ${ZAP.utils.esc(u.name)}"
               ${!ZAP.auth.isAdmin() ? 'disabled' : ''}>
               ${['user','moderator','tech-admin','founder'].map(r =>
                 `<option value="${r}" ${u.role === r ? 'selected' : ''}>${

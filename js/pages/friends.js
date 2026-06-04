@@ -45,6 +45,7 @@
     <!-- Search by ID -->
     <div class="friend-search">
       <input id="friend-search-input" placeholder="Введіть ID (наприклад ZAP-A7F3K2)"
+        aria-label="Пошук друга за ID"
         onkeydown="if(event.key==='Enter')ZAP.pages.friends.search()"/>
       <button class="btn btn-dark" onclick="ZAP.pages.friends.search()" ${searchLoading ? 'disabled' : ''}>
         ${searchLoading ? '⏳' : '🔍 Знайти'}
