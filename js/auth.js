@@ -94,7 +94,9 @@
   // ── Logout ──
   async function logout() {
     if (!ZAP.authInstance) return;
+    const uid = currentUser?.uid;
     ZAP.notifications.stopListeningNotifications();
+    if (uid) ZAP.notifications.deleteFCMToken(uid);
     await ZAP.authInstance.signOut();
     currentUser = null;
     currentProfile = null;

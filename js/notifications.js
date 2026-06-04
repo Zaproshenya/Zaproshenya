@@ -3,7 +3,50 @@
    ═══════════════════════════════════════════════════════ */
 
 (function () {
-  // ── Push permissions ──
+  let _fcmToken = null;
+
+  // ── FCM initialization ──
+  async function initFCM(uid) {
+    if (!ZAP.messaging || !uid) return;
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') return;
+
+      const token = await ZAP.messaging.getToken({
+        vapidKey: null,
+      });
+
+      if (token) {
+        _fcmToken = token;
+        await ZAP.dbRef.ref('users/' + uid + '/fcmToken').set(token);
+        console.log('✦ FCM token registered');
+      }
+
+      // Listen for foreground messages
+      ZAP.messaging.onMessage((payload) => {
+        const title = payload.notification?.title || 'Сповіщення';
+        const body = payload.notification?.body || '';
+        sendPush(title, body);
+      });
+    } catch (e) {
+      console.warn('FCM init error:', e.message);
+    }
+  }
+
+  async function deleteFCMToken(uid) {
+    if (!ZAP.messaging || !uid) return;
+    try {
+      if (_fcmToken) {
+        await ZAP.dbRef.ref('users/' + uid + '/fcmToken').remove();
+        _fcmToken = null;
+      }
+      await ZAP.messaging.deleteToken();
+    } catch (e) {
+      console.warn('FCM delete token:', e.message);
+    }
+  }
+
+  // ── Push permissions (legacy browser Notification API) ──
   function requestPushPermission() {
     if (!('Notification' in window)) return;
     if (Notification.permission === 'default') {
@@ -132,6 +175,7 @@
 
   ZAP.notifications = {
     requestPushPermission, sendPush,
+    initFCM, deleteFCMToken,
     addNotification, getNotifications, deleteNotification, deleteNotificationsByPayload,
     markNotifRead, markAllNotifsRead, getUnreadCount,
     listenNotifications, stopListeningNotifications,

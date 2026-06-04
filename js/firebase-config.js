@@ -18,6 +18,10 @@ try {
   ZAP.firebaseApp = firebase.initializeApp(ZAP.FIREBASE_CONFIG);
   ZAP.authInstance = firebase.auth();
   ZAP.dbRef = firebase.database();
+  ZAP.messaging = null;
+  try {
+    ZAP.messaging = firebase.messaging();
+  } catch (e) { console.warn('FCM not available:', e.message); }
   console.log('✦ Firebase initialized');
 } catch (e) {
   console.error('Firebase init failed:', e.message);

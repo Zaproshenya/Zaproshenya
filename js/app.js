@@ -472,6 +472,8 @@
     authReady = true;
     if (user) {
       await updateUnreadCount();
+      // Initialize FCM for push notifications
+      ZAP.notifications.initFCM(user.uid);
       // Periodic unread count update
       setInterval(updateUnreadCount, 30000);
       

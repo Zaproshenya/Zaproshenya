@@ -7,6 +7,7 @@
   let loading = false;
 
   function render() {
+    loading = false;
     const { esc } = ZAP.utils;
     return `
     <div class="auth-bg">
