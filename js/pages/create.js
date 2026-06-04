@@ -8,6 +8,7 @@
   let requireAuth = false;
   let selectedFriends = [];
   let friends = [];
+  let friendFilter = '';
   let done = false;
   let createdInv = null;
   let formState = {};
@@ -98,18 +99,31 @@
 
   function renderPersonalOptions() {
     if (friends.length === 0) return '';
+    const filtered = friendFilter
+      ? friends.filter(f =>
+          (f.name || '').toLowerCase().includes(friendFilter) ||
+          (f.uniqueId || '').toLowerCase().includes(friendFilter))
+      : friends;
     return `
     <div style="background:var(--warm);border-radius:12px;padding:16px;border:1px solid var(--border)">
       <p style="font-size:.78rem;color:var(--muted);margin-bottom:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em">
         Або надішліть напряму другу
       </p>
+      ${friends.length > 3 ? `
+        <input type="text" placeholder="🔍 Пошук друга..."
+          value="${ZAP.utils.esc(friendFilter)}"
+          oninput="ZAP.pages.create.filterFriends(this.value)"
+          style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:.85rem;margin-bottom:10px;background:var(--card)"/>
+      ` : ''}
       <div style="display:flex;flex-wrap:wrap;gap:8px">
-        ${friends.map(f => `
+        ${filtered.length === 0 ? `
+          <p style="font-size:.85rem;color:var(--muted);font-style:italic;width:100%">Нікого не знайдено</p>
+        ` : filtered.map(f => `
           <button class="pill ${selectedFriends.includes(f.uid) ? 'on' : ''}"
             onclick="ZAP.pages.create.toggleFriend('${f.uid}','personal')">
             <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
               ${ZAP.utils.avatarHTML(f, 'sm')}
-              <span>${ZAP.utils.esc(f.name)}</span>
+              <span style="font-weight:600;color:var(--ink)">${ZAP.utils.esc(f.name)}</span>
               ${f.uniqueId ? `<span style="font-size:.65rem;color:var(--muted);font-family:monospace">${ZAP.utils.esc(f.uniqueId)}</span>` : ''}
             </div>
           </button>
@@ -333,9 +347,14 @@
     ZAP.render();
   }
 
+  function filterFriends(query) {
+    friendFilter = query.toLowerCase().trim();
+    ZAP.render();
+  }
+
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.create = {
     render, load, setMode, togglePublic, toggleFriend, chk, submit, reset,
-    toggleRequireAuth, saveFormState,
+    toggleRequireAuth, saveFormState, filterFriends,
   };
 })();
