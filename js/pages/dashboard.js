@@ -403,7 +403,7 @@
     <div class="table-card">
       <div class="table-header">
         <h2>Всього: ${filtered.length}</h2>
-        <input class="table-search" placeholder="${icon('magnifying-glass', 16)} Пошук по логіну або імені..."
+        <input class="table-search" placeholder="Пошук по логіну або імені..."
           value="${ZAP.utils.esc(userSearch)}"
           oninput="ZAP.pages.dashboard.searchUsers(this.value)"
           aria-label="Пошук користувачів"/>
