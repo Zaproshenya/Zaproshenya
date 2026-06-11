@@ -27,7 +27,8 @@
       stats = data;
       users = data.users || [];
       reports = await ZAP.db.getReports();
-      invites = await ZAP.db.getAllInvites();
+      invites = (data.personalInvites || []).concat(data.groupInvites || [])
+        .sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
     } catch (e) {
       console.warn('Dashboard load:', e);
     }

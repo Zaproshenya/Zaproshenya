@@ -315,31 +315,6 @@
     return list.reverse();
   }
 
-  async function getAllInvites() {
-    if (!db()) return [];
-    const list = [];
-    try {
-      const invitesSnap = await db().ref('invites').get();
-      if (invitesSnap && invitesSnap.exists()) {
-        invitesSnap.forEach(function (c) {
-          const inv = c.val();
-          inv.id = c.key;
-          list.push(inv);
-        });
-      }
-      const groupSnap = await db().ref('group-invites').get();
-      if (groupSnap && groupSnap.exists()) {
-        groupSnap.forEach(function (c) {
-          const inv = c.val();
-          inv.id = c.key;
-          inv.isGroup = true;
-          list.push(inv);
-        });
-      }
-    } catch (e) { console.warn('getAllInvites:', e); }
-    return list.sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
-  }
-
   async function resolveReport(reportId, action, moderatorUid) {
     if (!db()) return;
     await db().ref('reports/' + reportId).update({
@@ -373,12 +348,16 @@
     let personalInvitesCount = 0;
     let groupInvitesCount = 0;
     const typeCounts = {};
+    const personalInvites = [];
+    const groupInvites = [];
 
     if (invitesSnap && invitesSnap.exists()) {
       invitesSnap.forEach(c => {
         totalInvites++;
         personalInvitesCount++;
         const inv = c.val();
+        inv.id = c.key;
+        personalInvites.push(inv);
         if (inv && inv.type) {
           typeCounts[inv.type] = (typeCounts[inv.type] || 0) + 1;
         }
@@ -389,6 +368,9 @@
         totalInvites++;
         groupInvitesCount++;
         const inv = c.val();
+        inv.id = c.key;
+        inv.isGroup = true;
+        groupInvites.push(inv);
         if (inv && inv.type) {
           typeCounts[inv.type] = (typeCounts[inv.type] || 0) + 1;
         }
@@ -478,6 +460,8 @@
       personalInvitesCount,
       groupInvitesCount,
       typeCounts,
+      personalInvites,
+      groupInvites,
     };
   }
 
@@ -540,7 +524,7 @@
     // Reports
     createReport, getReports, resolveReport,
     // Stats
-    getStats, getAllInvites,
+    getStats,
     // Real-time
     listenStatuses, listenUserInvites, stopListening,
     // Direct invite
