@@ -15,9 +15,9 @@
   const MSG_MAX = 120;
 
   function truncMsg(text) {
-    if (!text || text.length <= MSG_MAX) return esc(text);
+    if (!text || text.length <= MSG_MAX) return ZAP.utils.esc(text);
     const id = 'msg-' + Math.random().toString(36).slice(2, 8);
-    return `<span class="truncated-text" id="${id}">${esc(text)}</span><button class="toggle-more-btn" onclick="const el=document.getElementById('${id}');el.classList.toggle('expanded');this.textContent=el.classList.contains('expanded')?'Приховати':'Показати більше'">Показати більше</button>`;
+    return `<span class="truncated-text" id="${id}">${ZAP.utils.esc(text)}</span><button class="toggle-more-btn" onclick="const el=document.getElementById('${id}');el.classList.toggle('expanded');this.textContent=el.classList.contains('expanded')?'Приховати':'Показати більше'">Показати більше</button>`;
   }
 
   async function loadPersonal(inviteId, b64) {
