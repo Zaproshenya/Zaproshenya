@@ -80,7 +80,7 @@
   -webkit-overflow-scrolling: touch;
 }
 .data-table {
-  width: 100%; border-collapse: collapse; min-width: 480px;
+  width: 100%; border-collapse: collapse; min-width: 640px;
 }
 .data-table th {
   text-align: left; font-size: .7rem; letter-spacing: .08em;

@@ -465,7 +465,7 @@
       <div class="table-scroll-wrap">
       <table class="data-table">
         <thead><tr>
-          <th>Користувач</th><th>Логін</th><th>Роль</th><th>Статус</th><th>Дії</th>
+          <th>Користувач</th><th>Логін</th><th>Роль</th><th>Зареєстрований</th><th>Активність</th><th>Статус</th><th>Дії</th>
         </tr></thead>
         <tbody>
           ${paged.map(u => {
@@ -500,6 +500,7 @@
                   <div>
                     <div style="font-weight:500">${ZAP.utils.esc(u.name)}</div>
                     <div style="font-size:.72rem;color:var(--muted)">${ZAP.utils.esc(u.uniqueId)}</div>
+                    <div style="font-size:.7rem;color:var(--gold);margin-top:2px">${icon('eye',12)} ${ZAP.utils.esc(u.currentAction || 'Переглядає сайт')}</div>
                   </div>
                 </div>
               </td>
@@ -515,6 +516,8 @@
                   ).join('')}
                 </select>
               </td>
+              <td style="font-size:.82rem;color:var(--muted)">${ZAP.utils.timeAgo(u.createdAt)}</td>
+              <td style="font-size:.82rem;color:var(--muted)">${u.lastSeen ? ZAP.utils.timeAgo(u.lastSeen) : 'Ніколи'}</td>
               <td>
                 ${u.banned
                   ? `<span class="badge badge-declined" title="${u.bannedUntil ? new Date(u.bannedUntil).toLocaleString('uk-UA') : 'Перманентно'}">${banStatusText}</span>`
@@ -1062,6 +1065,7 @@
               <div>
                 <div style="font-weight:500">${ZAP.utils.esc(u.name)}</div>
                 <div style="font-size:.72rem;color:var(--muted)">${ZAP.utils.esc(u.uniqueId)}</div>
+                <div style="font-size:.7rem;color:var(--gold);margin-top:2px">${icon('eye',12)} ${ZAP.utils.esc(u.currentAction || 'Переглядає сайт')}</div>
               </div>
             </div>
           </td>
@@ -1077,6 +1081,8 @@
               ).join('')}
             </select>
           </td>
+          <td style="font-size:.82rem;color:var(--muted)">${ZAP.utils.timeAgo(u.createdAt)}</td>
+          <td style="font-size:.82rem;color:var(--muted)">${u.lastSeen ? ZAP.utils.timeAgo(u.lastSeen) : 'Ніколи'}</td>
           <td>
             ${u.banned
               ? `<span class="badge badge-declined" title="${u.bannedUntil ? new Date(u.bannedUntil).toLocaleString('uk-UA') : 'Перманентно'}">${banStatusText}</span>`
