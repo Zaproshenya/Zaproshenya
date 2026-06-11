@@ -6,11 +6,15 @@
   let stats = null;
   let users = [];
   let reports = [];
+  let invites = [];
   let loading = true;
-  let dashTab = 'overview'; // 'overview' | 'users' | 'reports'
+  let dashTab = 'overview'; // 'overview' | 'users' | 'reports' | 'moderation'
   let userSearch = '';
   let userPage = 0;
+  let inviteSearch = '';
+  let invitePage = 0;
   const PAGE_SIZE = 15;
+  const INVITE_PAGE_SIZE = 30;
 
   async function load() {
     if (!ZAP.auth.isAdmin() && !ZAP.auth.isModerator()) {
@@ -23,6 +27,7 @@
       stats = data;
       users = data.users || [];
       reports = await ZAP.db.getReports();
+      invites = await ZAP.db.getAllInvites();
     } catch (e) {
       console.warn('Dashboard load:', e);
     }
@@ -76,6 +81,10 @@
         onclick="ZAP.pages.dashboard.setTab('users')">
         <span class="sidebar-item-icon">${icon('users', 20)}</span> Користувачі
       </button>
+      <button class="sidebar-item ${dashTab === 'moderation' ? 'active' : ''}"
+        onclick="ZAP.pages.dashboard.setTab('moderation')">
+        <span class="sidebar-item-icon">${icon('shield', 20)}</span> Модерація
+      </button>
       <button class="sidebar-item ${dashTab === 'reports' ? 'active' : ''}"
         onclick="ZAP.pages.dashboard.setTab('reports')">
         <span class="sidebar-item-icon">${icon('warning', 20)}</span> Скарги
@@ -106,6 +115,7 @@
   function renderDashContent() {
     if (dashTab === 'users') return renderUsers();
     if (dashTab === 'reports') return renderReports();
+    if (dashTab === 'moderation') return renderModeration();
     return renderOverview();
   }
 
@@ -630,6 +640,164 @@
   }
 
   // ═══════════════════════════════════════════════════════
+  // Moderation — all invites
+  // ═══════════════════════════════════════════════════════
+
+  function getProfile(uid) {
+    return users.find(function (u) { return u.uid === uid; }) || null;
+  }
+
+  function renderModeration() {
+    const { icon } = ZAP.utils;
+    const filtered = inviteSearch
+      ? invites.filter(function (inv) {
+          var q = inviteSearch.toLowerCase();
+          return (inv.id && inv.id.includes(q))
+            || (inv.to && inv.to.toLowerCase().includes(q))
+            || (inv.from && inv.from.toLowerCase().includes(q))
+            || (inv.creatorName && inv.creatorName.toLowerCase().includes(q))
+            || (inv.title && inv.title.toLowerCase().includes(q))
+            || (inv.creatorUid && inv.creatorUid.includes(q));
+        })
+      : invites;
+    const paged = filtered.slice(invitePage * INVITE_PAGE_SIZE, (invitePage + 1) * INVITE_PAGE_SIZE);
+    var totalPages = Math.ceil(filtered.length / INVITE_PAGE_SIZE);
+
+    return `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+      <h1 class="page-title" style="margin-bottom:0">Модерація запрошень</h1>
+      <button class="hamburger" onclick="ZAP.pages.dashboard.toggleSidebar()">${icon('list', 20)}</button>
+    </div>
+
+    <div style="background:var(--warm);border-radius:12px;padding:16px;margin-bottom:24px;border:1px solid var(--border)">
+      <input type="text" placeholder="Пошук за ID запрошення, ID користувача, іменем…"
+        value="${ZAP.utils.esc(inviteSearch)}"
+        oninput="ZAP.pages.dashboard.searchInvites(this.value)"
+        aria-label="Пошук запрошень"
+        style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:.88rem;background:var(--card)"/>
+    </div>
+
+    <div style="margin-bottom:8px;font-size:.8rem;color:var(--muted)">
+      ${filtered.length} запрошень
+    </div>
+
+    ${paged.length === 0 ? `
+      <div style="background:var(--green-bg);border-radius:12px;padding:18px;text-align:center">
+        <p style="color:var(--green);font-size:.95rem">${icon('check-circle',16)} Нічого не знайдено</p>
+      </div>
+    ` : paged.map(function (inv) {
+      return renderInviteCard(inv);
+    }).join('')}
+
+    ${totalPages > 1 ? `
+      <div style="display:flex;justify-content:center;gap:8px;margin-top:20px;flex-wrap:wrap">
+        ${Array.from({ length: totalPages }, function (_, i) {
+          return '<button class="btn btn-sm ' + (i === invitePage ? 'btn-dark' : 'btn-outline') + '" onclick="ZAP.pages.dashboard.setInvitePage(' + i + ')">' + (i + 1) + '</button>';
+        }).join('')}
+      </div>
+    ` : ''}`;
+  }
+
+  function renderInviteCard(inv) {
+    const { icon } = ZAP.utils;
+    var isGroup = inv.isGroup;
+    var creatorProfile = getProfile(inv.creatorUid);
+    var creatorIdText = creatorProfile
+      ? ' (<strong>' + ZAP.utils.esc(creatorProfile.uniqueId) + '</strong>, @' + ZAP.utils.esc(creatorProfile.login) + ')'
+      : (inv.creatorUid ? ' (ID: ' + ZAP.utils.esc(inv.creatorUid) + ')' : '');
+
+    var recipientHtml = '';
+    if (isGroup) {
+      var memberCount = inv.members ? Object.keys(inv.members).length : 0;
+      var invitedCount = inv.invited ? Object.keys(inv.invited).length : 0;
+      recipientHtml = '<span style="font-size:.82rem">' + icon('users', 16) + (inv.title ? ' ' + ZAP.utils.esc(inv.title) : ' Групове') + ' <span style="color:var(--muted)">(' + memberCount + ' учасників, ' + invitedCount + ' запрошено)</span></span>';
+    } else {
+      var recipientProfile = getProfile(inv.recipientUid);
+      var toIdText = recipientProfile
+        ? ' (<strong>' + ZAP.utils.esc(recipientProfile.uniqueId) + '</strong>, @' + ZAP.utils.esc(recipientProfile.login) + ')'
+        : (inv.recipientUid ? ' (ID: ' + ZAP.utils.esc(inv.recipientUid) + ')' : '');
+      recipientHtml = '<span style="font-size:.82rem">' + icon('user', 16) + ' ' + (inv.to ? '<strong>' + ZAP.utils.esc(inv.to) + '</strong>' : '?') + toIdText + '</span>';
+    }
+
+    var statusMap = { pending: 'pending', accepted: 'accepted', declined: 'declined', reschedule: 'reschedule' };
+    var statusLabel = inv.status || 'pending';
+    var statusText = statusLabel === 'accepted' ? 'Прийнято' : statusLabel === 'declined' ? 'Відхилено' : statusLabel === 'reschedule' ? 'Перенесення' : 'Очікує';
+    var statusStyle = statusLabel === 'accepted' ? 'color:var(--green)' : statusLabel === 'declined' ? 'color:var(--red)' : statusLabel === 'reschedule' ? 'color:var(--gold)' : 'color:var(--muted)';
+
+    var dateText = inv.date || 'Не вказано';
+    var timeText = inv.time ? ', ' + inv.time : '';
+    var placeText = inv.place ? ' · ' + icon('map-pin', 16) + ' ' + ZAP.utils.esc(inv.place) : '';
+
+    var msgHtml = '';
+    if (inv.msg) {
+      var mt = ZAP.utils.truncate(inv.msg, 60);
+      msgHtml = '<span style="color:var(--muted);font-style:italic">« ' + mt.html + ' »</span>';
+      if (mt.id) msgHtml += ZAP.utils.truncateBtn(mt.id);
+    }
+
+    var shortId = inv.id ? inv.id.substring(0, 8) + '…' : '?';
+
+    return `
+    <div class="complaint-card">
+      <div class="complaint-icon">${icon(isGroup ? 'users' : 'paper-plane-tilt', 20)}</div>
+      <div class="complaint-body">
+        <div class="complaint-meta">
+          <span style="font-weight:600">${isGroup ? 'Групове' : 'Персональне'}</span>
+          · <span style="${statusStyle};font-weight:500">${statusText}</span>
+          · <code style="font-size:.7rem;color:var(--muted)">${ZAP.utils.esc(shortId)}</code>
+        </div>
+        <div class="complaint-meta" style="margin-top:2px">
+          ${icon('arrow-up', 16)} <strong>${ZAP.utils.esc(inv.creatorName || inv.from || 'Невідомо')}</strong>${creatorIdText}
+          <br>${icon('arrow-down', 16)} ${recipientHtml}
+        </div>
+        <div class="complaint-meta" style="margin-top:2px">
+          ${icon('calendar-blank', 16)} ${ZAP.utils.esc(dateText)}${timeText}${placeText}
+        </div>
+        ${msgHtml ? '<div class="complaint-meta" style="margin-top:2px">' + msgHtml + '</div>' : ''}
+        <div class="complaint-meta" style="margin-top:2px;font-size:.75rem;color:var(--muted)">
+          ${ZAP.utils.timeAgo(inv.created)}
+        </div>
+        <div class="complaint-actions" style="margin-top:6px">
+          <button class="btn btn-sm btn-gold"
+            onclick="ZAP.router.go(${isGroup ? "'group-invite'" : "'invite'"},{id:'${inv.id}'})">
+            ${icon('eye', 14)} Переглянути
+          </button>
+          <button class="btn btn-sm btn-outline"
+            onclick="ZAP.pages.dashboard.modDeleteInvite('${inv.id}','${isGroup ? 'group' : 'personal'}')">
+            ${icon('trash', 16)} Видалити
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function searchInvites(q) {
+    inviteSearch = q.toLowerCase().trim();
+    invitePage = 0;
+    var container = document.getElementById('app');
+    if (container) ZAP.render();
+  }
+
+  function setInvitePage(p) {
+    invitePage = p;
+    ZAP.render();
+  }
+
+  async function modDeleteInvite(invId, type) {
+    if (!confirm('Видалити це запрошення? Цю дію не можна скасувати.')) return;
+    try {
+      var path = type === 'group' ? 'group-invites/' : 'invites/';
+      await ZAP.dbRef.ref(path + invId).remove();
+      await ZAP.dbRef.ref('statuses/' + invId).remove();
+      invites = invites.filter(function (i) { return i.id !== invId; });
+      ZAP.utils.toast('Запрошення видалено', 'success');
+      ZAP.render();
+    } catch (e) {
+      ZAP.utils.toast('Помилка: ' + e.message, 'error');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
   // Chart rendering (Canvas)
   // ═══════════════════════════════════════════════════════
   function drawCharts() {
@@ -1007,5 +1175,6 @@
     searchUsers, setUserPage,
     changeRole, toggleBan,
     resolveReport, deleteReportedInvite,
+    searchInvites, setInvitePage, modDeleteInvite,
   };
 })();

@@ -315,6 +315,31 @@
     return list.reverse();
   }
 
+  async function getAllInvites() {
+    if (!db()) return [];
+    const list = [];
+    try {
+      const invitesSnap = await db().ref('invites').get();
+      if (invitesSnap && invitesSnap.exists()) {
+        invitesSnap.forEach(function (c) {
+          const inv = c.val();
+          inv.id = c.key;
+          list.push(inv);
+        });
+      }
+      const groupSnap = await db().ref('group-invites').get();
+      if (groupSnap && groupSnap.exists()) {
+        groupSnap.forEach(function (c) {
+          const inv = c.val();
+          inv.id = c.key;
+          inv.isGroup = true;
+          list.push(inv);
+        });
+      }
+    } catch (e) { console.warn('getAllInvites:', e); }
+    return list.sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
+  }
+
   async function resolveReport(reportId, action, moderatorUid) {
     if (!db()) return;
     await db().ref('reports/' + reportId).update({
@@ -515,7 +540,7 @@
     // Reports
     createReport, getReports, resolveReport,
     // Stats
-    getStats,
+    getStats, getAllInvites,
     // Real-time
     listenStatuses, listenUserInvites, stopListening,
     // Direct invite
