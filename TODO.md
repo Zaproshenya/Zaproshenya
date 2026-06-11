@@ -26,3 +26,4 @@
 - [x] Extract admin UI to js/admin.js (dynamic load)
 - [x] Lazy load dashboard.js (only for admins)
 - [x] Guard dashboard load() — redirect non-admins
+- [x] Moderation panel in dashboard (all invites, search, user IDs, actions)
