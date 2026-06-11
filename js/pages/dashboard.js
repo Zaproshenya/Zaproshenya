@@ -19,16 +19,18 @@
   const INVITE_PAGE_SIZE = 30;
 
   async function load() {
+    console.log('[DASH] load() start', Date.now(), 'lastPage tracker:', window._lastDashPage);
     if (!ZAP.auth.isAdmin() && !ZAP.auth.isModerator()) {
       ZAP.router.go('home');
       return;
     }
-    if (_loadingGuard) return;
+    if (_loadingGuard) { console.log('[DASH] load() skipped — already loading'); return; }
     _loadingGuard = true;
     loading = true;
     loadingError = false;
 
     const timeout = setTimeout(function () {
+      console.warn('[DASH] load() TIMEOUT — 15s passed, showing retry');
       loading = false;
       _loadingGuard = false;
       loadingError = true;
@@ -38,14 +40,17 @@
     try {
       const data = await ZAP.db.getStats();
       clearTimeout(timeout);
+      console.log('[DASH] getStats done, users:', (data.users || []).length, 'invites:', (data.personalInvites || []).length, 'groups:', (data.groupInvites || []).length);
       stats = data;
       users = data.users || [];
       reports = await ZAP.db.getReports();
+      console.log('[DASH] reports done:', reports.length);
       invites = (data.personalInvites || []).concat(data.groupInvites || [])
         .sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
+      console.log('[DASH] load() complete, total invites:', invites.length, Date.now());
     } catch (e) {
       clearTimeout(timeout);
-      console.warn('Dashboard load:', e);
+      console.warn('[DASH] load() error:', e);
     } finally {
       clearTimeout(timeout);
       loading = false;
@@ -1202,6 +1207,7 @@
   }
 
   function retryLoad() {
+    console.log('[DASH] retryLoad clicked');
     loadingError = false;
     load().then(function () { ZAP.render(); });
   }

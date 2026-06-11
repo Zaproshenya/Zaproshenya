@@ -334,12 +334,13 @@
     let usersSnap = null, invitesSnap = null, groupSnap = null, reportsSnap = null;
     let statusesSnap = null, friendsSnap = null;
 
-    try { usersSnap = await db().ref('users').get(); } catch (e) { console.warn('users stats:', e); }
-    try { invitesSnap = await db().ref('invites').get(); } catch (e) { console.warn('invites stats:', e); }
-    try { groupSnap = await db().ref('group-invites').get(); } catch (e) { console.warn('groups stats:', e); }
-    try { reportsSnap = await db().ref('reports').get(); } catch (e) { console.warn('reports stats:', e); }
-    try { statusesSnap = await db().ref('statuses').get(); } catch (e) { console.warn('statuses stats:', e); }
-    try { friendsSnap = await db().ref('friends').get(); } catch (e) { console.warn('friends stats:', e); }
+    console.log('[DASH] getStats start', Date.now());
+    try { usersSnap = await db().ref('users').get(); console.log('[DASH] 1/6 users OK', Date.now()); } catch (e) { console.warn('[DASH] 1/6 users FAIL:', e); }
+    try { invitesSnap = await db().ref('invites').get(); console.log('[DASH] 2/6 invites OK', Date.now()); } catch (e) { console.warn('[DASH] 2/6 invites FAIL:', e); }
+    try { groupSnap = await db().ref('group-invites').get(); console.log('[DASH] 3/6 group-invites OK', Date.now()); } catch (e) { console.warn('[DASH] 3/6 group-invites FAIL:', e); }
+    try { reportsSnap = await db().ref('reports').get(); console.log('[DASH] 4/6 reports OK', Date.now()); } catch (e) { console.warn('[DASH] 4/6 reports FAIL:', e); }
+    try { statusesSnap = await db().ref('statuses').get(); console.log('[DASH] 5/6 statuses OK', Date.now()); } catch (e) { console.warn('[DASH] 5/6 statuses FAIL:', e); }
+    try { friendsSnap = await db().ref('friends').get(); console.log('[DASH] 6/6 friends OK', Date.now()); } catch (e) { console.warn('[DASH] 6/6 friends FAIL:', e); }
 
     const users = [];
     if (usersSnap && usersSnap.exists()) usersSnap.forEach(c => { users.push(c.val()); });

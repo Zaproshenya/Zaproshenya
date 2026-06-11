@@ -154,25 +154,32 @@
 
     // ── Dashboard (has its own layout, lazy loaded for admins only) ──
     if (route.page === 'dashboard') {
+      console.log('[DASH] render() dashboard handler, isPageChange:', isPageChange, 'lastPage:', lastPage, 'pages.dash exists:', !!ZAP.pages.dashboard, Date.now());
       if (!ZAP.pages.dashboard) {
         if (!window._dashLoading) {
+          console.log('[DASH] lazy loading dashboard.js script');
           window._dashLoading = true;
           app.innerHTML = ZAP.utils.spinner();
           const s = document.createElement('script');
           s.src = '/js/pages/dashboard.js';
-          s.onload = function () { window._dashLoading = false; ZAP.render(); };
+          s.onload = function () { console.log('[DASH] dashboard.js loaded, calling ZAP.render()'); window._dashLoading = false; ZAP.render(); };
           document.body.appendChild(s);
         }
         return;
       }
       if (isPageChange) {
+        console.log('[DASH] isPageChange=true, calling load()');
         app.innerHTML = ZAP.utils.spinner();
         await ZAP.pages.dashboard.load();
+        console.log('[DASH] load() done, now rendering');
+      } else {
+        console.log('[DASH] isPageChange=false, skipping load()');
       }
       app.innerHTML = ZAP.pages.dashboard.render();
       ZAP.pages.dashboard.drawCharts();
       lastPage = route.page;
       lastParamsStr = JSON.stringify(route.params);
+      console.log('[DASH] render complete, lastPage set to:', lastPage);
       return;
     }
 
@@ -520,7 +527,12 @@
 
     // Warm up Firebase connection for faster dashboard loads
     if (ZAP.dbRef) {
-      ZAP.dbRef.ref('.info/connected').once('value');
+      console.log('[DASH] warming Firebase connection...', Date.now());
+      ZAP.dbRef.ref('.info/connected').once('value').then(function (snap) {
+        console.log('[DASH] Firebase warmup done, connected:', snap.val(), Date.now());
+      }).catch(function (e) {
+        console.warn('[DASH] Firebase warmup error:', e);
+      });
     }
 
     if (user) {
