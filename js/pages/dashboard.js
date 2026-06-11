@@ -13,6 +13,7 @@
   let userPage = 0;
   let inviteSearch = '';
   let invitePage = 0;
+  let _loadingGuard = false;
   const PAGE_SIZE = 15;
   const INVITE_PAGE_SIZE = 30;
 
@@ -21,6 +22,8 @@
       ZAP.router.go('home');
       return;
     }
+    if (_loadingGuard) return;
+    _loadingGuard = true;
     loading = true;
     try {
       const data = await ZAP.db.getStats();
@@ -31,8 +34,10 @@
         .sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
     } catch (e) {
       console.warn('Dashboard load:', e);
+    } finally {
+      loading = false;
+      _loadingGuard = false;
     }
-    loading = false;
   }
 
   function render() {

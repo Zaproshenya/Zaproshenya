@@ -171,6 +171,8 @@
       }
       app.innerHTML = ZAP.pages.dashboard.render();
       ZAP.pages.dashboard.drawCharts();
+      lastPage = route.page;
+      lastParamsStr = JSON.stringify(route.params);
       return;
     }
 
