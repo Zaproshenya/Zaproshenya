@@ -517,6 +517,12 @@
 
   ZAP.auth.onAuthReady(async (user) => {
     authReady = true;
+
+    // Warm up Firebase connection for faster dashboard loads
+    if (ZAP.dbRef) {
+      ZAP.dbRef.ref('.info/connected').once('value');
+    }
+
     if (user) {
       await updateUnreadCount();
       // Initialize FCM for push notifications

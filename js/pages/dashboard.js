@@ -14,6 +14,7 @@
   let inviteSearch = '';
   let invitePage = 0;
   let _loadingGuard = false;
+  let loadingError = false;
   const PAGE_SIZE = 15;
   const INVITE_PAGE_SIZE = 30;
 
@@ -25,16 +26,28 @@
     if (_loadingGuard) return;
     _loadingGuard = true;
     loading = true;
+    loadingError = false;
+
+    const timeout = setTimeout(function () {
+      loading = false;
+      _loadingGuard = false;
+      loadingError = true;
+      ZAP.render();
+    }, 15000);
+
     try {
       const data = await ZAP.db.getStats();
+      clearTimeout(timeout);
       stats = data;
       users = data.users || [];
       reports = await ZAP.db.getReports();
       invites = (data.personalInvites || []).concat(data.groupInvites || [])
         .sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
     } catch (e) {
+      clearTimeout(timeout);
       console.warn('Dashboard load:', e);
     } finally {
+      clearTimeout(timeout);
       loading = false;
       _loadingGuard = false;
     }
@@ -60,7 +73,7 @@
       ${renderSidebar()}
       <div class="sidebar-content">
         <div class="wrap">
-          ${loading ? ZAP.utils.spinner() : renderDashContent()}
+          ${loading ? ZAP.utils.spinner() : loadingError ? renderLoadError() : renderDashContent()}
         </div>
       </div>
     </div>`;
@@ -116,6 +129,19 @@
       </div>
     </aside>
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="ZAP.pages.dashboard.toggleSidebar()"></div>`;
+  }
+
+  function renderLoadError() {
+    const { icon } = ZAP.utils;
+    return `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center">
+      <div style="font-size:2.5rem;margin-bottom:16px;color:var(--red)">${icon('warning-circle', 48)}</div>
+      <h2 style="font-family:var(--font-heading);font-weight:400;margin-bottom:8px">Не вдалося завантажити дані</h2>
+      <p style="color:var(--muted);margin-bottom:24px;max-width:320px">
+        Перевірте з'єднання з інтернетом або спробуйте ще раз.
+      </p>
+      <button class="btn btn-dark" onclick="ZAP.pages.dashboard.retryLoad()">${icon('arrows-clockwise', 16)} Спробувати ще раз</button>
+    </div>`;
   }
 
   function renderDashContent() {
@@ -1175,12 +1201,17 @@
     }
   }
 
+  function retryLoad() {
+    loadingError = false;
+    load().then(function () { ZAP.render(); });
+  }
+
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.dashboard = {
     render, load, setTab, toggleSidebar, drawCharts,
     searchUsers, setUserPage,
     changeRole, toggleBan,
     resolveReport, deleteReportedInvite,
-    searchInvites, setInvitePage, modDeleteInvite,
+    searchInvites, setInvitePage, modDeleteInvite, retryLoad,
   };
 })();
