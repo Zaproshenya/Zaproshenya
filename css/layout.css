@@ -57,10 +57,10 @@
 
 /* ── Invite page background ── */
 .invite-bg {
-  height: 100dvh;
+  min-height: 100dvh;
   display: flex; flex-direction: column;
   padding: 20px 16px;
-  overflow: hidden;
+  overflow-y: auto;
   background:
     radial-gradient(ellipse at 20% 20%, rgba(201,146,42,.07) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 80%, rgba(45,122,79,.06) 0%, transparent 60%),
@@ -94,7 +94,7 @@
 .envelope-type {
   font-size: .68rem; letter-spacing: .18em;
   color: rgba(255,255,255,.5); text-transform: uppercase;
-  font-weight: 500; margin-bottom: 6px;
+  font-weight: 500; margin-bottom: 10px;
 }
 .envelope-to {
   font-family: var(--font-heading); font-style: italic;
@@ -110,6 +110,7 @@
   background: var(--warm); border-radius: 12px;
   padding: 12px 14px; margin-bottom: 16px;
   border-left: 3px solid var(--gold); position: relative;
+  overflow-wrap: break-word; word-break: break-word;
 }
 .msg-block::before {
   content: '\201C'; font-family: var(--font-heading);
@@ -119,6 +120,7 @@
 .msg-text {
   font-family: var(--font-heading); font-style: italic;
   font-size: .92rem; line-height: 1.7; color: var(--ink); padding-left: 8px;
+  overflow-wrap: break-word; word-break: break-word; min-width: 0;
 }
 
 /* ── Result screen ── */

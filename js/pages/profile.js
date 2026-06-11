@@ -179,7 +179,7 @@
       body = `
         <div class="form-group">
           <label class="lbl">Нове ім'я</label>
-          <input id="edit-name" value="${ZAP.utils.esc(profile.name)}" placeholder="Ваше ім'я"/>
+          <input id="edit-name" value="${ZAP.utils.esc(profile.name)}" placeholder="Ваше ім'я" maxlength="15"/>
         </div>
         <div class="form-error" id="edit-error"></div>
         <button class="btn btn-dark btn-full" id="btn-save-profile" onclick="ZAP.pages.profile.saveName()">
@@ -190,7 +190,7 @@
       body = `
         <div class="form-group">
           <label class="lbl">Новий логін</label>
-          <input id="edit-login" value="${ZAP.utils.esc(profile.login)}" placeholder="Логін (латиниця, цифри, _)"/>
+          <input id="edit-login" value="${ZAP.utils.esc(profile.login)}" placeholder="Логін (латиниця, цифри, _)" maxlength="10"/>
         </div>
         <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">
           ${icon('warning', 14)} Після зміни логіну потрібно буде входити з новим логіном

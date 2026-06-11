@@ -12,6 +12,12 @@
   let userPage = 0;
   const PAGE_SIZE = 15;
 
+  function truncText(text, maxLen) {
+    if (!text || text.length <= maxLen) return ZAP.utils.esc(text || '');
+    const id = 'trc-' + Math.random().toString(36).slice(2, 8);
+    return `<span class="truncated-text" id="${id}">${ZAP.utils.esc(text)}</span><button class="toggle-more-btn" onclick="const el=document.getElementById('${id}');el.classList.toggle('expanded');this.textContent=el.classList.contains('expanded')?'Приховати':'Показати більше'">Показати більше</button>`;
+  }
+
   async function load() {
     loading = true;
     try {
@@ -557,7 +563,7 @@
             <span>${icon('clipboard-text', 14)} Вміст запрошення${toText}${creator}</span>
           </div>
           <div class="cip-content">
-            ${tc.msg ? `<p class="cip-msg">« ${ZAP.utils.esc(tc.msg)} »</p>` : '<p class="cip-msg" style="font-style:italic;color:var(--muted)">Без тексту повідомлення</p>'}
+            ${tc.msg ? `<p class="cip-msg">« ${truncText(tc.msg, 80)} »</p>` : '<p class="cip-msg" style="font-style:italic;color:var(--muted)">Без тексту повідомлення</p>'}
             <div class="cip-details" style="font-size:.78rem;color:var(--muted);margin-top:5px">
               ${icon('calendar-blank', 20)} ${ZAP.utils.esc(dateText)}${timeText}${placeText}
             </div>
@@ -580,7 +586,7 @@
           Від: ${ZAP.utils.esc(r.reporterName || 'Анонім')}${reporterIdText} ·
           Тип: ${r.targetType === 'invite' ? `${icon('paper-plane-tilt', 20)} Запрошення` : `${icon('users', 20)} Групове`} ·
           ${ZAP.utils.timeAgo(r.createdAt)}
-          ${r.comment ? `<br>${icon('chat-circle-dots', 20)} ${ZAP.utils.esc(r.comment)}` : ''}
+          ${r.comment ? `<br>${icon('chat-circle-dots', 20)} ${truncText(r.comment, 80)}` : ''}
         </div>
         ${invitePreview}
         ${!isResolved ? `

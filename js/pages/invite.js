@@ -334,7 +334,7 @@
       <div class="answer-wrap">
         <div style="margin-bottom:12px">
           <label class="lbl">Ваше ім'я</label>
-          <input id="guest-name" placeholder="Як вас звати?" value="${ZAP.utils.esc(guestName)}"
+          <input id="guest-name" placeholder="Як вас звати?" value="${ZAP.utils.esc(guestName)}" maxlength="15"
             oninput="ZAP.pages.invite.setGuestName(this.value)"/>
         </div>
         <button class="btn-yes" onclick="ZAP.pages.invite.joinGroup()">
@@ -516,7 +516,7 @@
         </div>
         <div style="margin-top:12px">
           <label class="lbl">Додатковий коментар (необов'язково)</label>
-          <textarea id="report-comment" placeholder="Опишіть проблему..." style="min-height:60px"></textarea>
+          <textarea id="report-comment" placeholder="Опишіть проблему..." style="min-height:60px" maxlength="100"></textarea>
         </div>
         <div style="display:flex;gap:10px;margin-top:18px">
           <button class="btn btn-red btn-full" onclick="ZAP.pages.invite.submitReport('${invId}')">

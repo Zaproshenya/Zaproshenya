@@ -52,19 +52,19 @@
       ${mode === 'group' ? `
         <div>
           <label class="lbl">Назва зустрічі</label>
-          <input id="f-title" placeholder="Наприклад: Вечірка на день народження" value="${ZAP.utils.esc(formState.title || '')}" oninput="ZAP.pages.create.chk()"/>
+          <input id="f-title" placeholder="Наприклад: Вечірка на день народження" value="${ZAP.utils.esc(formState.title || '')}" maxlength="20" oninput="ZAP.pages.create.chk()"/>
         </div>
       ` : `
         <div>
           <label class="lbl">Кому</label>
-          <input id="f-to" placeholder="Ім'я отримувача" value="${ZAP.utils.esc(formState.to || '')}" oninput="ZAP.pages.create.chk()"/>
+          <input id="f-to" placeholder="Ім'я отримувача" value="${ZAP.utils.esc(formState.to || '')}" maxlength="15" oninput="ZAP.pages.create.chk()"/>
         </div>
       `}
 
       <div>
         <label class="lbl">Ваше повідомлення</label>
         <textarea id="f-msg" placeholder="Напишіть своїми словами — що хочете, куди запрошуєте…"
-          style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:#fff;font-size:1rem" oninput="ZAP.pages.create.chk()">${ZAP.utils.esc(formState.msg || '')}</textarea>
+          style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:#fff;font-size:1rem" maxlength="100" oninput="ZAP.pages.create.chk()">${ZAP.utils.esc(formState.msg || '')}</textarea>
       </div>
 
       <div>
@@ -81,7 +81,7 @@
 
       <div>
         <label class="lbl">Місце</label>
-        <input id="f-place" placeholder="Адреса, назва кафе, парк…" value="${ZAP.utils.esc(formState.place || '')}" oninput="ZAP.pages.create.chk()"/>
+        <input id="f-place" placeholder="Адреса, назва кафе, парк…" value="${ZAP.utils.esc(formState.place || '')}" maxlength="30" oninput="ZAP.pages.create.chk()"/>
       </div>
 
       ${mode === 'group' ? renderGroupOptions() : renderPersonalOptions()}
