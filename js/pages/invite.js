@@ -372,7 +372,6 @@
   // ───────────────────────────────────────────────
 
   async function answer(invId, status) {
-    const { icon } = ZAP.utils;
     // Write to Firebase
     if (ZAP.dbRef) {
       await ZAP.dbRef.ref('statuses/' + invId).set(status);
@@ -386,8 +385,8 @@
     if (invData?.creatorUid) {
       const responderName = ZAP.auth.getProfile()?.name || invData.to || 'Хтось';
       const titles = {
-        accepted: `${icon('check', 14)} Запрошення прийнято!`,
-        declined: `${icon('x', 14)} Запрошення відхилено`,
+        accepted: `Запрошення прийнято!`,
+        declined: `Запрошення відхилено`,
       };
       await ZAP.notifications.addNotification(invData.creatorUid, {
         type: 'invite-response',

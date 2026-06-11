@@ -115,7 +115,6 @@
   }
 
   async function addFriend() {
-    const { icon } = ZAP.utils;
     const me = ZAP.auth.getUser();
     const myProfile = ZAP.auth.getProfile();
     if (!me || !userData) return;
@@ -124,10 +123,10 @@
       const result = await ZAP.db.sendFriendRequest(me.uid, userData.uid, myProfile.name);
       if (result === 'auto-accepted') {
         friendStatus = 'friend';
-        ZAP.utils.toast(`${userData.name} тепер ваш друг! ${icon('check', 14)}`, 'success');
+        ZAP.utils.toast(`${userData.name} тепер ваш друг!`, 'success');
       } else {
         friendStatus = 'pending-sent';
-        ZAP.utils.toast(`Запит надіслано ${icon('check', 14)}`, 'success');
+        ZAP.utils.toast(`Запит надіслано`, 'success');
       }
       ZAP.render();
     } catch (e) {
@@ -136,14 +135,13 @@
   }
 
   async function acceptRequest() {
-    const { icon } = ZAP.utils;
     const me = ZAP.auth.getUser();
     if (!me || !userData) return;
 
     try {
       await ZAP.db.acceptFriendRequest(me.uid, userData.uid);
       friendStatus = 'friend';
-      ZAP.utils.toast(`${userData.name} тепер ваш друг! ${icon('check', 14)}`, 'success');
+      ZAP.utils.toast(`${userData.name} тепер ваш друг!`, 'success');
       ZAP.render();
     } catch (e) {
       ZAP.utils.toast(e.message || 'Помилка', 'error');

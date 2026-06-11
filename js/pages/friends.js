@@ -243,7 +243,6 @@
   }
 
   async function acceptReq(fromUid) {
-    const { icon } = ZAP.utils;
     const me = ZAP.auth.getUser();
     if (!me) return;
     
@@ -256,7 +255,7 @@
       requests = requests.filter(r => r.fromUid !== fromUid);
       friends = await ZAP.db.getFriends(me.uid);
       await ZAP.notifications.deleteNotificationsByPayload(me.uid, 'friend-request', 'fromUid', fromUid);
-      ZAP.utils.toast(`Друга додано ${icon('check', 14)}`, 'success');
+      ZAP.utils.toast(`Друга додано`, 'success');
       ZAP.render();
     } catch (e) {
       ZAP.utils.toast(e.message || 'Помилка', 'error');

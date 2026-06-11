@@ -209,7 +209,6 @@
 
   // Start real-time listener for status updates
   function startListening() {
-    const { icon } = ZAP.utils;
     const user = ZAP.auth.getUser();
     if (!user) return;
     ZAP.db.listenStatuses(user.uid, statuses => {
@@ -222,7 +221,7 @@
 
           // Toast notification
           if (inv.status === 'accepted') {
-            ZAP.utils.toast(`${inv.to || 'Хтось'} прийняв запрошення! ${icon('check', 14)}`, 'success');
+            ZAP.utils.toast(`${inv.to || 'Хтось'} прийняв запрошення!`, 'success');
           } else if (inv.status === 'declined') {
             ZAP.utils.toast(`${inv.to || 'Хтось'} відхилив запрошення`, 'error');
           } else if (inv.status === 'reschedule') {

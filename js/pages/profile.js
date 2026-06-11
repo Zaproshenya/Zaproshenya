@@ -257,7 +257,6 @@
   }
 
   async function saveName() {
-    const { icon } = ZAP.utils;
     const name = document.getElementById('edit-name')?.value.trim();
     if (!name || name.length < 2) { showEditError('Ім\'я має бути не менше 2 символів'); return; }
 
@@ -270,7 +269,7 @@
         await ZAP.dbRef.ref('friends/' + f.uid + '/' + ZAP.auth.getUser().uid + '/name').set(name);
       }
       cancelEdit();
-      ZAP.utils.toast(`Ім'я змінено ${icon('check', 14)}`, 'success');
+      ZAP.utils.toast(`Ім'я змінено`, 'success');
       ZAP.render();
     } catch (e) {
       setSavingState(false);
@@ -279,7 +278,6 @@
   }
 
   async function saveLogin() {
-    const { icon } = ZAP.utils;
     const newLogin = document.getElementById('edit-login')?.value.trim();
     if (!newLogin) { showEditError('Введіть логін'); return; }
 
@@ -287,7 +285,7 @@
     try {
       await ZAP.auth.changeLogin(newLogin);
       cancelEdit();
-      ZAP.utils.toast(`Логін змінено ${icon('check', 14)}`, 'success');
+      ZAP.utils.toast(`Логін змінено`, 'success');
       ZAP.render();
     } catch (e) {
       setSavingState(false);
@@ -296,7 +294,6 @@
   }
 
   async function savePassword() {
-    const { icon } = ZAP.utils;
     const oldPass = document.getElementById('edit-old-pass')?.value;
     const newPass = document.getElementById('edit-new-pass')?.value;
     const newPass2 = document.getElementById('edit-new-pass2')?.value;
@@ -308,7 +305,7 @@
     try {
       await ZAP.auth.changePassword(oldPass, newPass);
       cancelEdit();
-      ZAP.utils.toast(`Пароль змінено ${icon('check', 14)}`, 'success');
+      ZAP.utils.toast(`Пароль змінено`, 'success');
       ZAP.render();
     } catch (e) {
       setSavingState(false);
@@ -319,12 +316,11 @@
   }
 
   async function uploadAvatar(file) {
-    const { icon } = ZAP.utils;
     if (!file) return;
     try {
       ZAP.utils.toast('Завантаження аватару...', 'info');
       await ZAP.auth.uploadAvatar(file);
-      ZAP.utils.toast(`Аватар оновлено ${icon('check', 14)}`, 'success');
+      ZAP.utils.toast(`Аватар оновлено`, 'success');
       ZAP.render();
     } catch (e) {
       ZAP.utils.toast(e.message || 'Помилка завантаження', 'error');
