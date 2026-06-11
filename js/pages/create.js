@@ -16,6 +16,12 @@
   async function load() {
     done = false;
     createdInv = null;
+    selectedFriends = [];
+    mode = 'personal';
+    isPublic = true;
+    requireAuth = false;
+    formState = {};
+    friendFilter = '';
     const user = ZAP.auth.getUser();
     if (user) {
       friends = await ZAP.db.getFriends(user.uid);
@@ -250,6 +256,7 @@
       }
     }
     ZAP.render();
+    chk();
   }
 
   function chk() {
