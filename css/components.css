@@ -162,7 +162,7 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   background: rgba(0,0,0,.08); margin-left: 6px;
   line-height: 1;
 }
-.pill.on .pill-count { background: rgba(255,255,255,.3); color: #fff; }
+.pill.on .pill-count { background: rgba(0,0,0,.08); color: var(--ink); }
 
 /* ── Tabs ── */
 .tabs {
