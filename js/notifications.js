@@ -88,7 +88,13 @@
         .orderByChild('createdAt').limitToLast(50).get();
       if (!snap.exists()) return [];
       const list = [];
-      snap.forEach(c => { list.push(c.val()); });
+      snap.forEach(c => {
+        const val = c.val();
+        // Clean old broken titles that may contain raw HTML tags
+        if (val.title) val.title = val.title.replace(/<[^>]*>/g, '');
+        if (val.body) val.body = val.body.replace(/<[^>]*>/g, '');
+        list.push(val);
+      });
       return list.reverse();
     } catch (e) { console.warn('getNotifications:', e); return []; }
   }

@@ -332,13 +332,17 @@
     };
     const iconHtml = iconMap[notif.type] || icon('bell',24);
 
+    // Clean old broken titles that may contain raw HTML tags
+    const cleanTitle = (notif.title || 'Сповіщення').replace(/<[^>]*>/g, '');
+    const cleanBody = (notif.body || '').replace(/<[^>]*>/g, '');
+
     const popup = document.createElement('div');
     popup.className = 'notif-popup';
     popup.innerHTML = `
       <div class="notif-popup-icon">${iconHtml}</div>
       <div class="notif-popup-body">
-        <div class="notif-popup-title">${ZAP.utils.esc(notif.title || 'Сповіщення')}</div>
-        <div class="notif-popup-text">${ZAP.utils.esc(notif.body || '')}</div>
+        <div class="notif-popup-title">${ZAP.utils.esc(cleanTitle)}</div>
+        <div class="notif-popup-text">${ZAP.utils.esc(cleanBody)}</div>
       </div>
       <button class="notif-popup-close" onclick="event.stopPropagation();this.closest('.notif-popup').classList.add('removing');setTimeout(()=>this.closest('.notif-popup')?.remove(),300)">×</button>
     `;

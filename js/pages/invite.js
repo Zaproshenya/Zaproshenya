@@ -43,6 +43,20 @@
     }
 
     loading = false;
+
+    // Mark matching notification as read
+    const currentUser = ZAP.auth.getUser();
+    if (currentUser && inviteId) {
+      try {
+        const notifs = await ZAP.notifications.getNotifications(currentUser.uid);
+        for (const n of notifs) {
+          if (n.type === 'invite' && n.inviteId === inviteId && !n.read && n.id) {
+            await ZAP.notifications.markNotifRead(currentUser.uid, n.id);
+          }
+        }
+        if (ZAP.app.updateUnreadCount) ZAP.app.updateUnreadCount();
+      } catch {}
+    }
   }
 
   async function loadGroup(inviteId) {
@@ -64,6 +78,20 @@
     }
 
     loading = false;
+
+    // Mark matching notification as read
+    const currentUser = ZAP.auth.getUser();
+    if (currentUser && inviteId) {
+      try {
+        const notifs = await ZAP.notifications.getNotifications(currentUser.uid);
+        for (const n of notifs) {
+          if (n.type === 'group-invite' && n.inviteId === inviteId && !n.read && n.id) {
+            await ZAP.notifications.markNotifRead(currentUser.uid, n.id);
+          }
+        }
+        if (ZAP.app.updateUnreadCount) ZAP.app.updateUnreadCount();
+      } catch {}
+    }
   }
 
   function render() {

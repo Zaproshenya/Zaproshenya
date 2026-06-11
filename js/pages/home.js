@@ -31,7 +31,7 @@
     // Load incoming invitations from notifications
     const notifs = await ZAP.notifications.getNotifications(user.uid);
     incomingInvites = notifs.filter(n =>
-      (n.type === 'invite' || n.type === 'group-invite') && n.inviteId
+      (n.type === 'invite' || n.type === 'group-invite') && n.inviteId && !n.read
     );
 
     loaded = true;
