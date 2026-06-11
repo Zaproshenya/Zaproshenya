@@ -14,6 +14,8 @@
   let formState = {};
 
   async function load() {
+    done = false;
+    createdInv = null;
     const user = ZAP.auth.getUser();
     if (user) {
       friends = await ZAP.db.getFriends(user.uid);
