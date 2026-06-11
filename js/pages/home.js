@@ -34,6 +34,14 @@
       (n.type === 'invite' || n.type === 'group-invite') && n.inviteId && !n.read
     );
 
+    // Cross-reference with actual statuses — skip already-answered invites
+    if (statusSnap.exists()) {
+      incomingInvites = incomingInvites.filter(n => {
+        const s = statuses[n.inviteId];
+        return !s || !['accepted', 'declined', 'reschedule'].includes(s);
+      });
+    }
+
     loaded = true;
   }
 

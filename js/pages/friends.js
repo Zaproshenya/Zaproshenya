@@ -26,10 +26,13 @@
       }
     });
 
-    // Load friend invites from notifications
+    // Load friend invites from notifications (unread only, last 7 days)
     const notifs = await ZAP.notifications.getNotifications(user.uid);
+    const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
     friendInvites = notifs.filter(n =>
-      (n.type === 'invite' || n.type === 'group-invite')
+      (n.type === 'invite' || n.type === 'group-invite') && !n.read &&
+      now - n.createdAt < SEVEN_DAYS
     );
 
     loaded = true;

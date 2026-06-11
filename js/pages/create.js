@@ -130,7 +130,7 @@
           <p style="font-size:.85rem;color:var(--muted);font-style:italic;width:100%">Нікого не знайдено</p>
         ` : filtered.map(f => `
           <button class="pill ${selectedFriends.includes(f.uid) ? 'on' : ''}"
-            onclick="ZAP.pages.create.toggleFriend('${f.uid}','personal')">
+            onclick="ZAP.pages.create.toggleFriend('${f.uid}','personal',this)">
             <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
               ${ZAP.utils.avatarHTML(f, 'sm')}
               <span style="font-weight:600;color:var(--ink)">${ZAP.utils.esc(f.name)}</span>
@@ -168,7 +168,7 @@
           <div style="display:flex;flex-direction:column;gap:4px">
             ${friends.map(f => `
               <div class="check-item ${selectedFriends.includes(f.uid) ? 'checked' : ''}"
-                onclick="ZAP.pages.create.toggleFriend('${f.uid}','group')">
+                onclick="ZAP.pages.create.toggleFriend('${f.uid}','group',this)">
                 <div class="check-box">${selectedFriends.includes(f.uid) ? icon('check', 14) : ''}</div>
                 ${ZAP.utils.avatarHTML(f, 'sm')}
                 <span style="font-size:.9rem">${ZAP.utils.esc(f.name)}</span>
@@ -242,20 +242,22 @@
     ZAP.render();
   }
 
-  function toggleFriend(uid, ctx) {
+  function toggleFriend(uid, ctx, el) {
     saveFormState();
     if (ctx === 'personal') {
-      // For personal, only one friend
-      selectedFriends = selectedFriends.includes(uid) ? [] : [uid];
+      const wasSelected = selectedFriends.includes(uid);
+      selectedFriends = wasSelected ? [] : [uid];
+      document.querySelectorAll('#cform .pill.on').forEach(b => b.classList.remove('on'));
+      if (!wasSelected) el.classList.add('on');
     } else {
-      // For group, multiple
       if (selectedFriends.includes(uid)) {
         selectedFriends = selectedFriends.filter(f => f !== uid);
+        el.classList.remove('checked');
       } else {
         selectedFriends.push(uid);
+        el.classList.add('checked');
       }
     }
-    ZAP.render();
     chk();
   }
 

@@ -431,7 +431,9 @@
         }
       } else if ((n.type === 'invite' || n.type === 'group-invite') && n.inviteId) {
         const routePage = n.type === 'group-invite' ? 'group-invite' : 'invite';
-        actionBtn = `<button class="btn btn-gold btn-sm" onclick="ZAP.router.go('${routePage}',{id:'${n.inviteId}'})">Переглянути</button>`;
+        actionBtn = n.read
+          ? `<span class="status-text" style="color:var(--muted)">Переглянуто</span>`
+          : `<button class="btn btn-gold btn-sm" onclick="ZAP.router.go('${routePage}',{id:'${n.inviteId}'})">Переглянути</button>`;
       } else if (n.type === 'friend-accepted' && n.fromUid) {
         actionBtn = `<button class="btn btn-outline btn-sm" onclick="ZAP.router.go('user-profile',{uid:'${n.fromUid}'})">Профіль</button>`;
       }
@@ -455,10 +457,20 @@
     const user = ZAP.auth.getUser();
     if (!user) { unreadCount = 0; return; }
     unreadCount = await ZAP.notifications.getUnreadCount(user.uid);
-    // Update DOM badge immediately
     const badge = document.querySelector('.notif-badge');
-    if (badge) badge.textContent = unreadCount > 0 ? unreadCount : '';
-    if (unreadCount === 0 && badge) badge.remove();
+    if (badge) {
+      if (unreadCount > 0) {
+        badge.textContent = unreadCount;
+      } else {
+        badge.remove();
+      }
+    } else if (unreadCount > 0) {
+      const el = document.createElement('span');
+      el.className = 'notif-badge';
+      el.textContent = unreadCount;
+      const container = document.querySelector('.pill-wrap .nb[aria-label="Сповіщення"]')?.parentElement;
+      if (container) container.appendChild(el);
+    }
   }
 
   // ── Task 4: Delete a notification inline without full re-render ──
