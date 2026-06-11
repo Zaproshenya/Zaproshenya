@@ -152,8 +152,19 @@
       return;
     }
 
-    // ── Dashboard (has its own layout) ──
+    // ── Dashboard (has its own layout, lazy loaded for admins only) ──
     if (route.page === 'dashboard') {
+      if (!ZAP.pages.dashboard) {
+        if (!window._dashLoading) {
+          window._dashLoading = true;
+          app.innerHTML = ZAP.utils.spinner();
+          const s = document.createElement('script');
+          s.src = '/js/pages/dashboard.js';
+          s.onload = function () { window._dashLoading = false; ZAP.render(); };
+          document.body.appendChild(s);
+        }
+        return;
+      }
       if (isPageChange) {
         app.innerHTML = ZAP.utils.spinner();
         await ZAP.pages.dashboard.load();
