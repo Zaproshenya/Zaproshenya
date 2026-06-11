@@ -12,14 +12,6 @@
   let showRescheduleForm = false;
   let isGroup = false;
   let guestName = '';
-  const MSG_MAX = 120;
-
-  function truncMsg(text) {
-    if (!text || text.length <= MSG_MAX) return ZAP.utils.esc(text);
-    const id = 'msg-' + Math.random().toString(36).slice(2, 8);
-    return `<span class="truncated-text" id="${id}">${ZAP.utils.esc(text)}</span><button class="toggle-more-btn" onclick="const el=document.getElementById('${id}');el.classList.toggle('expanded');this.textContent=el.classList.contains('expanded')?'Приховати':'Показати більше'">Показати більше</button>`;
-  }
-
   async function loadPersonal(inviteId, b64) {
     loading = true;
     isGroup = false;
@@ -129,7 +121,11 @@
         <div class="envelope-body">
           ${invData.msg ? `
             <div class="msg-block">
-              <p class="msg-text">${truncMsg(invData.msg)}</p>
+              ${(() => {
+                const mt = ZAP.utils.truncate(invData.msg, 120);
+                if (mt.id) return `<p class="msg-text">${mt.html}</p>${ZAP.utils.truncateBtn(mt.id)}`;
+                return `<p class="msg-text">${mt.html}</p>`;
+              })()}
             </div>` : ''}
 
           <div style="background:rgba(0,0,0,.02);border-radius:12px;padding:6px 12px;margin-bottom:0">
@@ -263,7 +259,11 @@
         <div class="envelope-body">
           ${groupData.msg ? `
             <div class="msg-block">
-              <p class="msg-text">${truncMsg(groupData.msg)}</p>
+              ${(() => {
+                const mt = ZAP.utils.truncate(groupData.msg, 120);
+                if (mt.id) return `<p class="msg-text">${mt.html}</p>${ZAP.utils.truncateBtn(mt.id)}`;
+                return `<p class="msg-text">${mt.html}</p>`;
+              })()}
             </div>` : ''}
 
           <div style="background:rgba(0,0,0,.02);border-radius:12px;padding:6px 12px;margin-bottom:16px">

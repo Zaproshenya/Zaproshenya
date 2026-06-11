@@ -123,7 +123,7 @@
   overflow-wrap: break-word; word-break: break-word; min-width: 0;
 }
 .msg-block .toggle-more-btn {
-  display: block; margin-top: 4px; padding-left: 8px;
+  margin-top: 6px;
 }
 
 /* ── Result screen ── */
@@ -193,8 +193,8 @@
 .sidebar-item-icon { font-size: 1.1rem; width: 24px; text-align: center; }
 .sidebar-content {
   flex: 1; margin-left: var(--sidebar-w);
-  min-height: 100vh; background: var(--paper);
-  /* Prevent child content from causing horizontal overflow on mobile */
+  height: 100dvh; background: var(--paper);
+  overflow-y: auto;
   overflow-x: hidden;
 }
 .sidebar-content .wrap { max-width: 1100px; }
@@ -299,10 +299,12 @@
   .sidebar.open { transform: translateX(0); }
   .sidebar-overlay.open { display: block; }
   /* Dashboard: content takes full width when sidebar is hidden */
-  .sidebar-content { margin-left: 0; }
+  .sidebar-content {
+    margin-left: 0;
+    height: 100dvh;
+    padding-bottom: 64px;
+  }
   .app-with-sidebar { display: block; }
-  /* Dashboard wrap: padding bottom so content clears the bottom bar */
-  .sidebar-content .wrap { padding-bottom: 32px; }
   .hamburger { display: block; }
   .grid3 { grid-template-columns: 1fr 1fr; }
 

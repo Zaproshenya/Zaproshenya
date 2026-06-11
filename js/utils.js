@@ -234,11 +234,55 @@
     });
   }
 
+  // ── Text truncation with show more/less ──
+  let truncInit = false;
+
+  function truncate(text, maxLen) {
+    if (!text || text.length <= maxLen) return { html: esc(text || '') };
+    const id = 'trc-' + Math.random().toString(36).slice(2, 8);
+    return {
+      html: `<span class="truncated-text" data-trc="${id}">${esc(text)}</span>`,
+      id: id
+    };
+  }
+
+  function truncateBtn(id) {
+    return `<button class="toggle-more-btn" data-trc="${id}" type="button">
+      <span class="tm-btn-text">Показати більше</span>
+      <i class="ph ph-caret-down" style="font-size:14px"></i>
+    </button>`;
+  }
+
+  function truncateFull(text, maxLen) {
+    const t = truncate(text, maxLen);
+    return t.id ? t.html + '\n' + truncateBtn(t.id) : t.html;
+  }
+
+  function initTruncHandler() {
+    if (truncInit) return;
+    truncInit = true;
+    document.addEventListener('click', function (e) {
+      const btn = e.target.closest('.toggle-more-btn');
+      if (!btn) return;
+      const id = btn.dataset.trc;
+      if (!id) return;
+      const span = document.querySelector(`.truncated-text[data-trc="${id}"]`);
+      if (!span) return;
+      span.classList.toggle('expanded');
+      const expanded = span.classList.contains('expanded');
+      const textEl = btn.querySelector('.tm-btn-text');
+      if (textEl) textEl.textContent = expanded ? 'Приховати' : 'Показати більше';
+      const icon = btn.querySelector('i');
+      if (icon) icon.className = expanded ? 'ph ph-caret-up' : 'ph ph-caret-down';
+    });
+  }
+
   // ── Expose ──
   ZAP.utils = {
     esc, icon, genId, genUserId, copyText, badge, roleBadge, divLine,
     boom, toast, formatDate, timeAgo, avatarHTML, spinner,
     TYPES, TYPE_MAP, inviteLink,
     confirm, alert, prompt,
+    truncate, truncateBtn, truncateFull, initTruncHandler,
   };
 })();

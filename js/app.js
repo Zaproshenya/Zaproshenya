@@ -473,6 +473,9 @@
   ZAP.render = render;
   ZAP.app = { deleteNotification };
 
+  // Initialize delegated truncation handler once
+  ZAP.utils.initTruncHandler();
+
   ZAP.auth.onAuthReady(async (user) => {
     authReady = true;
     if (user) {
