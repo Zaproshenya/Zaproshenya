@@ -91,7 +91,7 @@
       <div style="background:var(--warm);border-radius:12px;padding:16px;border:1px solid var(--border)">
         <div class="toggle-wrap">
           <button class="toggle ${requireAuth ? 'on' : ''}"
-            onclick="ZAP.pages.create.toggleRequireAuth()"
+            onclick="ZAP.pages.create.toggleRequireAuth(this)"
             role="switch" aria-checked="${requireAuth}" aria-label="Обмежити доступ лише для зареєстрованих"></button>
           <span class="toggle-label">
             ${requireAuth
@@ -145,42 +145,55 @@
 
   function renderGroupOptions() {
     const { icon } = ZAP.utils;
+    const filtered = friendFilter
+      ? friends.filter(f =>
+          (f.name || '').toLowerCase().includes(friendFilter) ||
+          (f.uniqueId || '').toLowerCase().includes(friendFilter))
+      : friends;
     return `
     <!-- Public / Private toggle -->
     <div style="background:var(--warm);border-radius:12px;padding:16px;border:1px solid var(--border)">
       <div class="toggle-wrap" style="margin-bottom:14px">
         <button class="toggle ${isPublic ? 'on' : ''}"
-          onclick="ZAP.pages.create.togglePublic()"
+          onclick="ZAP.pages.create.togglePublic(this)"
           role="switch" aria-checked="${isPublic}" aria-label="Публічне або приватне запрошення"></button>
         <span class="toggle-label">
           ${isPublic ? `${icon('globe-hemisphere-west', 14)} Публічне — будь-хто може приєднатися за посиланням` : `${icon('lock', 14)} Приватне — тільки для обраних друзів`}
         </span>
       </div>
 
-      ${!isPublic ? `
+      <div id="group-friends-section"${isPublic ? ' style="display:none"' : ''}>
         <p style="font-size:.78rem;color:var(--muted);margin-bottom:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em">
           Виберіть друзів для запрошення
         </p>
+        ${friends.length > 3 ? `
+          <input type="text" placeholder="Пошук друга..."
+            value="${ZAP.utils.esc(friendFilter)}"
+            oninput="ZAP.pages.create.filterFriends(this.value)"
+            aria-label="Пошук друга за іменем або ID"
+            style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:.85rem;margin-bottom:10px;background:var(--card)"/>
+        ` : ''}
         ${friends.length === 0 ? `
           <p style="font-size:.88rem;color:var(--muted);font-style:italic">
             У вас ще немає друзів. <button class="btn-ghost" onclick="ZAP.router.go('friends')">Додати →</button>
           </p>
         ` : `
-          <div style="display:flex;flex-direction:column;gap:4px">
-            ${friends.map(f => `
-              <div class="check-item ${selectedFriends.includes(f.uid) ? 'checked' : ''}"
+          <div id="group-friends-area" style="display:flex;flex-wrap:wrap;gap:8px">
+            ${filtered.length === 0 ? `
+              <p style="font-size:.85rem;color:var(--muted);font-style:italic;width:100%">Нікого не знайдено</p>
+            ` : filtered.map(f => `
+              <button class="pill ${selectedFriends.includes(f.uid) ? 'on' : ''}"
                 onclick="ZAP.pages.create.toggleFriend('${f.uid}','group',this)">
-                <div class="check-box">${selectedFriends.includes(f.uid) ? icon('check', 14) : ''}</div>
-                ${ZAP.utils.avatarHTML(f, 'sm')}
-                <div>
-                  <span style="font-size:.9rem">${ZAP.utils.esc(f.name)}</span>
-                  ${f.uniqueId ? `<br><span style="font-size:.65rem;color:var(--muted);font-family:monospace">${ZAP.utils.esc(f.uniqueId)}</span>` : ''}
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                  ${ZAP.utils.avatarHTML(f, 'sm')}
+                  <span style="font-weight:600;color:var(--ink)">${ZAP.utils.esc(f.name)}</span>
+                  ${f.uniqueId ? `<span style="font-size:.65rem;color:var(--muted);font-family:monospace">${ZAP.utils.esc(f.uniqueId)}</span>` : ''}
                 </div>
-              </div>
+              </button>
             `).join('')}
           </div>
         `}
-      ` : ''}
+      </div>
     </div>`;
   }
 
@@ -239,11 +252,24 @@
     ZAP.render();
   }
 
-  function togglePublic() {
+  function togglePublic(btn) {
     saveFormState();
     isPublic = !isPublic;
     if (isPublic) selectedFriends = [];
-    ZAP.render();
+
+    btn.classList.toggle('on');
+    btn.setAttribute('aria-checked', isPublic);
+    const label = btn.parentElement.querySelector('.toggle-label');
+    if (label) {
+      label.innerHTML = isPublic
+        ? `${ZAP.utils.icon('globe-hemisphere-west', 14)} Публічне — будь-хто може приєднатися за посиланням`
+        : `${ZAP.utils.icon('lock', 14)} Приватне — тільки для обраних друзів`;
+    }
+
+    const section = document.getElementById('group-friends-section');
+    if (section) section.style.display = isPublic ? 'none' : '';
+
+    chk();
   }
 
   function toggleFriend(uid, ctx, el) {
@@ -256,10 +282,10 @@
     } else {
       if (selectedFriends.includes(uid)) {
         selectedFriends = selectedFriends.filter(f => f !== uid);
-        el.classList.remove('checked');
+        el.classList.remove('on');
       } else {
         selectedFriends.push(uid);
-        el.classList.add('checked');
+        el.classList.add('on');
       }
     }
     chk();
@@ -360,10 +386,20 @@
     ZAP.render();
   }
 
-  function toggleRequireAuth() {
+  function toggleRequireAuth(btn) {
     saveFormState();
     requireAuth = !requireAuth;
-    ZAP.render();
+
+    btn.classList.toggle('on');
+    btn.setAttribute('aria-checked', requireAuth);
+    const label = btn.parentElement.querySelector('.toggle-label');
+    if (label) {
+      label.innerHTML = requireAuth
+        ? `${ZAP.utils.icon('lock', 14)} Тільки для зареєстрованих — отримувач повинен увійти в акаунт`
+        : `${ZAP.utils.icon('globe-hemisphere-west', 14)} Для всіх — будь-хто може переглянути запрошення`;
+    }
+
+    chk();
   }
 
   function filterFriends(query) {
