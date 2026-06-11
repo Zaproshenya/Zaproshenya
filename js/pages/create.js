@@ -64,7 +64,8 @@
       <div>
         <label class="lbl">Ваше повідомлення</label>
         <textarea id="f-msg" placeholder="Напишіть своїми словами — що хочете, куди запрошуєте…"
-          style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:#fff;font-size:1rem" maxlength="100" oninput="ZAP.pages.create.chk()">${ZAP.utils.esc(formState.msg || '')}</textarea>
+          style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:#fff;font-size:1rem;resize:none" maxlength="100" oninput="ZAP.pages.create.onMsgInput()">${ZAP.utils.esc(formState.msg || '')}</textarea>
+        <div style="text-align:right;font-size:.75rem;color:var(--muted);margin-top:4px"><span id="msg-counter">${(formState.msg || '').length}</span>/100</div>
       </div>
 
       <div>
@@ -171,7 +172,10 @@
                 onclick="ZAP.pages.create.toggleFriend('${f.uid}','group',this)">
                 <div class="check-box">${selectedFriends.includes(f.uid) ? icon('check', 14) : ''}</div>
                 ${ZAP.utils.avatarHTML(f, 'sm')}
-                <span style="font-size:.9rem">${ZAP.utils.esc(f.name)}</span>
+                <div>
+                  <span style="font-size:.9rem">${ZAP.utils.esc(f.name)}</span>
+                  ${f.uniqueId ? `<br><span style="font-size:.65rem;color:var(--muted);font-family:monospace">${ZAP.utils.esc(f.uniqueId)}</span>` : ''}
+                </div>
               </div>
             `).join('')}
           </div>
@@ -367,9 +371,16 @@
     ZAP.render();
   }
 
+  function onMsgInput() {
+    const ta = document.getElementById('f-msg');
+    const counter = document.getElementById('msg-counter');
+    if (ta && counter) counter.textContent = ta.value.length;
+    chk();
+  }
+
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.create = {
     render, load, setMode, togglePublic, toggleFriend, chk, submit, reset,
-    toggleRequireAuth, saveFormState, filterFriends,
+    toggleRequireAuth, saveFormState, filterFriends, onMsgInput,
   };
 })();

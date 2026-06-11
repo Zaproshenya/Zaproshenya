@@ -235,15 +235,10 @@
     const { esc, avatarHTML, roleBadge, icon } = ZAP.utils;
     const isAdminUser = ZAP.auth.isAdmin() || ZAP.auth.isModerator();
 
-    const fbStatus = ZAP.dbRef
-      ? `<span title="Firebase підключено" style="font-size:.7rem;color:var(--muted);display:flex;align-items:center"><span class="fb-dot ok"></span>синх.</span>`
-      : `<span title="Firebase не підключено" style="font-size:.7rem;color:var(--red)">${icon('warning-circle',16)} Firebase</span>`;
-
     return `
     <header class="topbar">
       <button class="logo" onclick="ZAP.router.go('home')">Запрошення ✦</button>
       <div class="topbar-right">
-        ${fbStatus}
         <button class="nb ${page === 'home' ? 'on' : ''}" onclick="ZAP.router.go('home')">${icon('house',18)} Мої</button>
         <button class="nb ${page === 'create' ? 'on' : ''}" onclick="ZAP.router.go('create')">+ Нове</button>
         <div class="pill-wrap">
