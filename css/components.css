@@ -86,7 +86,7 @@ input:focus, textarea:focus, select:focus {
 input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7; }
 select { cursor: pointer; }
 select option { background: var(--paper); }
-textarea { resize: vertical; min-height: 88px; line-height: 1.65; }
+textarea { resize: none; min-height: 88px; line-height: 1.65; }
 input[type="file"] { padding: 8px; font-size: .9rem; }
 
 .input-flat {
@@ -292,35 +292,30 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 
 /* ── Tabs ── */
 .tabs {
-  display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 24px;
+  display: flex; gap: 4px; margin-bottom: 20px;
+  background: var(--warm); border-radius: var(--radius-sm); padding: 4px;
 }
 .tab {
-  padding: 10px 20px; font-size: .95rem; color: var(--muted);
-  background: none; border: none; border-bottom: 2px solid transparent;
-  margin-bottom: -2px; font-weight: 500;
-  transition: all .2s var(--ease);
+  flex: 1; padding: 10px 16px; border: none; background: transparent;
+  border-radius: var(--radius-sm); cursor: pointer; font-size: .88rem;
+  color: var(--muted); transition: all .2s var(--ease); font-weight: 500;
 }
-.tab:hover { color: var(--ink); }
-.tab.active {
-  color: var(--gold); border-bottom-color: var(--gold); font-weight: 600;
-}
+.tab.active { background: var(--card); color: var(--ink); font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+.tab:hover:not(.active) { color: var(--ink); }
 
 @media (max-width: 768px) {
   .tabs {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     gap: 8px;
-    border-bottom: none;
   }
   .tab {
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 10px;
-    margin-bottom: 0;
     text-align: center;
   }
   .tab.active {
-    border-bottom-color: var(--border) !important;
     background: var(--warm);
     color: var(--ink);
   }
