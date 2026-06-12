@@ -89,7 +89,7 @@
       return `
       <div class="empty">
         <div class="empty-icon"><i class="ph ph-users" style="font-size:3rem"></i></div>
-        <p style="font-style:italic;font-size:1.05rem;margin-bottom:8px">Ще немає друзів</p>
+        <p class="empty-desc" style="margin-bottom:8px">Ще немає друзів</p>
         <p style="font-size:.88rem;color:var(--muted)">Знайдіть друзів за їх унікальним ID</p>
       </div>`;
     }
@@ -120,7 +120,7 @@
       return `
       <div class="empty">
         <div class="empty-icon">${icon('hand-waving', 32)}</div>
-        <p style="font-style:italic;font-size:1.05rem">Немає запитів на дружбу</p>
+        <p class="empty-desc">Немає запитів на дружбу</p>
       </div>`;
     }
 

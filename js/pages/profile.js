@@ -230,7 +230,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
           <h3 class="modal-title" style="margin-bottom:0">${title}</h3>
           <button onclick="ZAP.pages.profile.cancelEdit()"
-            style="background:none;border:none;font-size:1.3rem;color:var(--muted)">×</button>
+            class="modal-close">×</button>
         </div>
         ${body}
       </div>`;

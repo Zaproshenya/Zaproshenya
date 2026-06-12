@@ -65,7 +65,7 @@
       <div>
         <label class="lbl">Ваше повідомлення</label>
         <textarea id="f-msg" placeholder="Напишіть своїми словами — що хочете, куди запрошуєте…"
-          style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:#fff;font-size:1rem;resize:none" maxlength="100" oninput="ZAP.pages.create.onMsgInput()">${ZAP.utils.esc(formState.msg || '')}</textarea>
+          maxlength="100" oninput="ZAP.pages.create.onMsgInput()">${ZAP.utils.esc(formState.msg || '')}</textarea>
         <div style="text-align:right;font-size:.75rem;color:var(--muted);margin-top:4px"><span id="msg-counter">${(formState.msg || '').length}</span>/100</div>
       </div>
 
@@ -89,7 +89,7 @@
       ${mode === 'group' ? renderGroupOptions() : renderPersonalOptions()}
 
       <!-- Auth required toggle -->
-      <div style="background:var(--warm);border-radius:12px;padding:16px;border:1px solid var(--border)">
+      <div class="warm-panel">
         <div class="toggle-wrap">
           <button class="toggle ${requireAuth ? 'on' : ''}"
             onclick="ZAP.pages.create.toggleRequireAuth(this)"
@@ -116,8 +116,8 @@
           (f.uniqueId || '').toLowerCase().includes(friendFilter))
       : friends;
     return `
-    <div style="background:var(--warm);border-radius:12px;padding:16px;border:1px solid var(--border)">
-      <p style="font-size:.78rem;color:var(--muted);margin-bottom:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em">
+    <div class="warm-panel">
+      <p class="lbl">
         Або надішліть напряму другу
       </p>
       ${friends.length > 3 ? `
@@ -153,7 +153,7 @@
       : friends;
     return `
     <!-- Public / Private toggle -->
-    <div style="background:var(--warm);border-radius:12px;padding:16px;border:1px solid var(--border)">
+    <div class="warm-panel">
       <div class="toggle-wrap" style="margin-bottom:14px">
         <button class="toggle ${isPublic ? 'on' : ''}"
           onclick="ZAP.pages.create.togglePublic(this)"

@@ -9,9 +9,9 @@
 }
 .stat-card {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); padding: 22px 20px;
+  border-radius: var(--radius-lg); padding: 16px 20px;
   transition: box-shadow .2s, transform .15s;
-  animation: fadeUp .4s ease both;
+  animation: fadeUp .4s var(--ease) both;
 }
 .stat-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
 .stat-icon {
@@ -20,7 +20,7 @@
   font-size: 1.3rem; margin-bottom: 14px;
 }
 .stat-icon.users   { background: var(--blue-bg); }
-.stat-icon.online  { background: rgba(46,204,113,.15); color: #2ecc71; }
+.stat-icon.online  { background: rgba(45,122,79,.15); color: var(--green); }
 .stat-icon.invites { background: var(--green-bg); }
 .stat-icon.accepted{ background: var(--purple-bg); }
 .stat-icon.active  { background: var(--gold-dim); }
@@ -43,8 +43,8 @@
 }
 .chart-card {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); padding: 22px 20px;
-  animation: fadeUp .4s ease both;
+  border-radius: var(--radius-lg); padding: 16px 20px;
+  animation: fadeUp .4s var(--ease) both;
 }
 .chart-card-title {
   display: flex; justify-content: space-between; align-items: center;
@@ -62,8 +62,8 @@
 /* ── Users table ── */
 .table-card {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); padding: 22px 20px;
-  margin-bottom: 20px; animation: fadeUp .4s ease both;
+  border-radius: var(--radius-lg); padding: 16px 20px;
+  margin-bottom: 20px; animation: fadeUp .4s var(--ease) both;
 }
 .table-header {
   display: flex; justify-content: space-between; align-items: center;
@@ -91,7 +91,7 @@
   padding: 12px; border-bottom: 1px solid rgba(0,0,0,.04);
   font-size: .9rem; vertical-align: middle;
 }
-.data-table tr:hover td { background: rgba(201,146,42,.03); }
+.data-table tr:hover td { background: rgba(var(--gold-rgb),.03); }
 .data-table tr:last-child td { border-bottom: none; }
 
 .role-select {
@@ -104,9 +104,9 @@
 /* ── Complaints section ── */
 .complaint-card {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius-md); padding: 16px 18px;
+  border-radius: var(--radius-card); padding: 16px 20px;
   margin-bottom: 10px; display: flex; align-items: flex-start; gap: 14px;
-  animation: fadeUp .3s ease both;
+  animation: fadeUp .3s var(--ease) both;
 }
 .complaint-card.resolved { opacity: .5; }
 .complaint-icon {
@@ -133,8 +133,8 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(201,146,42,.1);
-  border: 1px solid rgba(201,146,42,.25);
+  background: rgba(var(--gold-rgb),.1);
+  border: 1px solid rgba(var(--gold-rgb),.25);
   border-radius: 20px;
   color: var(--gold);
   font-size: .75rem;
@@ -147,7 +147,7 @@
   white-space: nowrap;
 }
 .toggle-more-btn:hover {
-  background: rgba(201,146,42,.18);
+  background: rgba(var(--gold-rgb),.18);
   border-color: var(--gold);
   text-decoration: none;
 }

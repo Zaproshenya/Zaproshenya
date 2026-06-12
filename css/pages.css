@@ -125,7 +125,7 @@
   text-align: center; padding: 40px 32px;
   background: var(--card); border-radius: var(--radius-xl);
   border: 1px solid var(--border); max-width: 400px;
-  margin: 0 auto; animation: pop .4s ease both;
+  margin: 0 auto; animation: pop .4s var(--ease) both;
 }
 .user-profile-card .avatar-xl { margin: 0 auto 16px; }
 .user-profile-name {
@@ -139,12 +139,12 @@
 /* ── Friends page ── */
 .friend-card {
   display: flex; align-items: center; gap: 14px;
-  padding: 14px 18px; background: var(--card);
-  border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 16px 20px; background: var(--card);
+  border: 1px solid var(--border); border-radius: var(--radius-card);
   margin-bottom: 10px; transition: box-shadow .2s, transform .15s;
-  animation: fadeUp .4s ease both;
+  animation: fadeUp .4s var(--ease) both;
 }
-.friend-card:hover:not(.processed) { box-shadow: var(--shadow); transform: translateY(-1px); }
+.friend-card:hover:not(.processed) { box-shadow: var(--shadow); transform: translateY(-2px); }
 .friend-card.processed {
   opacity: .65;
   border-left: 4px solid var(--green);
@@ -171,10 +171,10 @@
   padding: 14px 18px; background: var(--card);
   border: 1px solid var(--border); border-radius: var(--radius-md);
   margin-bottom: 8px; transition: background .2s;
-  animation: fadeUp .3s ease both;
+  animation: fadeUp .3s var(--ease) both;
   position: relative;
 }
-.notif-item.unread { background: rgba(201,146,42,.04); border-color: rgba(201,146,42,.2); }
+.notif-item.unread { background: rgba(var(--gold-rgb),.04); border-color: rgba(var(--gold-rgb),.2); }
 .notif-item.processed {
   opacity: .65;
   border-left: 4px solid var(--green);

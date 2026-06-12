@@ -18,7 +18,7 @@ button { cursor: pointer; font-family: var(--font-body); transition: all .2s var
 .btn-dark:disabled { background: var(--warm); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
 
 .btn-yes {
-  background: var(--green); color: #fff; border-radius: 14px;
+  background: var(--green); color: #fff; border-radius: var(--radius-card);
   padding: 15px; font-family: var(--font-heading); font-style: italic;
   font-size: 1.1rem; width: 100%; border: none;
 }
@@ -26,17 +26,17 @@ button { cursor: pointer; font-family: var(--font-body); transition: all .2s var
 
 .btn-no {
   background: none; color: var(--red); border: 1.5px solid rgba(192,57,43,.3);
-  border-radius: 14px; padding: 14px; font-size: 1rem; width: 100%;
+  border-radius: var(--radius-card); padding: 14px; font-size: 1rem; width: 100%;
 }
 .btn-no:hover { background: var(--red-bg); }
 
 .btn-reschedule {
-  background: rgba(201,146,42,.1); color: var(--gold);
-  border: 1.5px solid rgba(201,146,42,.35); border-radius: 14px;
+  background: rgba(var(--gold-rgb),.1); color: var(--gold);
+  border: 1.5px solid rgba(var(--gold-rgb),.35); border-radius: var(--radius-card);
   padding: 13px; font-size: .95rem; width: 100%;
   font-family: var(--font-body);
 }
-.btn-reschedule:hover { background: rgba(201,146,42,.18); }
+.btn-reschedule:hover { background: rgba(var(--gold-rgb),.18); }
 
 .btn-outline {
   background: none; border: 1.5px solid var(--border); border-radius: var(--radius-pill);
@@ -81,7 +81,7 @@ input, textarea, select {
 }
 input:focus, textarea:focus, select:focus {
   border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(201,146,42,.12);
+  box-shadow: 0 0 0 3px rgba(var(--gold-rgb),.12);
 }
 input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7; }
 select { cursor: pointer; }
@@ -99,23 +99,23 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 
 /* ── Labels ── */
 .lbl {
-  display: block; font-size: .72rem; letter-spacing: .1em;
+  display: block; font-size: .75rem; letter-spacing: .1em;
   color: var(--muted); margin-bottom: 6px;
   text-transform: uppercase; font-weight: 500;
 }
 .form-error {
   color: var(--red); font-size: .82rem; margin-top: 5px;
-  display: none; animation: fadeIn .2s ease;
+  display: none; animation: fadeIn .2s var(--ease);
 }
 .form-error.show { display: block; }
 
 /* ── Cards ── */
 .inv-card {
-  background: var(--card); border: 1.5px solid var(--border); border-radius: 14px;
+  background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius-card);
   padding: 16px 20px; margin-bottom: 12px; cursor: pointer;
   display: flex; align-items: center; gap: 14px;
   transition: box-shadow .2s var(--ease), transform .15s var(--ease), border-color .2s;
-  animation: fadeUp .4s ease both;
+  animation: fadeUp .4s var(--ease) both;
 }
 .inv-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
 .inv-card.status-accepted  { border-left: 4px solid var(--green); }
@@ -130,7 +130,7 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 /* ── Badges ── */
 .badge {
   display: inline-flex; align-items: center; gap: 5px;
-  font-size: .7rem; letter-spacing: .06em; border-radius: 20px;
+  font-size: .7rem; letter-spacing: .06em; border-radius: var(--radius-badge);
   padding: 3px 10px; font-weight: 500;
 }
 .badge-pending    { background: var(--gold-dim); color: var(--gold); }
@@ -149,7 +149,7 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 /* ── Pills (filter) ── */
 .pill {
   background: none; color: var(--muted); border: 1px solid var(--border);
-  border-radius: 20px; padding: 5px 15px; font-size: .8rem;
+  border-radius: var(--radius-badge); padding: 5px 15px; font-size: .8rem;
   transition: all .2s var(--ease); cursor: pointer;
 }
 .pill.on { background: var(--gold-light); color: var(--ink); border-color: var(--gold); }
@@ -163,27 +163,6 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   line-height: 1;
 }
 .pill.on .pill-count { background: rgba(0,0,0,.08); color: var(--ink); }
-
-/* ── Tabs ── */
-.tabs {
-  display: flex; gap: 4px; margin-bottom: 20px;
-  background: var(--warm); border-radius: var(--radius-sm); padding: 4px;
-}
-.tab {
-  flex: 1; padding: 10px 16px; border: none; background: transparent;
-  border-radius: var(--radius-sm); cursor: pointer; font-size: .88rem;
-  color: var(--muted); transition: all .2s var(--ease); font-weight: 500;
-  position: relative;
-}
-.tab.active { background: var(--card); color: var(--ink); font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-.tab:hover:not(.active) { color: var(--ink); }
-.tab-count {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-width: 18px; height: 18px; padding: 0 5px;
-  border-radius: 9px; font-size: .65rem; font-weight: 700;
-  background: var(--red); color: #fff; margin-left: 6px;
-  line-height: 1;
-}
 
 /* ── Notification badge ── */
 .notif-badge {
@@ -236,14 +215,14 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 /* ── Modal / Overlay ── */
 .overlay {
   position: fixed; inset: 0; background: rgba(18,12,6,.5);
-  z-index: 200; display: flex; align-items: center; justify-content: center;
-  padding: 20px; animation: fadeIn .2s ease;
+  z-index: var(--z-overlay); display: flex; align-items: center; justify-content: center;
+  padding: 20px;   animation: fadeIn .2s var(--ease);
   backdrop-filter: blur(4px);
 }
 .modal {
   background: var(--paper); border-radius: var(--radius-lg);
   max-width: 480px; width: 100%; padding: 28px;
-  border: 1px solid var(--border); animation: fadeUp .3s ease;
+  border: 1px solid var(--border); animation: fadeUp .3s var(--ease);
   max-height: 90vh; overflow-y: auto;
 }
 .modal-title {
@@ -253,7 +232,7 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 
 /* ── Toast ── */
 #toast-container {
-  position: fixed; top: 70px; right: 20px; z-index: 500;
+  position: fixed; top: 70px; right: 20px; z-index: var(--z-toast);
   display: flex; flex-direction: column; gap: 8px;
   pointer-events: none;
 }
@@ -296,7 +275,7 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 /* ── Confetti ── */
 .confetti-piece {
   position: fixed; width: 8px; height: 8px; border-radius: 2px;
-  pointer-events: none; z-index: 999;
+  pointer-events: none; z-index: var(--z-confetti);
   animation: confetti-fall linear forwards;
 }
 
@@ -393,9 +372,9 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 
 /* ── Reschedule form ── */
 .reschedule-form {
-  background: var(--warm); border-radius: 14px; padding: 18px;
+  background: var(--warm); border-radius: var(--radius-card); padding: 18px;
   margin-top: 14px; border: 1px solid var(--border);
-  animation: fadeUp .3s ease both;
+  animation: fadeUp .3s var(--ease) both;
 }
 
 /* ── Skeleton loading ── */
@@ -404,4 +383,43 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: var(--radius-sm);
+}
+
+/* ── Utility classes ── */
+.warm-panel {
+  background: var(--warm);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid var(--border);
+}
+.empty-desc {
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--muted);
+}
+.text-link {
+  background: none; border: none;
+  color: var(--muted); text-decoration: underline;
+  cursor: pointer; font-size: inherit;
+}
+.text-link:hover { color: var(--ink); }
+.banner {
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  margin-bottom: 20px;
+}
+.banner-error { background: var(--red-bg); }
+.banner-info  { background: var(--green-bg); }
+.progress-bar {
+  height: 6px; background: var(--border);
+  border-radius: 3px; overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%; background: var(--green);
+  border-radius: 3px;
+}
+.modal-close {
+  background: none; border: none;
+  font-size: 1.3rem; color: var(--muted);
+  cursor: pointer; line-height: 1; flex-shrink: 0;
 }

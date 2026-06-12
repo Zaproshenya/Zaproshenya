@@ -18,6 +18,7 @@
   let _loaded = false;
   const PAGE_SIZE = 15;
   const INVITE_PAGE_SIZE = 30;
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
   async function load() {
     console.log('[DASH] load() start', Date.now(), 'lastPage tracker:', window._lastDashPage);
@@ -825,7 +826,7 @@
   }
 
   async function modDeleteInvite(invId, type) {
-    if (!confirm('Видалити це запрошення? Цю дію не можна скасувати.')) return;
+    if (!await ZAP.utils.confirm('Видалити це запрошення? Цю дію не можна скасувати.')) return;
     try {
       var path = type === 'group' ? 'group-invites/' : 'invites/';
       await ZAP.dbRef.ref(path + invId).remove();
@@ -886,13 +887,13 @@
     for (let i = 0; i <= 4; i++) {
       const y = padT + (chartH / 4) * i;
       ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
-      ctx.fillStyle = '#9a8e82'; ctx.font = '10px DM Sans';
+      ctx.fillStyle = css('--muted') || '#6b6058'; ctx.font = '10px DM Sans';
       ctx.textAlign = 'right';
       ctx.fillText(Math.round(max - (max / 4) * i), padL - 6, y + 4);
     }
 
     // Labels
-    ctx.fillStyle = '#9a8e82'; ctx.font = '9px DM Sans'; ctx.textAlign = 'center';
+    ctx.fillStyle = css('--muted') || '#6b6058'; ctx.font = '9px DM Sans'; ctx.textAlign = 'center';
     const step = chartW / (days.length - 1);
     labels.forEach((l, i) => {
       if (i % 2 === 0) ctx.fillText(l, padL + i * step, H - 8);
@@ -941,10 +942,10 @@
     ctx.scale(2, 2);
 
     const roles = {
-      user: { label: 'Користувачі', color: '#9a8e82', count: 0 },
-      moderator: { label: 'Модератори', color: '#c9922a', count: 0 },
-      'tech-admin': { label: 'Тех-адміни', color: '#3b82f6', count: 0 },
-      founder: { label: 'Засновники', color: '#7c3aed', count: 0 },
+      user: { label: 'Користувачі', color: css('--muted') || '#6b6058', count: 0 },
+      moderator: { label: 'Модератори', color: css('--gold') || '#c9922a', count: 0 },
+      'tech-admin': { label: 'Тех-адміни', color: css('--blue') || '#2563eb', count: 0 },
+      founder: { label: 'Засновники', color: css('--purple') || '#7c3aed', count: 0 },
     };
     users.forEach(u => { if (roles[u.role]) roles[u.role].count++; });
 
@@ -977,7 +978,7 @@
     // Center text
     ctx.fillStyle = '#18120a'; ctx.font = 'bold 20px DM Sans'; ctx.textAlign = 'center';
     ctx.fillText(total, cx, cy + 4);
-    ctx.fillStyle = '#9a8e82'; ctx.font = '10px DM Sans';
+    ctx.fillStyle = css('--muted') || '#6b6058'; ctx.font = '10px DM Sans';
     ctx.fillText('всього', cx, cy + 18);
 
     // Legend
@@ -988,7 +989,7 @@
       const x = legendX + i * (W / entries.length);
       ctx.fillStyle = r.color;
       ctx.fillRect(x, ly, 10, 10);
-      ctx.fillStyle = '#9a8e82'; ctx.font = '9px DM Sans';
+      ctx.fillStyle = css('--muted') || '#6b6058'; ctx.font = '9px DM Sans';
       ctx.fillText(`${r.label} (${r.count})`, x + 14, ly + 9);
     });
   }

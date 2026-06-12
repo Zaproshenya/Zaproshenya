@@ -183,7 +183,7 @@
           <div style="display:flex;gap:8px;align-items:center">
             ${badge(inv.status)}
             <button onclick="ZAP.pages.home.closeModal()"
-              style="background:none;border:none;font-size:1.3rem;color:var(--muted);line-height:1">${icon('x', 20)}</button>
+              class="modal-close">${icon('x', 20)}</button>
           </div>
         </div>
 
