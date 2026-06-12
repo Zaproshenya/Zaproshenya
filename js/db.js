@@ -277,6 +277,7 @@
         if (pf.avatar) f.avatar = pf.avatar;
         if (pf.name) f.name = pf.name;
         if (pf.uniqueId) f.uniqueId = pf.uniqueId;
+        if (pf.lastSeen) f.lastSeen = pf.lastSeen;
       }
     }
     return list;

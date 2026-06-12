@@ -83,6 +83,10 @@
     return renderFriendsList();
   }
 
+  function isOnline(f) {
+    return f.lastSeen && (Date.now() - f.lastSeen < 2 * 60 * 1000);
+  }
+
   function renderFriendsList() {
     const { icon } = ZAP.utils;
     if (friends.length === 0) {
@@ -94,25 +98,56 @@
       </div>`;
     }
 
-    return friends.map((f, i) => {
-    const { esc, avatarHTML, icon } = ZAP.utils;
+    return `<div class="friend-list">
+    ${friends.map((f, i) => {
+      const { esc, avatarHTML, icon } = ZAP.utils;
+      const online = isOnline(f);
+      const statusText = online ? 'В мережі' : (f.lastSeen ? ZAP.utils.timeAgo(f.lastSeen) : '');
       return `
-      <div class="friend-card" style="animation-delay:${i * 40}ms">
+      <div class="friend-row" style="animation-delay:${i * 40}ms" data-uid="${f.uid}">
         ${avatarHTML(f)}
-        <div class="friend-info">
-          <div class="friend-name">${esc(f.name)}</div>
+        <div class="friend-row-info">
+          <div class="friend-row-name">${esc(f.name)}</div>
+          ${statusText ? `<div class="friend-row-status${online ? ' online' : ''}">${online ? '● ' : ''}${statusText}</div>` : ''}
         </div>
-        <div class="friend-actions">
-          <button class="btn-icon" title="Профіль"
-            onclick="ZAP.router.go('user-profile', {uid:'${f.uid}'})">${icon('user', 14)}</button>
-          <button class="btn-icon" title="Запросити"
-            onclick="ZAP.router.go('create')">${icon('paper-plane-tilt', 14)}</button>
-          <button class="btn-icon" title="Видалити з друзів" style="color:var(--red)"
-            onclick="ZAP.pages.friends.removeFriend('${f.uid}','${esc(f.name)}')">${icon('x', 14)}</button>
-        </div>
+        <button class="friend-menu-btn" onclick="ZAP.pages.friends.toggleMenu(event, '${f.uid}')" title="Дії">${icon('dots-three-vertical', 20)}</button>
       </div>`;
-    }).join('');
+    }).join('')}
+    </div>`;
   }
+
+  let openMenuUid = null;
+  function toggleMenu(e, uid) {
+    e.stopPropagation();
+    closeMenu();
+    const row = e.target.closest('.friend-row');
+    if (!row) return;
+    const f = friends.find(x => x.uid === uid);
+    if (!f) return;
+    const menu = document.createElement('div');
+    menu.className = 'friend-menu';
+    menu.innerHTML = `
+      <button class="friend-menu-item" onclick="ZAP.pages.friends.goProfile('${uid}')">
+        ${ZAP.utils.icon('user', 16)} Профіль
+      </button>
+      <button class="friend-menu-item" onclick="ZAP.pages.friends.goInvite()">
+        ${ZAP.utils.icon('paper-plane-tilt', 16)} Запросити
+      </button>
+      <button class="friend-menu-item danger" onclick="ZAP.pages.friends.removeFriend('${uid}','${ZAP.utils.esc(f.name)}')">
+        ${ZAP.utils.icon('x', 16)} Видалити з друзів
+      </button>
+    `;
+    row.appendChild(menu);
+    openMenuUid = uid;
+    setTimeout(() => document.addEventListener('click', closeMenu, { once: true }), 10);
+  }
+  function closeMenu() {
+    const m = document.querySelector('.friend-menu');
+    if (m) m.remove();
+    openMenuUid = null;
+  }
+  function goProfile(uid) { closeMenu(); ZAP.router.go('user-profile', { uid }); }
+  function goInvite() { closeMenu(); ZAP.router.go('create'); }
 
   function renderRequests() {
     const { icon } = ZAP.utils;
@@ -295,6 +330,6 @@
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.friends = {
     _loaded: false,
-    render, load, setTab, search, acceptReq, declineReq, removeFriend,
+    render, load, setTab, search, acceptReq, declineReq, removeFriend, toggleMenu, goProfile, goInvite,
   };
 })();
