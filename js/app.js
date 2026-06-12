@@ -88,10 +88,6 @@
       return;
     }
 
-    // Update page tracking AFTER authReady check
-    lastPage = route.page;
-    lastParamsStr = JSON.stringify(route.params);
-
     // ── Auth required pages ──
     if (!user && ZAP.router.isAuthRequired(route.page)) {
       app.innerHTML = ZAP.pages.login.render();
@@ -190,6 +186,8 @@
         await ZAP.pages.userProfile.load(route.params.uid);
       }
       app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.pages.userProfile.render() + '</div>' + renderFooter(route.page) + (user ? renderBottomNav(route.page) : '');
+      lastPage = route.page;
+      lastParamsStr = JSON.stringify(route.params);
       return;
     }
 
@@ -202,33 +200,33 @@
           ZAP.pages.home.startListening();
           ZAP.pages.home._listening = true;
         }
-        if (isPageChange) {
+        if (isPageChange || !ZAP.pages.home._loaded) {
           app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.utils.spinner() + '</div>';
-          await ZAP.pages.home.load();
+          try { await ZAP.pages.home.load(); } catch (e) { console.error('Home load error:', e); }
         }
         pageContent = ZAP.pages.home.render();
         break;
 
       case 'create':
-        if (isPageChange) {
+        if (isPageChange || !ZAP.pages.create._loaded) {
           app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.utils.spinner() + '</div>';
-          await ZAP.pages.create.load();
+          try { await ZAP.pages.create.load(); } catch (e) { console.error('Create load error:', e); }
         }
         pageContent = ZAP.pages.create.render();
         break;
 
       case 'profile':
-        if (isPageChange) {
+        if (isPageChange || !ZAP.pages.profile._loaded) {
           app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.utils.spinner() + '</div>';
-          await ZAP.pages.profile.load();
+          try { await ZAP.pages.profile.load(); } catch (e) { console.error('Profile load error:', e); }
         }
         pageContent = ZAP.pages.profile.render();
         break;
 
       case 'friends':
-        if (isPageChange) {
+        if (isPageChange || !ZAP.pages.friends._loaded) {
           app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.utils.spinner() + '</div>';
-          await ZAP.pages.friends.load();
+          try { await ZAP.pages.friends.load(); } catch (e) { console.error('Friends load error:', e); }
         }
         pageContent = ZAP.pages.friends.render();
         break;
@@ -247,6 +245,9 @@
       ${renderFooter(route.page)}
       ${user ? renderBottomNav(route.page) : ''}
     `;
+
+    lastPage = route.page;
+    lastParamsStr = JSON.stringify(route.params);
 
     // Dynamic admin UI injection (not visible to regular users)
     if (user && (ZAP.auth.isAdmin() || ZAP.auth.isModerator())) {

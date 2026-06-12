@@ -43,6 +43,7 @@
     }
 
     loaded = true;
+    ZAP.pages.home._loaded = true;
   }
 
   function render() {
@@ -312,6 +313,7 @@
 
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.home = {
+    _loaded: false,
     render, load, setTab, setFilter, openModal, closeModal, deleteInv, startListening,
   };
 })();

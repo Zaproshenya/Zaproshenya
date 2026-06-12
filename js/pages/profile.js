@@ -34,6 +34,7 @@
     } catch (e) {
       console.warn('Profile load stats:', e);
     }
+    ZAP.pages.profile._loaded = true;
   }
 
   function render() {
@@ -378,6 +379,7 @@
 
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.profile = {
+    _loaded: false,
     render, load, startEdit, cancelEdit,
     saveName, saveLogin, savePassword,
     uploadAvatar, confirmDelete, doDelete, doLogout,

@@ -36,6 +36,7 @@
     );
 
     loaded = true;
+    ZAP.pages.friends._loaded = true;
   }
 
   function render() {
@@ -293,6 +294,7 @@
 
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.friends = {
+    _loaded: false,
     render, load, setTab, search, acceptReq, declineReq, removeFriend,
   };
 })();

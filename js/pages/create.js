@@ -26,6 +26,7 @@
     if (user) {
       friends = await ZAP.db.getFriends(user.uid);
     }
+    ZAP.pages.create._loaded = true;
   }
 
   function render() {
@@ -416,6 +417,7 @@
 
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.create = {
+    _loaded: false,
     render, load, setMode, togglePublic, toggleFriend, chk, submit, reset,
     toggleRequireAuth, saveFormState, filterFriends, onMsgInput,
   };
