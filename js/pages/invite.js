@@ -177,17 +177,17 @@
 
           ${answered ? renderResult(answerStatus) : renderButtons(invData.id)}
 
-          <div style="display:flex;justify-content:center;gap:16px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
-            ${!answered ? `
-              <button onclick="ZAP.pages.invite.showReport('${invData.id}')"
-                style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline">
-                ${icon('warning', 12)} Поскаржитися
-              </button>
-            ` : ''}
+          <div style="display:flex;justify-content:center;gap:16px;margin-top:20px;padding-top:14px;border-top:1px solid var(--border)">
             ${ZAP.auth.getUser() ? `
               <button onclick="ZAP.router.go('home')"
                 style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline">
                 ← Меню
+              </button>
+            ` : ''}
+            ${!answered ? `
+              <button onclick="ZAP.pages.invite.showReport('${invData.id}')"
+                style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline">
+                ${icon('warning', 12)} Поскаржитися
               </button>
             ` : ''}
           </div>
