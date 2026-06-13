@@ -204,10 +204,10 @@
     return `
     <div class="answer-wrap" id="answer-btns-${invId}">
       <button class="btn-yes" onclick="ZAP.pages.invite.answer('${invId}','accepted')">
-        Так, я приду! ${icon('check', 14)}
+        ${icon('check', 16)} Так, я приду!
       </button>
       <button class="btn-reschedule" onclick="ZAP.pages.invite.toggleReschedule('${invId}')">
-        ${icon('calendar-blank', 14)} Перенести зустріч
+        ${icon('calendar-blank', 16)} Перенести зустріч
       </button>
       <div id="reschedule-block-${invId}" style="display:${showRescheduleForm ? 'block' : 'none'}">
         <div class="reschedule-form">
@@ -222,7 +222,7 @@
         </div>
       </div>
       <button class="btn-no" onclick="ZAP.pages.invite.answer('${invId}','declined')">
-        Ні, не зможу
+        ${icon('x', 16)} Ні, не зможу
       </button>
     </div>`;
   }

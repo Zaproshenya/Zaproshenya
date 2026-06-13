@@ -68,7 +68,7 @@
 }
 .invite-envelope {
   margin: auto;
-  max-width: 360px; width: 100%;
+  max-width: 400px; width: 100%;
   background: var(--card);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
