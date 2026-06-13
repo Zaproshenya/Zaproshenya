@@ -177,7 +177,7 @@
 
           ${answered ? renderResult(answerStatus) : renderButtons(invData.id)}
 
-          <div style="display:flex;justify-content:center;gap:16px;margin-top:28px;padding-top:16px;border-top:1px solid var(--border)">
+          <div style="display:flex;justify-content:center;gap:16px;margin-top:28px;padding:16px 0 20px;border-top:1px solid var(--border)">
             ${ZAP.auth.getUser() ? `
               <button onclick="ZAP.router.go('home')"
                 style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline">
