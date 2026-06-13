@@ -101,7 +101,7 @@
   font-size: 1.6rem; color: #fff; font-weight: 400;
 }
 .envelope-body {
-  padding: 12px 16px;
+  padding: 12px 16px 4px;
 }
 .answer-wrap { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
 
