@@ -311,7 +311,9 @@
     } catch (e) {
       setSavingState(false);
       let msg = e.message || 'Помилка';
-      if (e.code === 'auth/wrong-password') msg = 'Невірний поточний пароль';
+      if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') msg = 'Невірний поточний пароль';
+      else if (e.code === 'auth/too-many-requests') msg = 'Забагато спроб. Спробуйте пізніше';
+      else if (e.code === 'auth/network-request-failed') msg = 'Помилка мережі. Перевірте з\'єднання';
       setTimeout(() => showEditError(msg), 50);
     }
   }
@@ -366,7 +368,9 @@
     } catch (e) {
       const el = document.getElementById('delete-error');
       let msg = e.message || 'Помилка';
-      if (e.code === 'auth/wrong-password') msg = 'Невірний пароль';
+      if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') msg = 'Невірний пароль';
+      else if (e.code === 'auth/too-many-requests') msg = 'Забагато спроб. Спробуйте пізніше';
+      else if (e.code === 'auth/network-request-failed') msg = 'Помилка мережі. Перевірте з\'єднання';
       if (el) { el.textContent = msg; el.classList.add('show'); }
     }
   }
