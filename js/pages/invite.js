@@ -627,7 +627,7 @@
     const env = document.querySelector('.invite-envelope');
     if (!bg || !env) return;
     const rect = env.getBoundingClientRect();
-    const margin = 8;
+    const margin = 0;
     const fits = rect.top >= margin && rect.bottom <= window.innerHeight - margin;
     bg.style.overflowY = fits ? '' : 'auto';
   }
