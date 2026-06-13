@@ -187,9 +187,10 @@
           ` : ''}
           
           ${ZAP.auth.getUser() ? `
-            <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
-              <button class="btn btn-dark btn-full" onclick="ZAP.router.go('home')">
-                Перейти до головного меню
+            <div style="text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+              <button onclick="ZAP.router.go('home')"
+                style="background:none;border:none;color:var(--muted);font-size:.85rem;cursor:pointer;text-decoration:underline">
+                ← Повернутися до головного меню
               </button>
             </div>
           ` : ''}
@@ -338,9 +339,10 @@
           ${answered ? renderResult(answerStatus) : renderGroupJoin()}
           
           ${ZAP.auth.getUser() ? `
-            <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
-              <button class="btn btn-dark btn-full" onclick="ZAP.router.go('home')">
-                Перейти до головного меню
+            <div style="text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+              <button onclick="ZAP.router.go('home')"
+                style="background:none;border:none;color:var(--muted);font-size:.85rem;cursor:pointer;text-decoration:underline">
+                ← Повернутися до головного меню
               </button>
             </div>
           ` : ''}
