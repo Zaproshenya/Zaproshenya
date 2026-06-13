@@ -180,14 +180,14 @@
           <div style="display:flex;justify-content:center;gap:16px;margin-top:28px;padding:18px 0;border-top:1px solid var(--border)">
             ${ZAP.auth.getUser() ? `
               <button onclick="ZAP.router.go('home')"
-                style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline;font-weight:400">
+                style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline">
                 ← Меню
               </button>
             ` : ''}
             ${!answered ? `
               <button onclick="ZAP.pages.invite.showReport('${invData.id}')"
-                style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline;font-weight:400">
-                ${icon('warning', 10)} Поскаржитися
+                style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline">
+                ${icon('warning', 12)} Поскаржитися
               </button>
             ` : ''}
           </div>
@@ -621,11 +621,35 @@
     ZAP.utils.toast('Скаргу надіслано. Дякуємо!', 'success');
   }
 
+  let _resizeHandler = null;
+  function checkScroll() {
+    const bg = document.querySelector('.invite-bg');
+    const env = document.querySelector('.invite-envelope');
+    if (!bg || !env) return;
+    if (env.scrollHeight > window.innerHeight) {
+      bg.style.overflowY = 'auto';
+    } else {
+      bg.style.overflowY = '';
+    }
+  }
+  function initScrollCheck() {
+    checkScroll();
+    _resizeHandler = () => checkScroll();
+    window.addEventListener('resize', _resizeHandler);
+  }
+  function destroyScrollCheck() {
+    if (_resizeHandler) {
+      window.removeEventListener('resize', _resizeHandler);
+      _resizeHandler = null;
+    }
+  }
+
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.invite = {
     render, loadPersonal, loadGroup,
     answer, toggleReschedule, sendReschedule,
     joinGroup, declineGroup, setGuestName,
     showReport, submitReport,
+    initScrollCheck, destroyScrollCheck,
   };
 })();

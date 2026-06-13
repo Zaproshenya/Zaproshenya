@@ -56,12 +56,14 @@
     // ── Invite pages — accessible without auth ──
     if (route.page === 'invite') {
       if (isPageChange) {
+        ZAP.pages.invite.destroyScrollCheck();
         app.innerHTML = ZAP.utils.spinner();
         await ZAP.pages.invite.loadPersonal(route.params.inviteId, route.params.b64);
       }
       app.innerHTML = ZAP.pages.invite.render();
       requestAnimationFrame(() => {
         document.querySelector('.invite-envelope')?.scrollIntoView({ block: 'center' });
+        ZAP.pages.invite.initScrollCheck();
       });
       lastPage = route.page;
       lastParamsStr = JSON.stringify(route.params);
@@ -70,12 +72,14 @@
 
     if (route.page === 'group-invite') {
       if (isPageChange) {
+        ZAP.pages.invite.destroyScrollCheck();
         app.innerHTML = ZAP.utils.spinner();
         await ZAP.pages.invite.loadGroup(route.params.inviteId);
       }
       app.innerHTML = ZAP.pages.invite.render();
       requestAnimationFrame(() => {
         document.querySelector('.invite-envelope')?.scrollIntoView({ block: 'center' });
+        ZAP.pages.invite.initScrollCheck();
       });
       lastPage = route.page;
       lastParamsStr = JSON.stringify(route.params);
