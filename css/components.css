@@ -19,14 +19,14 @@ button { cursor: pointer; font-family: var(--font-body); transition: all .2s var
 
 .btn-yes {
   background: var(--green); color: #fff; border-radius: var(--radius-card);
-  padding: 10px; font-size: 1rem; width: 100%; border: none;
+  padding: 14px; font-size: 1rem; width: 100%; border: none;
   display: flex; align-items: center; justify-content: center; gap: 6px;
 }
 .btn-yes:hover { background: #236040; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(45,122,79,.3); }
 
 .btn-no {
   background: none; color: var(--red); border: 1.5px solid rgba(192,57,43,.3);
-  border-radius: var(--radius-card); padding: 9px; font-size: .95rem; width: 100%;
+  border-radius: var(--radius-card); padding: 12px; font-size: .95rem; width: 100%;
   display: flex; align-items: center; justify-content: center; gap: 6px;
 }
 .btn-no:hover { background: var(--red-bg); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(192,57,43,.15); }
@@ -34,7 +34,7 @@ button { cursor: pointer; font-family: var(--font-body); transition: all .2s var
 .btn-reschedule {
   background: rgba(var(--gold-rgb),.1); color: var(--gold);
   border: 1.5px solid rgba(var(--gold-rgb),.35); border-radius: var(--radius-card);
-  padding: 9px; font-size: .95rem; width: 100%;
+  padding: 12px; font-size: .95rem; width: 100%;
   display: flex; align-items: center; justify-content: center; gap: 6px;
 }
 .btn-reschedule:hover { background: rgba(var(--gold-rgb),.18); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(var(--gold-rgb),.2); }
