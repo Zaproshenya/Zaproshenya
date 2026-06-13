@@ -177,23 +177,20 @@
 
           ${answered ? renderResult(answerStatus) : renderButtons(invData.id)}
 
-          ${!answered ? `
-            <div style="text-align:center;margin-top:18px">
+          <div style="display:flex;justify-content:center;gap:16px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+            ${!answered ? `
               <button onclick="ZAP.pages.invite.showReport('${invData.id}')"
                 style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline">
-                ${icon('warning', 14)} Поскаржитися
+                ${icon('warning', 12)} Поскаржитися
               </button>
-            </div>
-          ` : ''}
-          
-          ${ZAP.auth.getUser() ? `
-            <div style="text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+            ` : ''}
+            ${ZAP.auth.getUser() ? `
               <button onclick="ZAP.router.go('home')"
-                style="background:none;border:none;color:var(--muted);font-size:.85rem;cursor:pointer;text-decoration:underline">
-                ← Повернутися до головного меню
+                style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline">
+                ← Меню
               </button>
-            </div>
-          ` : ''}
+            ` : ''}
+          </div>
         </div>
       </div>
     </div>`;
@@ -339,10 +336,10 @@
           ${answered ? renderResult(answerStatus) : renderGroupJoin()}
           
           ${ZAP.auth.getUser() ? `
-            <div style="text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+            <div style="text-align:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
               <button onclick="ZAP.router.go('home')"
-                style="background:none;border:none;color:var(--muted);font-size:.85rem;cursor:pointer;text-decoration:underline">
-                ← Повернутися до головного меню
+                style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline">
+                ← Меню
               </button>
             </div>
           ` : ''}
