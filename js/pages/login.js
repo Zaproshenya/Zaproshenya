@@ -173,9 +173,15 @@
       loading = false;
       ZAP.render();
       setTimeout(() => {
-        let msg = e.message || 'Помилка реєстрації';
+        let msg = 'Помилка реєстрації';
         if (e.code === 'auth/email-already-in-use') {
           msg = 'Цей логін вже зайнятий';
+        } else if (e.code === 'auth/weak-password') {
+          msg = 'Пароль занадто простий. Використайте мінімум 6 символів';
+        } else if (e.code === 'auth/too-many-requests') {
+          msg = 'Забагато спроб. Спробуйте пізніше';
+        } else if (e.code === 'auth/network-request-failed') {
+          msg = 'Помилка мережі. Перевірте з\'єднання';
         }
         showError('reg-error', msg);
       }, 50);

@@ -130,7 +130,7 @@
       }
       ZAP.render();
     } catch (e) {
-      ZAP.utils.toast(e.message || 'Помилка', 'error');
+      ZAP.utils.toast('Не вдалося надіслати запит. Спробуйте пізніше', 'error');
     }
   }
 
@@ -144,7 +144,7 @@
       ZAP.utils.toast(`${userData.name} тепер ваш друг!`, 'success');
       ZAP.render();
     } catch (e) {
-      ZAP.utils.toast(e.message || 'Помилка', 'error');
+      ZAP.utils.toast('Не вдалося прийняти запит. Спробуйте пізніше', 'error');
     }
   }
 

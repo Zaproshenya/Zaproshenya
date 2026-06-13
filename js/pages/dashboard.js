@@ -835,7 +835,7 @@
       ZAP.utils.toast('Запрошення видалено', 'success');
       ZAP.render();
     } catch (e) {
-      ZAP.utils.toast('Помилка: ' + e.message, 'error');
+      ZAP.utils.toast('Не вдалося видалити. Спробуйте пізніше', 'error');
     }
   }
 
@@ -1135,7 +1135,7 @@
       if (u) u.role = newRole;
       ZAP.utils.toast('Роль змінено', 'success');
     } catch (e) {
-      ZAP.utils.toast('Помилка: ' + e.message, 'error');
+      ZAP.utils.toast('Не вдалося змінити роль. Спробуйте пізніше', 'error');
     }
   }
 
@@ -1178,7 +1178,7 @@
       ZAP.utils.toast(ban ? 'Користувача забанено' : 'Користувача розбанено', ban ? 'error' : 'success');
       ZAP.render();
     } catch (e) {
-      ZAP.utils.toast('Помилка: ' + e.message, 'error');
+      ZAP.utils.toast('Не вдалося виконати операцію. Спробуйте пізніше', 'error');
     }
   }
 
@@ -1190,7 +1190,7 @@
       ZAP.utils.toast(action === 'resolved' ? 'Скаргу вирішено' : 'Скаргу відхилено', 'success');
       ZAP.render();
     } catch (e) {
-      ZAP.utils.toast('Помилка: ' + e.message, 'error');
+      ZAP.utils.toast('Не вдалося обробити скаргу. Спробуйте пізніше', 'error');
     }
   }
 
@@ -1209,7 +1209,7 @@
       ZAP.utils.toast('Запрошення видалено, скаргу вирішено', 'success');
       ZAP.render();
     } catch (e) {
-      ZAP.utils.toast('Помилка: ' + e.message, 'error');
+      ZAP.utils.toast('Не вдалося видалити запрошення. Спробуйте пізніше', 'error');
     }
   }
 

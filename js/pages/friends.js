@@ -298,7 +298,7 @@
       ZAP.utils.toast(`Друга додано`, 'success');
       ZAP.render();
     } catch (e) {
-      ZAP.utils.toast(e.message || 'Помилка', 'error');
+      ZAP.utils.toast('Не вдалося прийняти запит. Спробуйте пізніше', 'error');
     }
   }
 

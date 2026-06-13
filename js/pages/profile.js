@@ -274,7 +274,11 @@
       ZAP.render();
     } catch (e) {
       setSavingState(false);
-      setTimeout(() => showEditError(e.message || 'Помилка'), 50);
+      let msg = 'Помилка збереження';
+      if (e.code === 'auth/too-many-requests') msg = 'Забагато спроб. Спробуйте пізніше';
+      else if (e.code === 'auth/network-request-failed') msg = 'Помилка мережі. Перевірте з\'єднання';
+      else if (e.message) msg = e.message;
+      setTimeout(() => showEditError(msg), 50);
     }
   }
 
@@ -290,7 +294,12 @@
       ZAP.render();
     } catch (e) {
       setSavingState(false);
-      setTimeout(() => showEditError(e.message || 'Помилка'), 50);
+      let msg = 'Помилка збереження';
+      if (e.code === 'auth/requires-recent-login') msg = 'Для зміни логіну увійдіть знову';
+      else if (e.code === 'auth/too-many-requests') msg = 'Забагато спроб. Спробуйте пізніше';
+      else if (e.code === 'auth/network-request-failed') msg = 'Помилка мережі. Перевірте з\'єднання';
+      else if (e.message) msg = e.message;
+      setTimeout(() => showEditError(msg), 50);
     }
   }
 
@@ -326,7 +335,13 @@
       ZAP.utils.toast(`Аватар оновлено`, 'success');
       ZAP.render();
     } catch (e) {
-      ZAP.utils.toast(e.message || 'Помилка завантаження', 'error');
+      let msg = 'Помилка завантаження';
+      if (e.code === 'storage/unauthorized') msg = 'Немає доступу для завантаження';
+      else if (e.code === 'storage/canceled') msg = 'Завантаження скасовано';
+      else if (e.code === 'storage/quota-exceeded') msg = 'Перевищено ліміт сховища';
+      else if (e.code === 'storage/network-request-failed') msg = 'Помилка мережі. Перевірте з\'єднання';
+      else if (e.message) msg = e.message;
+      ZAP.utils.toast(msg, 'error');
     }
   }
 
