@@ -82,6 +82,7 @@
   background: linear-gradient(135deg, #1a120a 0%, #2d2010 100%);
   padding: 12px 18px 20px;
   text-align: center; position: relative;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 .envelope-top::after {
   content: ''; position: absolute; bottom: -1px; left: 0; right: 0;
