@@ -626,8 +626,8 @@
     const bg = document.querySelector('.invite-bg');
     const env = document.querySelector('.invite-envelope');
     if (!bg || !env) return;
-    const fits = env.offsetHeight <= window.innerHeight;
-    bg.style.overflowY = fits ? '' : 'auto';
+    const overflow = env.offsetHeight - window.innerHeight;
+    bg.style.overflowY = overflow > 5 ? 'auto' : '';
   }
   function initScrollCheck() {
     checkScroll();
