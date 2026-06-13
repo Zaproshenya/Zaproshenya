@@ -1,0 +1,288 @@
+/* ═══════════════════════════════════════════════════════
+   Utils — Common helpers
+   ═══════════════════════════════════════════════════════ */
+
+(function () {
+  // ── HTML escape ──
+  function esc(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // ── Phosphor icon helper ──
+  function icon(name, size, weight) {
+    const sz = size || 20;
+    const w = weight || 'duotone';
+    return `<i class="ph ph-${name}" style="font-size:${sz}px;vertical-align:middle;line-height:1"></i>`;
+  }
+
+  // ── Generate short ID ──
+  function genId() {
+    return Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-5);
+  }
+
+  // ── Generate unique user ID (ZAP-XXXXXX) ──
+  function genUserId() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let id = '';
+    for (let i = 0; i < 6; i++) id += chars[Math.floor(Math.random() * chars.length)];
+    return 'ZAP-' + id;
+  }
+
+  // ── Copy to clipboard ──
+  function copyText(text, btn) {
+    const flash = () => {
+      if (!btn) return;
+      btn.classList.add('copy-ok');
+      const t = btn.textContent;
+      btn.textContent = '✓ Скопійовано!';
+      setTimeout(() => { btn.classList.remove('copy-ok'); btn.textContent = t; }, 2400);
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(flash).catch(() => { legacyCopy(text); flash(); });
+    } else {
+      legacyCopy(text); flash();
+    }
+  }
+
+  function legacyCopy(text) {
+    const el = Object.assign(document.createElement('textarea'), { value: text });
+    el.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(el); el.focus(); el.select();
+    try { document.execCommand('copy'); } catch { }
+    document.body.removeChild(el);
+  }
+
+  // ── Badge HTML ──
+  function badge(status) {
+    const MAP = {
+      pending: ['badge-pending', 'clock', 'Очікує'],
+      accepted: ['badge-accepted', 'check-circle', 'Прийнято'],
+      declined: ['badge-declined', 'x-circle', 'Відхилено'],
+      reschedule: ['badge-reschedule', 'arrows-clockwise', 'Перенесення'],
+    };
+    const [cls, iconName, label] = MAP[status] || MAP.pending;
+    return `<span class="badge ${cls}">${icon(iconName,14)} ${label}</span>`;
+  }
+
+  // ── Role badge ──
+  function roleBadge(role) {
+    const MAP = {
+      founder: ['badge-role badge-founder', 'crown', 'Засновник'],
+      'tech-admin': ['badge-role badge-tech-admin', 'gear', 'Тех-адмін'],
+      moderator: ['badge-role badge-moderator', 'shield-check', 'Модератор'],
+      user: ['badge-role badge-user', '', 'Користувач'],
+    };
+    const [cls, iconName, label] = MAP[role] || MAP.user;
+    return `<span class="badge ${cls}">${iconName ? icon(iconName,14) + ' ' : ''}${label}</span>`;
+  }
+
+  // ── Divider line ──
+  function divLine() {
+    return '<div class="div-line"><i>✦</i></div>';
+  }
+
+  // ── Confetti ──
+  function boom() {
+    const colors = ['#c9922a', '#2d7a4f', '#e05c5c', '#5a8fd4', '#e8b84b', '#6db87a'];
+    for (let i = 0; i < 60; i++) {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.cssText = `
+        left:${Math.random() * 100}vw;top:-10px;
+        background:${colors[Math.floor(Math.random() * colors.length)]};
+        width:${6 + Math.random() * 8}px;height:${6 + Math.random() * 8}px;
+        border-radius:${Math.random() > .5 ? '50%' : '2px'};
+        animation-duration:${1.5 + Math.random() * 2}s;
+        animation-delay:${Math.random() * .6}s;
+      `;
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }
+  }
+
+  // ── Toast notifications ──
+  function toast(message, type = 'info', duration = 3500) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const el = document.createElement('div');
+    el.className = `toast toast-${type}`;
+    const icons = { success: icon('check-circle',18), error: icon('x-circle',18), info: icon('info',18) };
+    el.innerHTML = `<span>${icons[type] || icon('info',18)}</span><span>${esc(message)}</span>`;
+    container.appendChild(el);
+    setTimeout(() => {
+      el.classList.add('removing');
+      setTimeout(() => el.remove(), 300);
+    }, duration);
+  }
+
+  // ── Date formatting ──
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
+    } catch { return dateStr; }
+  }
+
+  function timeAgo(timestamp) {
+    if (!timestamp) return '';
+    const diff = Date.now() - timestamp;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'щойно';
+    if (mins < 60) return `${mins} хв тому`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs} год тому`;
+    const days = Math.floor(hrs / 24);
+    if (days < 7) return `${days} дн тому`;
+    return formatDate(new Date(timestamp).toISOString().split('T')[0]);
+  }
+
+  // ── Avatar HTML ──
+  function avatarHTML(user, size = '') {
+    const cls = size ? `avatar avatar-${size}` : 'avatar';
+    const src = user?.avatar || user?.avatarBase64 || null;
+    if (src) {
+      return `<div class="${cls}"><img src="${esc(src)}" alt="" aria-hidden="true" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/></div>`;
+    }
+    const initials = (user?.name || '?').charAt(0).toUpperCase();
+    return `<div class="${cls}">${initials}</div>`;
+  }
+
+  // ── Spinner HTML ──
+  function spinner() {
+    return '<div class="page-loader"><div class="spinner"></div></div>';
+  }
+
+  // ── Invite types ──
+  const TYPES = [
+    { v: 'date', l: 'Побачення', e: '🌹' },
+    { v: 'walk', l: 'Прогулянка', e: '🍃' },
+    { v: 'birthday', l: 'День народження', e: '🎂' },
+    { v: 'party', l: 'Свято / Вечірка', e: '🥂' },
+    { v: 'cinema', l: 'Кіно', e: '🎬' },
+    { v: 'coffee', l: 'Кава', e: '☕' },
+    { v: 'travel', l: 'Подорож', e: '✈️' },
+    { v: 'other', l: 'Інше', e: '✨' },
+  ];
+  const TYPE_MAP = Object.fromEntries(TYPES.map(t => [t.v, t]));
+
+  // ── Invite link ──
+  function inviteLink(invId) {
+    return location.origin + '/i/' + invId;
+  }
+
+  // ── Custom confirm ──
+  function confirm(message) {
+    return new Promise(resolve => {
+      const overlay = document.createElement('div');
+      overlay.className = 'overlay';
+      overlay.onclick = e => { if (e.target === overlay) { overlay.remove(); resolve(false); } };
+      overlay.innerHTML = `
+        <div class="modal" onclick="event.stopPropagation()" style="text-align:center;max-width:380px">
+          <p style="font-size:1rem;margin-bottom:20px;line-height:1.5">${esc(message)}</p>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-full" id="cup-yes" style="background:var(--red);color:#fff;border:none">Так</button>
+            <button class="btn btn-outline btn-full" id="cup-no">Ні</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      overlay.querySelector('#cup-yes').onclick = () => { overlay.remove(); resolve(true); };
+      overlay.querySelector('#cup-no').onclick = () => { overlay.remove(); resolve(false); };
+    });
+  }
+
+  // ── Custom alert ──
+  function alert(message) {
+    return new Promise(resolve => {
+      const overlay = document.createElement('div');
+      overlay.className = 'overlay';
+      overlay.onclick = e => { if (e.target === overlay) { overlay.remove(); resolve(); } };
+      overlay.innerHTML = `
+        <div class="modal" onclick="event.stopPropagation()" style="text-align:center;max-width:380px">
+          <p style="font-size:1rem;margin-bottom:20px;line-height:1.5">${esc(message)}</p>
+          <button class="btn btn-dark btn-full" id="cup-ok">ОК</button>
+        </div>`;
+      document.body.appendChild(overlay);
+      overlay.querySelector('#cup-ok').onclick = () => { overlay.remove(); resolve(); };
+    });
+  }
+
+  // ── Custom prompt ──
+  function prompt(message, placeholder) {
+    return new Promise(resolve => {
+      const overlay = document.createElement('div');
+      overlay.className = 'overlay';
+      overlay.onclick = e => { if (e.target === overlay) { overlay.remove(); resolve(null); } };
+      overlay.innerHTML = `
+        <div class="modal" onclick="event.stopPropagation()" style="max-width:380px">
+          <p style="font-size:1rem;margin-bottom:16px;line-height:1.5">${esc(message)}</p>
+          <div class="form-group">
+            <input id="cup-input" placeholder="${esc(placeholder || '')}" aria-label="${esc(message)}" autofocus/>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:4px">
+            <button class="btn btn-dark btn-full" id="cup-ok">ОК</button>
+            <button class="btn btn-outline btn-full" id="cup-cancel">Скасувати</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      const input = overlay.querySelector('#cup-input');
+      input.focus();
+      input.onkeydown = e => { if (e.key === 'Enter') { overlay.remove(); resolve(input.value || ''); } };
+      overlay.querySelector('#cup-ok').onclick = () => { overlay.remove(); resolve(input.value || ''); };
+      overlay.querySelector('#cup-cancel').onclick = () => { overlay.remove(); resolve(null); };
+    });
+  }
+
+  // ── Text truncation with show more/less ──
+  let truncInit = false;
+
+  function truncate(text, maxLen) {
+    if (!text || text.length <= maxLen) return { html: esc(text || '') };
+    const id = 'trc-' + Math.random().toString(36).slice(2, 8);
+    return {
+      html: `<span class="truncated-text" data-trc="${id}">${esc(text)}</span>`,
+      id: id
+    };
+  }
+
+  function truncateBtn(id) {
+    return `<button class="toggle-more-btn" data-trc="${id}" type="button">
+      <span class="tm-btn-text">Показати більше</span>
+      <i class="ph ph-caret-down" style="font-size:14px"></i>
+    </button>`;
+  }
+
+  function truncateFull(text, maxLen) {
+    const t = truncate(text, maxLen);
+    return t.id ? t.html + '\n' + truncateBtn(t.id) : t.html;
+  }
+
+  function initTruncHandler() {
+    if (truncInit) return;
+    truncInit = true;
+    document.addEventListener('click', function (e) {
+      const btn = e.target.closest('.toggle-more-btn');
+      if (!btn) return;
+      const id = btn.dataset.trc;
+      if (!id) return;
+      const span = document.querySelector(`.truncated-text[data-trc="${id}"]`);
+      if (!span) return;
+      span.classList.toggle('expanded');
+      const expanded = span.classList.contains('expanded');
+      const textEl = btn.querySelector('.tm-btn-text');
+      if (textEl) textEl.textContent = expanded ? 'Приховати' : 'Показати більше';
+      const icon = btn.querySelector('i');
+      if (icon) icon.className = expanded ? 'ph ph-caret-up' : 'ph ph-caret-down';
+    });
+  }
+
+  // ── Expose ──
+  ZAP.utils = {
+    esc, icon, genId, genUserId, copyText, badge, roleBadge, divLine,
+    boom, toast, formatDate, timeAgo, avatarHTML, spinner,
+    TYPES, TYPE_MAP, inviteLink,
+    confirm, alert, prompt,
+    truncate, truncateBtn, truncateFull, initTruncHandler,
+  };
+})();
