@@ -3,4 +3,4 @@ Allow: /
 Disallow: /dashboard
 Disallow: /notifications
 
-Sitemap: https://zaproshenya.vercel.app/sitemap.xml
+Sitemap: https://zaproshenya.pages.dev/sitemap.xml

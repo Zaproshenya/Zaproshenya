@@ -1,49 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://zaproshenya.vercel.app/</loc>
+    <loc>https://zaproshenya.pages.dev/</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://zaproshenya.vercel.app/about</loc>
+    <loc>https://zaproshenya.pages.dev/about</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://zaproshenya.vercel.app/privacy</loc>
+    <loc>https://zaproshenya.pages.dev/privacy</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://zaproshenya.vercel.app/terms</loc>
+    <loc>https://zaproshenya.pages.dev/terms</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://zaproshenya.vercel.app/login</loc>
+    <loc>https://zaproshenya.pages.dev/login</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://zaproshenya.vercel.app/create</loc>
+    <loc>https://zaproshenya.pages.dev/create</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://zaproshenya.vercel.app/friends</loc>
+    <loc>https://zaproshenya.pages.dev/friends</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://zaproshenya.vercel.app/profile</loc>
+    <loc>https://zaproshenya.pages.dev/profile</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
