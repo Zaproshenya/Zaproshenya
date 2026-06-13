@@ -59,7 +59,7 @@
 .invite-bg {
   min-height: 100dvh;
   display: flex; flex-direction: column;
-  padding: 20px 16px;
+  padding: 16px 16px;
   overflow-y: auto;
   background:
     radial-gradient(ellipse at 20% 20%, rgba(201,146,42,.07) 0%, transparent 60%),
@@ -79,7 +79,7 @@
 }
 .envelope-top {
   background: linear-gradient(135deg, #1a120a 0%, #2d2010 100%);
-  padding: 20px 20px 28px;
+  padding: 16px 20px 24px;
   text-align: center; position: relative;
 }
 .envelope-top::after {
@@ -88,7 +88,7 @@
   clip-path: ellipse(55% 100% at 50% 100%);
 }
 .envelope-emoji {
-  font-size: 3rem; display: block; margin-bottom: 8px;
+  font-size: 2.5rem; display: block; margin-bottom: 6px;
   animation: heartbeat 2s ease-in-out infinite;
 }
 .envelope-type {
@@ -101,14 +101,14 @@
   font-size: 1.6rem; color: #fff; font-weight: 400;
 }
 .envelope-body {
-  padding: 18px 20px;
+  padding: 14px 18px;
 }
-.answer-wrap { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
+.answer-wrap { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; }
 
 /* ── Message block ── */
 .msg-block {
   background: var(--warm); border-radius: 12px;
-  padding: 12px 14px; margin-bottom: 16px;
+  padding: 10px 12px; margin-bottom: 12px;
   border-left: 4px solid var(--gold); position: relative;
   overflow-wrap: break-word; word-break: break-word;
 }
