@@ -335,12 +335,13 @@
       // If sending to friends directly
       if (selectedFriends.length > 0) {
         for (const fUid of selectedFriends) {
-          const friendInv = { ...inv, id: ZAP.utils.genId(), to: to || 'Друг' };
+          const friendInv = { ...inv, id: ZAP.utils.genId(), to: to || 'Друг', recipientUid: fUid };
           await ZAP.db.sendInviteToFriend(friendInv, fUid);
         }
         inv.sentToFriends = true;
         createdInv = inv;
       } else {
+        inv.recipientUid = null;
         await ZAP.db.createInvite(inv);
         createdInv = inv;
       }

@@ -70,6 +70,7 @@
         id: inv.id, to: inv.to, type: inv.type,
         date: inv.date, time: inv.time, status: 'pending',
         created: inv.created,
+        recipientUid: inv.recipientUid || null,
       });
     }
   }
