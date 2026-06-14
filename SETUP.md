@@ -25,19 +25,22 @@
       ".indexOn": ["createdAt"],
       "$uid": {
         ".read": "auth != null",
-        ".write": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'"
+        ".write": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'",
+        "role": {
+          ".write": "root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin'"
+        }
       }
     },
     "logins": {
       ".read": true,
       "$login": {
-        ".write": "auth != null && (!root.child('logins').child($login).exists() || root.child('logins').child($login).val() === auth.uid)"
+        ".write": "auth != null && (!root.child('logins').child($login).exists() || root.child('logins').child($login).val() === auth.uid) && data.val() === auth.uid"
       }
     },
     "ids": {
       ".read": true,
       "$id": {
-        ".write": "auth != null && (!root.child('ids').child($id).exists() || root.child('ids').child($id).val() === auth.uid)"
+        ".write": "auth != null && (!root.child('ids').child($id).exists() || root.child('ids').child($id).val() === auth.uid) && data.val() === auth.uid"
       }
     },
     "invites": {
