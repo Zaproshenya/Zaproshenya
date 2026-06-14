@@ -24,7 +24,7 @@
       ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')",
       ".indexOn": ["createdAt"],
       "$uid": {
-        ".read": true,
+        ".read": "auth != null",
         ".write": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'"
       }
     },
