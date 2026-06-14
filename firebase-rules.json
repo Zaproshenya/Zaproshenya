@@ -80,12 +80,7 @@
     "group-invites": {
       ".read": "auth != null",
       "$invId": {
-        ".write": "auth != null",
-        "members": {
-          "$memberUid": {
-            ".write": "auth != null"
-          }
-        }
+        ".write": "auth != null"
       }
     },
     "reports": {
