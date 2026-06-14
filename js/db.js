@@ -189,22 +189,16 @@
     const existing = await db().ref('friends/' + fromUid + '/' + toUid).get();
     if (existing.exists()) throw new Error('Вже у друзях');
 
-    // Check if request already sent
-    const req = await db().ref('friend-requests/' + toUid + '/' + fromUid).get();
-    if (req.exists()) throw new Error('Запит вже надіслано');
-
-    await db().ref('friend-requests/' + toUid + '/' + fromUid).set({
-      fromUid, fromName, sentAt: Date.now(),
-    });
-
-    // Check if they already sent request to us (auto-accept)
-    const reverse = await db().ref('friend-requests/' + fromUid + '/' + toUid).get();
-    if (reverse.exists()) {
-      await acceptFriendRequest(fromUid, toUid);
-      return 'auto-accepted';
+    // Check if request already sent (check own notifications)
+    const notifsSnap = await db().ref('notifications/' + fromUid)
+      .orderByChild('type').equalTo('friend-request').get();
+    if (notifsSnap.exists()) {
+      let alreadySent = false;
+      notifsSnap.forEach(c => { if (c.val().toUid === toUid) alreadySent = true; });
+      if (alreadySent) throw new Error('Запит вже надіслано');
     }
 
-    // Notification
+    // Send notification (no cross-user write)
     await ZAP.notifications.addNotification(toUid, {
       type: 'friend-request',
       title: 'Запит на дружбу',
@@ -221,26 +215,21 @@
     // Check if already friends (idempotent operation)
     const alreadyFriends = await db().ref('friends/' + myUid + '/' + fromUid).get();
     if (alreadyFriends.exists()) {
-      console.log('acceptFriendRequest: Already friends, skipping');
       return;
     }
     
     const myProfile = await getUserByUid(myUid);
     const theirProfile = await getUserByUid(fromUid);
 
-    // Add both ways
+    // Write ONLY to own friends list
     await db().ref('friends/' + myUid + '/' + fromUid).set({
       uid: fromUid, name: theirProfile?.name || '', addedAt: Date.now(),
     });
-    await db().ref('friends/' + fromUid + '/' + myUid).set({
-      uid: myUid, name: myProfile?.name || '', addedAt: Date.now(),
-    });
 
-    // Remove requests both ways
+    // Remove own friend-requests
     await db().ref('friend-requests/' + myUid + '/' + fromUid).remove();
-    await db().ref('friend-requests/' + fromUid + '/' + myUid).remove();
 
-    // Notification
+    // Notify the other user to add us
     await ZAP.notifications.addNotification(fromUid, {
       type: 'friend-accepted',
       title: '✓ Запит прийнято',
@@ -251,7 +240,7 @@
 
   async function declineFriendRequest(myUid, fromUid) {
     if (!db()) return;
-    // Check if request exists (idempotent operation)
+    // Remove only from own
     const req = await db().ref('friend-requests/' + myUid + '/' + fromUid).get();
     if (req.exists()) {
       await db().ref('friend-requests/' + myUid + '/' + fromUid).remove();
@@ -260,8 +249,16 @@
 
   async function removeFriend(myUid, friendUid) {
     if (!db()) return;
+    // Remove only from own list
     await db().ref('friends/' + myUid + '/' + friendUid).remove();
-    await db().ref('friends/' + friendUid + '/' + myUid).remove();
+    // Notify the other user
+    const myProfile = await getUserByUid(myUid);
+    await ZAP.notifications.addNotification(friendUid, {
+      type: 'friend-removed',
+      title: 'Друга видалено',
+      body: `${myProfile?.name || 'Хтось'} видалив вас з друзів`,
+      fromUid: myUid, fromName: myProfile?.name || '',
+    });
   }
 
   async function getFriends(uid) {

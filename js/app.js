@@ -352,6 +352,7 @@
     const iconMap = {
       'friend-request': icon('user-plus',24),
       'friend-accepted': icon('check-circle',24),
+      'friend-removed': icon('user-minus',24),
       'invite': icon('paper-plane-tilt',24),
       'group-invite': icon('users',24),
       'invite-response': icon('chat-circle-dots',24),
@@ -425,6 +426,7 @@
     const iconMap = {
       'friend-request': phIcon('user-plus',20),
       'friend-accepted': phIcon('check-circle',20),
+      'friend-removed': phIcon('user-minus',20),
       'invite': phIcon('paper-plane-tilt',20),
       'group-invite': phIcon('users',20),
       'invite-response': phIcon('chat-circle-dots',20),
@@ -558,6 +560,14 @@
       // Start real-time notification listener with popup
       ZAP.notifications.listenNotifications(user.uid, (notif) => {
         showNotifPopup(notif);
+        // Auto-process friend-accepted: add the other user to our friends list
+        if (notif.type === 'friend-accepted' && notif.fromUid) {
+          ZAP.db.acceptFriendRequest(user.uid, notif.fromUid).catch(() => {});
+        }
+        // Auto-process friend-removed: remove the other user from our friends list
+        if (notif.type === 'friend-removed' && notif.fromUid) {
+          ZAP.dbRef.ref('friends/' + user.uid + '/' + notif.fromUid).remove().catch(() => {});
+        }
       });
       // Request push permission
       ZAP.notifications.requestPushPermission();

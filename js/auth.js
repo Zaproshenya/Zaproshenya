@@ -181,18 +181,6 @@
     // Save URL (Base64 string) in profile inside Realtime DB
     await updateProfile(currentUser.uid, { avatar: base64Url });
 
-    // Оновити аватар у всіх друзів
-    try {
-      const friendsSnap = await ZAP.dbRef.ref('friends/' + currentUser.uid).get();
-      if (friendsSnap.exists()) {
-        const updates = {};
-        friendsSnap.forEach(child => {
-          updates['friends/' + child.key + '/' + currentUser.uid + '/avatar'] = base64Url;
-        });
-        if (Object.keys(updates).length > 0) await ZAP.dbRef.ref().update(updates);
-      }
-    } catch (e) { console.warn('avatar sync:', e); }
-
     return base64Url;
   }
 

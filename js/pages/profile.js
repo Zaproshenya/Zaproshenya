@@ -264,11 +264,6 @@
     setSavingState(true);
     try {
       await ZAP.auth.updateProfile(ZAP.auth.getUser().uid, { name });
-      // Update in friends lists
-      const friends = await ZAP.db.getFriends(ZAP.auth.getUser().uid);
-      for (const f of friends) {
-        await ZAP.dbRef.ref('friends/' + f.uid + '/' + ZAP.auth.getUser().uid + '/name').set(name);
-      }
       cancelEdit();
       ZAP.utils.toast(`Ім'я змінено`, 'success');
       ZAP.render();
