@@ -13,8 +13,9 @@
   let processedRequests = new Set(); // Track processed friend requests by fromUid
 
   async function load() {
+    loaded = false;
     const user = ZAP.auth.getUser();
-    if (!user) return;
+    if (!user) { loaded = true; return; }
     friends = await ZAP.db.getFriends(user.uid);
     requests = await ZAP.db.getFriendRequests(user.uid);
 

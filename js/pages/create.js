@@ -15,6 +15,7 @@
   let formState = {};
 
   async function load() {
+    loading = true;
     done = false;
     createdInv = null;
     selectedFriends = [];

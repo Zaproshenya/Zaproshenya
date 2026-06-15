@@ -9,8 +9,9 @@
   let stats = null;
 
   async function load() {
+    loading = true;
     const user = ZAP.auth.getUser();
-    if (!user) return;
+    if (!user) { loading = false; return; }
 
     try {
       const invites = await ZAP.db.getUserInvites(user.uid);
