@@ -264,7 +264,16 @@
         break;
 
       case 'notifications':
-        pageContent = await renderNotifications();
+        if (isPageChange || !ZAP.pages.notifications._loaded) {
+          app.innerHTML = `
+            ${renderTopbar(route.page)}
+            <div class="wrap">${renderNotificationsSkeleton()}</div>
+            ${renderFooter(route.page)}
+            ${user ? renderBottomNav(route.page) : ''}
+          `;
+          pageContent = await renderNotifications();
+          ZAP.pages.notifications._loaded = true;
+        }
         break;
 
       default:
@@ -430,6 +439,23 @@
     updateUnreadCount();
   }
 
+  // ── Notifications skeleton ──
+  function renderNotificationsSkeleton() {
+    return `
+    <h1 class="page-title" style="margin-bottom:6px">Сповіщення</h1>
+    <p class="page-subtitle" style="margin-bottom:26px">Ваші останні сповіщення</p>
+    ${[1,2,3,4].map(() => `
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;animation:none">
+        <div class="skeleton-circle" style="width:40px;height:40px;flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div class="skeleton-line w-3-4" style="margin-bottom:6px;height:14px"></div>
+          <div class="skeleton-line w-1-2" style="height:12px"></div>
+        </div>
+        <div class="skeleton" style="width:24px;height:24px;border-radius:50%;flex-shrink:0"></div>
+      </div>
+    `).join('')}`;
+  }
+
   // ── Notifications page ──
   async function renderNotifications() {
     const user = ZAP.auth.getUser();
@@ -553,6 +579,8 @@
   // ── Init ──
   ZAP.render = render;
   ZAP.app = { deleteNotification, updateUnreadCount };
+  ZAP.pages = ZAP.pages || {};
+  ZAP.pages.notifications = { _loaded: false };
 
   // Initialize delegated truncation handler once
   ZAP.utils.initTruncHandler();

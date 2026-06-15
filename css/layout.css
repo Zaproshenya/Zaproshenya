@@ -228,6 +228,7 @@
   align-items: flex-end;
 }
 .bn-item {
+  flex: 1;
   display: flex; flex-direction: column; align-items: center;
   background: none; border: none; color: var(--muted);
   font-size: 1.2rem; gap: 2px; cursor: pointer; transition: color .2s;
