@@ -6,6 +6,7 @@
   let filter = 'all';
   let invites = [];
   let modalInv = null;
+  let loading = true;
   let loaded = false;
   let activeTab = 'outgoing';
   let incomingInvites = [];
@@ -37,11 +38,13 @@
       return !s || !['accepted', 'declined', 'reschedule'].includes(s);
     });
 
+    loading = false;
     loaded = true;
     ZAP.pages.home._loaded = true;
   }
 
   function render() {
+    if (loading) return renderSkeleton();
     const { esc, badge, TYPE_MAP, inviteLink, copyText, icon } = ZAP.utils;
     const incomingCount = incomingInvites.length;
 

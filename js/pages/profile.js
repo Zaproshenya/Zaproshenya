@@ -5,6 +5,7 @@
 (function () {
   let editing = null; // 'name' | 'login' | 'password' | null
   let saving = false;
+  let loading = true;
   let stats = null;
 
   async function load() {
@@ -34,6 +35,7 @@
     } catch (e) {
       console.warn('Profile load stats:', e);
     }
+    loading = false;
     ZAP.pages.profile._loaded = true;
   }
 
@@ -73,7 +75,7 @@
 
   function render() {
     const profile = ZAP.auth.getProfile();
-    if (!profile) return renderSkeleton();
+    if (loading || !profile) return renderSkeleton();
 
     const { esc, avatarHTML, roleBadge, icon } = ZAP.utils;
 

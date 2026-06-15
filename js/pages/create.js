@@ -9,6 +9,7 @@
   let selectedFriends = [];
   let friends = [];
   let friendFilter = '';
+  let loading = true;
   let done = false;
   let createdInv = null;
   let formState = {};
@@ -26,6 +27,7 @@
     if (user) {
       friends = await ZAP.db.getFriends(user.uid);
     }
+    loading = false;
     ZAP.pages.create._loaded = true;
   }
 
@@ -69,6 +71,7 @@
   }
 
   function render() {
+    if (loading) return renderSkeleton();
     const { esc, TYPES, icon } = ZAP.utils;
     const today = new Date().toISOString().split('T')[0];
     const profile = ZAP.auth.getProfile();

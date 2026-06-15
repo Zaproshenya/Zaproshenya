@@ -57,7 +57,7 @@
     if (route.page === 'invite') {
       if (isPageChange) {
         ZAP.pages.invite.destroyScrollCheck();
-        app.innerHTML = ZAP.utils.spinner();
+        app.innerHTML = ZAP.pages.invite.render();
         await ZAP.pages.invite.loadPersonal(route.params.inviteId, route.params.b64);
       }
       app.innerHTML = ZAP.pages.invite.render();
@@ -73,7 +73,7 @@
     if (route.page === 'group-invite') {
       if (isPageChange) {
         ZAP.pages.invite.destroyScrollCheck();
-        app.innerHTML = ZAP.utils.spinner();
+        app.innerHTML = ZAP.pages.invite.render();
         await ZAP.pages.invite.loadGroup(route.params.inviteId);
       }
       app.innerHTML = ZAP.pages.invite.render();
@@ -169,7 +169,7 @@
       }
       if (isPageChange || !ZAP.pages.dashboard._loaded) {
         console.log('[DASH] load needed — isPageChange:', isPageChange, '_loaded:', ZAP.pages.dashboard._loaded);
-        app.innerHTML = ZAP.utils.spinner();
+        app.innerHTML = ZAP.pages.dashboard.render();
         await ZAP.pages.dashboard.load();
         console.log('[DASH] load() done, now rendering');
       } else {
@@ -186,7 +186,7 @@
     // ── User profile ──
     if (route.page === 'user-profile') {
       if (isPageChange) {
-        app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.utils.spinner() + '</div>';
+        app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.pages.userProfile.render() + '</div>';
         await ZAP.pages.userProfile.load(route.params.uid);
       }
       app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.pages.userProfile.render() + '</div>' + renderFooter(route.page) + (user ? renderBottomNav(route.page) : '');
@@ -205,7 +205,7 @@
           ZAP.pages.home._listening = true;
         }
         if (isPageChange || !ZAP.pages.home._loaded) {
-          app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.utils.spinner() + '</div>';
+          app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.pages.home.render() + '</div>';
           try { await ZAP.pages.home.load(); } catch (e) { console.error('Home load error:', e); }
         }
         pageContent = ZAP.pages.home.render();
@@ -213,7 +213,7 @@
 
       case 'create':
         if (isPageChange || !ZAP.pages.create._loaded) {
-          app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.utils.spinner() + '</div>';
+          app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.pages.create.render() + '</div>';
           try { await ZAP.pages.create.load(); } catch (e) { console.error('Create load error:', e); }
         }
         pageContent = ZAP.pages.create.render();
@@ -221,7 +221,7 @@
 
       case 'profile':
         if (isPageChange || !ZAP.pages.profile._loaded) {
-          app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.utils.spinner() + '</div>';
+          app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.pages.profile.render() + '</div>';
           try { await ZAP.pages.profile.load(); } catch (e) { console.error('Profile load error:', e); }
         }
         pageContent = ZAP.pages.profile.render();
@@ -229,7 +229,7 @@
 
       case 'friends':
         if (isPageChange || !ZAP.pages.friends._loaded) {
-          app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.utils.spinner() + '</div>';
+          app.innerHTML = renderTopbar(route.page) + '<div class="wrap">' + ZAP.pages.friends.render() + '</div>';
           try { await ZAP.pages.friends.load(); } catch (e) { console.error('Friends load error:', e); }
         }
         pageContent = ZAP.pages.friends.render();
