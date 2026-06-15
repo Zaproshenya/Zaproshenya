@@ -17,16 +17,13 @@
 
     // Sync statuses from Firebase
     const statusSnap = await ZAP.dbRef.ref('statuses').get();
-    if (statusSnap.exists()) {
-      const statuses = statusSnap.val();
-      invites.forEach(inv => {
-        if (statuses[inv.id] && statuses[inv.id] !== inv.status) {
-          inv.status = statuses[inv.id];
-          // Update in DB
-          ZAP.db.updateInviteStatus(inv.id, statuses[inv.id], ZAP.auth.getUser().uid);
-        }
-      });
-    }
+    const statuses = statusSnap.exists() ? statusSnap.val() : {};
+    invites.forEach(inv => {
+      if (statuses[inv.id] && statuses[inv.id] !== inv.status) {
+        inv.status = statuses[inv.id];
+        ZAP.db.updateInviteStatus(inv.id, statuses[inv.id], ZAP.auth.getUser().uid);
+      }
+    });
 
     // Load incoming invitations from notifications
     const notifs = await ZAP.notifications.getNotifications(user.uid);
@@ -35,12 +32,10 @@
     );
 
     // Cross-reference with actual statuses — skip already-answered invites
-    if (statusSnap.exists()) {
-      incomingInvites = incomingInvites.filter(n => {
-        const s = statuses[n.inviteId];
-        return !s || !['accepted', 'declined', 'reschedule'].includes(s);
-      });
-    }
+    incomingInvites = incomingInvites.filter(n => {
+      const s = statuses[n.inviteId];
+      return !s || !['accepted', 'declined', 'reschedule'].includes(s);
+    });
 
     loaded = true;
     ZAP.pages.home._loaded = true;

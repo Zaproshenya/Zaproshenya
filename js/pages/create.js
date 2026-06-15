@@ -279,7 +279,24 @@
       const wasSelected = selectedFriends.includes(uid);
       selectedFriends = wasSelected ? [] : [uid];
       document.querySelectorAll('#cform .pill.on').forEach(b => b.classList.remove('on'));
-      if (!wasSelected) el.classList.add('on');
+      const toInput = document.getElementById('f-to');
+      if (!wasSelected) {
+        el.classList.add('on');
+        const friend = friends.find(f => f.uid === uid);
+        if (friend && toInput) {
+          toInput.value = friend.name;
+          toInput.readOnly = true;
+          toInput.style.opacity = '0.7';
+          formState.to = friend.name;
+        }
+      } else {
+        if (toInput) {
+          toInput.value = '';
+          toInput.readOnly = false;
+          toInput.style.opacity = '';
+          formState.to = '';
+        }
+      }
     } else {
       if (selectedFriends.includes(uid)) {
         selectedFriends = selectedFriends.filter(f => f !== uid);

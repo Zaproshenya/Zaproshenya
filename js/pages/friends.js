@@ -31,7 +31,7 @@
     const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
     const now = Date.now();
     friendInvites = notifs.filter(n =>
-      (n.type === 'invite' || n.type === 'group-invite') && !n.read &&
+      (n.type === 'invite' || n.type === 'group-invite') && n.inviteId && !n.read &&
       now - n.createdAt < SEVEN_DAYS
     );
 
@@ -119,6 +119,10 @@
   let openMenuUid = null;
   function toggleMenu(e, uid) {
     e.stopPropagation();
+    if (openMenuUid === uid) {
+      closeMenu();
+      return;
+    }
     closeMenu();
     const row = e.target.closest('.friend-row');
     if (!row) return;
@@ -126,6 +130,18 @@
     if (!f) return;
     const menu = document.createElement('div');
     menu.className = 'friend-menu';
+    const btn = e.target.closest('.friend-menu-btn');
+    if (btn) {
+      const rect = btn.getBoundingClientRect();
+      menu.style.position = 'fixed';
+      menu.style.top = (rect.bottom + 4) + 'px';
+      menu.style.right = (window.innerWidth - rect.right) + 'px';
+      menu.style.zIndex = '999';
+      if (rect.bottom + 130 > window.innerHeight) {
+        menu.style.top = 'auto';
+        menu.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
+      }
+    }
     menu.innerHTML = `
       <button class="friend-menu-item" onclick="ZAP.pages.friends.goProfile('${uid}')">
         ${ZAP.utils.icon('user', 16)} Профіль
@@ -137,7 +153,7 @@
         ${ZAP.utils.icon('x', 16)} Видалити з друзів
       </button>
     `;
-    row.appendChild(menu);
+    document.body.appendChild(menu);
     openMenuUid = uid;
     setTimeout(() => document.addEventListener('click', closeMenu, { once: true }), 10);
   }

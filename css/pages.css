@@ -187,10 +187,10 @@
 }
 .friend-menu-btn:hover { background: var(--warm); }
 .friend-menu {
-  position: absolute; right: 12px; top: calc(100% - 4px);
+  position: fixed;
   background: var(--card); border: 1px solid var(--border);
   border-radius: var(--radius-sm); box-shadow: var(--shadow);
-  min-width: 180px; z-index: var(--z-overlay); padding: 4px 0;
+  min-width: 180px; z-index: 999; padding: 4px 0;
   animation: fadeIn .15s var(--ease);
 }
 .friend-menu-item {
@@ -291,7 +291,6 @@
   .friend-actions.processed-status { margin-left: 0; }
   .friend-row { padding: 10px 14px; gap: 10px; }
   .friend-row-name { font-size: .9rem; }
-  .friend-menu { right: 8px; }
   .status-text { font-size: .8rem; }
   .user-profile-actions { flex-direction: column; }
   .friend-search { flex-direction: column; }
