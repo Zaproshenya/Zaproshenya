@@ -3,13 +3,6 @@
    ═══════════════════════════════════════════════════════ */
 
 (function () {
-  // Special logins → auto-assign roles
-  const SPECIAL_ROLES = {
-    'dinospike': 'founder',
-    'yarikyt445': 'founder',
-    'dimitrio': 'founder',
-  };
-
   // ── State ──
   let currentUser = null;   // Firebase Auth user
   let currentProfile = null; // Our user profile from DB
@@ -19,13 +12,11 @@
 
   function isAdmin() {
     const role = currentProfile?.role;
-    const special = currentProfile ? SPECIAL_ROLES[currentProfile.login] : null;
-    return role === 'founder' || role === 'tech-admin' || special === 'founder' || special === 'tech-admin';
+    return role === 'founder' || role === 'tech-admin';
   }
 
   function isModerator() {
-    const special = currentProfile ? SPECIAL_ROLES[currentProfile.login] : null;
-    return isAdmin() || currentProfile?.role === 'moderator' || special === 'moderator';
+    return isAdmin() || currentProfile?.role === 'moderator';
   }
 
   // ── Register ──
@@ -58,7 +49,7 @@
     }
 
     // Determine role
-    const role = SPECIAL_ROLES[login] || 'user';
+    const role = 'user';
 
     // Save profile
     const profile = {

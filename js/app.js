@@ -7,9 +7,13 @@
   let unreadCount = 0;
   let lastPage = '';
   let lastParamsStr = '';
+  let _rendering = false;
 
   // ── Main render ──
   async function render() {
+    if (_rendering) return;
+    _rendering = true;
+    try {
     const app = document.getElementById('app');
     if (!app) return;
 
@@ -304,6 +308,7 @@
         document.body.appendChild(s);
       }
     }
+  } finally { _rendering = false; }
   }
 
   // ── Topbar ──
@@ -582,6 +587,7 @@
   // ── Init ──
   ZAP.render = render;
   ZAP.app = { deleteNotification, updateUnreadCount };
+  ZAP.isRendering = () => _rendering;
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.notifications = { _loaded: false, _cached: '' };
 
