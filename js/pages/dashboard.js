@@ -81,7 +81,7 @@
       ${renderSidebar()}
       <div class="sidebar-content">
         <div class="wrap">
-          ${loading ? ZAP.utils.spinner() : loadingError ? renderLoadError() : renderDashContent()}
+          ${loading ? renderSkeleton() : loadingError ? renderLoadError() : renderDashContent()}
         </div>
       </div>
     </div>`;
@@ -149,6 +149,46 @@
         Перевірте з'єднання з інтернетом або спробуйте ще раз.
       </p>
       <button class="btn btn-dark" onclick="ZAP.pages.dashboard.retryLoad()">${icon('arrows-clockwise', 16)} Спробувати ще раз</button>
+    </div>`;
+  }
+
+  function renderSkeleton() {
+    return `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+      <div class="skeleton-line w-1-4" style="height:28px"></div>
+      <div class="skeleton" style="width:40px;height:40px;border-radius:50%"></div>
+    </div>
+    <div class="stats-grid">
+      ${[1,2,3,4,5].map(() => `
+        <div class="stat-card">
+          <div class="skeleton-circle" style="width:44px;height:44px;margin-bottom:14px"></div>
+          <div class="skeleton-line w-1-2" style="margin-bottom:6px;height:28px"></div>
+          <div class="skeleton-line w-3-4" style="height:12px"></div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="skeleton-line w-1-4" style="margin-bottom:18px;height:16px"></div>
+        <div class="skeleton" style="width:100%;height:220px;border-radius:var(--radius-sm)"></div>
+      </div>
+      <div class="chart-card">
+        <div class="skeleton-line w-1-4" style="margin-bottom:18px;height:16px"></div>
+        <div class="skeleton" style="width:100%;height:220px;border-radius:50%"></div>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="skeleton-line w-1-4" style="margin-bottom:16px;height:16px"></div>
+      ${[1,2,3,4,5].map(() => `
+        <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,.04)">
+          <div class="skeleton-circle" style="width:36px;height:36px;flex-shrink:0"></div>
+          <div style="flex:1">
+            <div class="skeleton-line w-1-2" style="margin-bottom:6px;height:14px"></div>
+            <div class="skeleton-line w-1-4" style="height:12px"></div>
+          </div>
+          <div class="skeleton" style="width:80px;height:24px;border-radius:var(--radius-sm)"></div>
+        </div>
+      `).join('')}
     </div>`;
   }
 

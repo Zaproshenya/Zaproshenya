@@ -16,7 +16,7 @@
   margin: auto;
   max-width: 420px; width: 100%;
   background: var(--card);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
   animation: pop .5s cubic-bezier(.34,1.56,.64,1) both;
@@ -123,7 +123,7 @@
 /* ── User profile (viewing others) ── */
 .user-profile-card {
   text-align: center; padding: 40px 32px;
-  background: var(--card); border-radius: var(--radius-xl);
+  background: var(--card); border-radius: var(--radius-card);
   border: 1px solid var(--border); max-width: 400px;
   margin: 0 auto; animation: pop .4s var(--ease) both;
 }
@@ -213,11 +213,12 @@
 .notif-item {
   display: flex; align-items: flex-start; gap: 14px;
   padding: 14px 18px; background: var(--card);
-  border: 1px solid var(--border); border-radius: var(--radius-md);
-  margin-bottom: 8px; transition: background .2s;
+  border: 1px solid var(--border); border-radius: var(--radius-card);
+  margin-bottom: 8px; transition: box-shadow .2s, transform .15s, background .2s;
   animation: fadeUp .3s var(--ease) both;
   position: relative;
 }
+.notif-item:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
 .notif-item.unread { background: rgba(var(--gold-rgb),.04); border-color: rgba(var(--gold-rgb),.2); }
 .notif-item.processed {
   opacity: .65;

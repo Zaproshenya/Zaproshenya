@@ -4,6 +4,10 @@
 
 /* ── Buttons ── */
 button { cursor: pointer; font-family: var(--font-body); transition: all .2s var(--ease); }
+button:focus-visible, .btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
 
 .btn {
   border: none; border-radius: var(--radius-md);
@@ -119,6 +123,10 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   animation: fadeUp .4s var(--ease) both;
 }
 .inv-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+.inv-card:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
 .inv-card.status-accepted  { border-left: 4px solid var(--green); }
 .inv-card.status-declined  { border-left: 4px solid var(--red); }
 .inv-card.status-pending   { border-left: 4px solid var(--gold); }
@@ -396,6 +404,49 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: var(--radius-sm);
+}
+.skeleton-line {
+  height: 14px;
+  background: linear-gradient(90deg, var(--warm) 25%, #e8dfd0 50%, var(--warm) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+.skeleton-line.w-full { width: 100%; }
+.skeleton-line.w-3-4 { width: 75%; }
+.skeleton-line.w-1-2 { width: 50%; }
+.skeleton-line.w-1-4 { width: 25%; }
+.skeleton-circle {
+  border-radius: 50%;
+  background: linear-gradient(90deg, var(--warm) 25%, #e8dfd0 50%, var(--warm) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+.skeleton-btn {
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(90deg, var(--warm) 25%, #e8dfd0 50%, var(--warm) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+.skeleton-card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 16px 20px;
+  margin-bottom: 12px;
+}
+
+/* ── Disabled buttons for invitation creator ── */
+.btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(40%);
+}
+.btn-disabled:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 /* ── Utility classes ── */

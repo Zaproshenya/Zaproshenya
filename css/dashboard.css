@@ -9,7 +9,7 @@
 }
 .stat-card {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); padding: 16px 20px;
+  border-radius: var(--radius-card); padding: 16px 20px;
   transition: box-shadow .2s, transform .15s;
   animation: fadeUp .4s var(--ease) both;
 }
@@ -43,9 +43,11 @@
 }
 .chart-card {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); padding: 16px 20px;
+  border-radius: var(--radius-card); padding: 16px 20px;
   animation: fadeUp .4s var(--ease) both;
+  transition: box-shadow .2s, transform .15s;
 }
+.chart-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
 .chart-card-title {
   display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 18px;
@@ -62,9 +64,11 @@
 /* ── Users table ── */
 .table-card {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); padding: 16px 20px;
+  border-radius: var(--radius-card); padding: 16px 20px;
   margin-bottom: 20px; animation: fadeUp .4s var(--ease) both;
+  transition: box-shadow .2s, transform .15s;
 }
+.table-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
 .table-header {
   display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 16px; gap: 12px; flex-wrap: wrap;
@@ -107,7 +111,9 @@
   border-radius: var(--radius-card); padding: 16px 20px;
   margin-bottom: 10px; display: flex; align-items: flex-start; gap: 14px;
   animation: fadeUp .3s var(--ease) both;
+  transition: box-shadow .2s, transform .15s;
 }
+.complaint-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
 .complaint-card.resolved { opacity: .5; }
 .complaint-icon {
   font-size: 1.2rem; flex-shrink: 0; margin-top: 2px;

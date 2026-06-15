@@ -41,8 +41,25 @@
     loading = false;
   }
 
+  function renderSkeleton() {
+    return `
+    <div class="wrap">
+      <div class="skeleton" style="width:80px;height:36px;border-radius:var(--radius-pill);margin-bottom:20px"></div>
+      <div class="user-profile-card" style="text-align:center">
+        <div class="skeleton-circle" style="width:96px;height:96px;margin:0 auto 16px"></div>
+        <div class="skeleton-line w-1-2" style="margin:0 auto 8px;height:24px"></div>
+        <div class="skeleton" style="width:80px;height:20px;border-radius:20px;margin:0 auto 8px"></div>
+        <div class="skeleton-line w-1-4" style="margin:0 auto 20px;height:14px"></div>
+        <div style="display:flex;gap:10px;justify-content:center">
+          <div class="skeleton" style="width:120px;height:36px;border-radius:var(--radius-md)"></div>
+          <div class="skeleton" style="width:120px;height:36px;border-radius:var(--radius-md)"></div>
+        </div>
+      </div>
+    </div>`;
+  }
+
   function render() {
-    if (loading) return ZAP.utils.spinner();
+    if (loading) return renderSkeleton();
 
     if (!userData) {
       const { icon } = ZAP.utils;

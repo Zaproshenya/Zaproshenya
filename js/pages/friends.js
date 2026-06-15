@@ -39,6 +39,28 @@
     ZAP.pages.friends._loaded = true;
   }
 
+  function renderSkeleton() {
+    return `
+    <div style="margin-bottom:20px">
+      <div class="skeleton" style="height:44px;border-radius:var(--radius-pill)"></div>
+    </div>
+    <div style="display:flex;gap:4px;margin-bottom:20px;background:var(--warm);border-radius:var(--radius-sm);padding:4px">
+      <div class="skeleton" style="flex:1;height:40px;border-radius:var(--radius-sm)"></div>
+      <div class="skeleton" style="flex:1;height:40px;border-radius:var(--radius-sm)"></div>
+      <div class="skeleton" style="flex:1;height:40px;border-radius:var(--radius-sm)"></div>
+    </div>
+    ${[1,2,3,4].map(() => `
+      <div class="skeleton-card" style="display:flex;align-items:center;gap:12px;padding:12px 16px">
+        <div class="skeleton-circle" style="width:40px;height:40px;flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div class="skeleton-line w-1-2" style="margin-bottom:6px;height:14px"></div>
+          <div class="skeleton-line w-1-4" style="height:12px"></div>
+        </div>
+        <div class="skeleton" style="width:32px;height:32px;border-radius:50%;flex-shrink:0"></div>
+      </div>
+    `).join('')}`;
+  }
+
   function render() {
     const { esc, avatarHTML, icon } = ZAP.utils;
 
@@ -74,7 +96,7 @@
       </button>
     </div>
 
-    ${!loaded ? ZAP.utils.spinner() : renderTab()}`;
+    ${!loaded ? renderSkeleton() : renderTab()}`;
   }
 
   function renderTab() {

@@ -37,9 +37,43 @@
     ZAP.pages.profile._loaded = true;
   }
 
+  function renderSkeleton() {
+    return `
+    <div class="profile-header" style="flex-direction:column;align-items:center;text-align:center">
+      <div class="skeleton-circle" style="width:96px;height:96px;margin-bottom:16px"></div>
+      <div class="skeleton-line w-1-2" style="margin:0 auto 8px;height:24px"></div>
+      <div class="skeleton" style="width:80px;height:20px;border-radius:20px;margin:0 auto 4px"></div>
+      <div class="skeleton-line w-1-4" style="margin:0 auto;height:14px"></div>
+    </div>
+    <div class="profile-section">
+      <div class="skeleton-line w-1-4" style="margin-bottom:18px;height:12px"></div>
+      ${[1,2,3].map(() => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(0,0,0,.05)">
+          <div>
+            <div class="skeleton-line w-1-4" style="margin-bottom:6px;height:10px"></div>
+            <div class="skeleton-line w-1-2" style="height:14px"></div>
+          </div>
+          <div class="skeleton" style="width:80px;height:32px;border-radius:var(--radius-pill)"></div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="profile-section">
+      <div class="skeleton-line w-1-4" style="margin-bottom:18px;height:12px"></div>
+      ${[1,2].map(() => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(0,0,0,.05)">
+          <div>
+            <div class="skeleton-line w-1-4" style="margin-bottom:6px;height:10px"></div>
+            <div class="skeleton-line w-1-2" style="height:14px"></div>
+          </div>
+          <div class="skeleton" style="width:80px;height:32px;border-radius:var(--radius-pill)"></div>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+
   function render() {
     const profile = ZAP.auth.getProfile();
-    if (!profile) return ZAP.utils.spinner();
+    if (!profile) return renderSkeleton();
 
     const { esc, avatarHTML, roleBadge, icon } = ZAP.utils;
 

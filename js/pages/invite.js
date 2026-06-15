@@ -94,8 +94,39 @@
     }
   }
 
+  function renderSkeleton() {
+    return `
+    <div class="invite-bg">
+      <div class="invite-envelope">
+        <div class="envelope-top" style="text-align:center">
+          <div class="skeleton-circle" style="width:64px;height:64px;margin:0 auto 12px"></div>
+          <div class="skeleton-line w-1-2" style="margin:0 auto 8px;height:16px;background:rgba(255,255,255,.3)"></div>
+          <div class="skeleton-line w-3-4" style="margin:0 auto;height:20px;background:rgba(255,255,255,.4)"></div>
+        </div>
+        <div class="envelope-body">
+          <div class="skeleton-line w-full" style="margin-bottom:8px;height:14px"></div>
+          <div class="skeleton-line w-3-4" style="margin-bottom:20px;height:14px"></div>
+          <div style="background:rgba(0,0,0,.02);border-radius:12px;padding:12px">
+            ${[1,2,3].map(() => `
+              <div style="display:flex;align-items:center;gap:10px;padding:6px 0">
+                <div class="skeleton-circle" style="width:28px;height:28px;flex-shrink:0"></div>
+                <div class="skeleton-line w-1-4" style="height:10px"></div>
+                <div class="skeleton-line w-1-2" style="flex:1;height:14px"></div>
+              </div>
+            `).join('')}
+          </div>
+          <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px">
+            <div class="skeleton-btn" style="height:48px;border-radius:var(--radius-card)"></div>
+            <div class="skeleton-btn" style="height:48px;border-radius:var(--radius-card)"></div>
+            <div class="skeleton-btn" style="height:48px;border-radius:var(--radius-card)"></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
   function render() {
-    if (loading) return `<div class="page-loader"><div class="spinner"></div></div>`;
+    if (loading) return renderSkeleton();
 
     if (isGroup) return renderGroupInvite();
     return renderPersonalInvite();
@@ -198,6 +229,27 @@
 
   function renderButtons(invId) {
     const { icon } = ZAP.utils;
+    const user = ZAP.auth.getUser();
+    const isCreator = user && invData && user.uid === invData.creatorUid;
+
+    if (isCreator) {
+      return `
+      <div class="answer-wrap" id="answer-btns-${invId}" style="opacity:0.5;pointer-events:none;filter:grayscale(40%)">
+        <button class="btn-yes btn-disabled" disabled>
+          ${icon('check', 16)} Так, я приду!
+        </button>
+        <button class="btn-reschedule btn-disabled" disabled>
+          ${icon('calendar-blank', 16)} Перенести зустріч
+        </button>
+        <button class="btn-no btn-disabled" disabled>
+          ${icon('x', 16)} Ні, не зможу
+        </button>
+        <p style="text-align:center;font-size:.8rem;color:var(--muted);margin-top:12px;font-style:italic">
+          ${icon('info', 14)} Це ваше запрошення. Ви не можете на нього відповісти.
+        </p>
+      </div>`;
+    }
+
     return `
     <div class="answer-wrap" id="answer-btns-${invId}">
       <button class="btn-yes" onclick="ZAP.pages.invite.answer('${invId}','accepted')">
@@ -351,6 +403,22 @@
   function renderGroupJoin() {
     const { icon } = ZAP.utils;
     const user = ZAP.auth.getUser();
+    const isCreator = user && groupData && user.uid === groupData.creatorUid;
+
+    if (isCreator) {
+      return `
+      <div class="answer-wrap" style="opacity:0.5;pointer-events:none;filter:grayscale(40%)">
+        <button class="btn-yes btn-disabled" disabled>
+          ${icon('check', 16)} Так, я приду!
+        </button>
+        <button class="btn-no btn-disabled" disabled>
+          ${icon('x', 16)} Ні, не зможу
+        </button>
+        <p style="text-align:center;font-size:.8rem;color:var(--muted);margin-top:12px;font-style:italic">
+          ${icon('info', 14)} Це ваше запрошення. Ви не можете на нього відповісти.
+        </p>
+      </div>`;
+    }
 
     if (!user && groupData.isPublic) {
       // Check if auth required

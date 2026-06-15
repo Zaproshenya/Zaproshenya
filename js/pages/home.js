@@ -59,6 +59,27 @@
     ${activeTab === 'outgoing' ? renderOutgoing() : renderIncoming()}`;
   }
 
+  function renderSkeleton() {
+    return `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px">
+      <div class="skeleton" style="width:60px;height:32px;border-radius:20px"></div>
+      <div class="skeleton" style="width:90px;height:32px;border-radius:20px"></div>
+      <div class="skeleton" style="width:80px;height:32px;border-radius:20px"></div>
+      <div class="skeleton" style="width:100px;height:32px;border-radius:20px"></div>
+      <div class="skeleton" style="width:110px;height:32px;border-radius:20px"></div>
+    </div>
+    ${[1,2,3,4,5].map(() => `
+      <div class="skeleton-card" style="display:flex;align-items:center;gap:14px;padding:16px 20px">
+        <div class="skeleton-circle" style="width:48px;height:48px;flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div class="skeleton-line w-3-4" style="margin-bottom:8px;height:16px"></div>
+          <div class="skeleton-line w-1-2" style="height:14px"></div>
+        </div>
+        <div class="skeleton" style="width:100px;height:32px;border-radius:8px;flex-shrink:0"></div>
+      </div>
+    `).join('')}`;
+  }
+
   function renderOutgoing() {
     const { esc, badge, TYPE_MAP, inviteLink, copyText, icon } = ZAP.utils;
     const f = filter;
@@ -82,7 +103,7 @@
           </div>`).join('')}
     </div>
 
-    ${!loaded ? ZAP.utils.spinner() :
+    ${!loaded ? renderSkeleton() :
       shown.length === 0 ? `
         <div class="empty">
           <div class="empty-icon">✦</div>
@@ -123,7 +144,7 @@
   function renderIncoming() {
     const { esc, TYPE_MAP, icon } = ZAP.utils;
 
-    if (!loaded) return ZAP.utils.spinner();
+    if (!loaded) return renderSkeleton();
 
     if (incomingInvites.length === 0) {
       return `

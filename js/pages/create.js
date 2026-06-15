@@ -29,6 +29,45 @@
     ZAP.pages.create._loaded = true;
   }
 
+  function renderSkeleton() {
+    return `
+    <div class="skeleton-line w-1-2" style="margin-bottom:8px;height:28px"></div>
+    <div class="skeleton-line w-3-4" style="margin-bottom:24px;height:14px"></div>
+    <div style="display:flex;gap:4px;margin-bottom:28px;background:var(--warm);border-radius:var(--radius-sm);padding:4px">
+      <div class="skeleton" style="flex:1;height:40px;border-radius:var(--radius-sm)"></div>
+      <div class="skeleton" style="flex:1;height:40px;border-radius:var(--radius-sm)"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:24px">
+      <div>
+        <div class="skeleton-line w-1-4" style="margin-bottom:8px;height:10px"></div>
+        <div class="skeleton" style="width:100%;height:44px;border-radius:var(--radius-sm)"></div>
+      </div>
+      <div>
+        <div class="skeleton-line w-1-4" style="margin-bottom:8px;height:10px"></div>
+        <div class="skeleton" style="width:100%;height:88px;border-radius:var(--radius-sm)"></div>
+      </div>
+      <div>
+        <div class="skeleton-line w-1-4" style="margin-bottom:8px;height:10px"></div>
+        <div class="skeleton" style="width:100%;height:44px;border-radius:var(--radius-sm)"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div class="skeleton-line w-1-4" style="margin-bottom:8px;height:10px"></div>
+          <div class="skeleton" style="width:100%;height:44px;border-radius:var(--radius-sm)"></div>
+        </div>
+        <div>
+          <div class="skeleton-line w-1-4" style="margin-bottom:8px;height:10px"></div>
+          <div class="skeleton" style="width:100%;height:44px;border-radius:var(--radius-sm)"></div>
+        </div>
+      </div>
+      <div>
+        <div class="skeleton-line w-1-4" style="margin-bottom:8px;height:10px"></div>
+        <div class="skeleton" style="width:100%;height:44px;border-radius:var(--radius-sm)"></div>
+      </div>
+      <div class="skeleton-btn" style="width:100%"></div>
+    </div>`;
+  }
+
   function render() {
     const { esc, TYPES, icon } = ZAP.utils;
     const today = new Date().toISOString().split('T')[0];

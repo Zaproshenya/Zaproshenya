@@ -6,6 +6,32 @@
   let activeTab = 'login'; // 'login' | 'register'
   let loading = false;
 
+  function renderSkeleton() {
+    return `
+    <div class="auth-bg">
+      <div class="auth-card">
+        <div class="auth-header" style="text-align:center">
+          <div class="skeleton-circle" style="width:48px;height:48px;margin:0 auto 8px;background:rgba(255,255,255,.2)"></div>
+          <div class="skeleton-line w-1-2" style="margin:0 auto;height:24px;background:rgba(255,255,255,.3)"></div>
+          <div class="skeleton-line w-3-4" style="margin:8px auto 0;height:14px;background:rgba(255,255,255,.2)"></div>
+        </div>
+        <div class="auth-body">
+          <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid var(--border)">
+            <div class="skeleton" style="flex:1;height:40px;border-radius:0"></div>
+            <div class="skeleton" style="flex:1;height:40px;border-radius:0"></div>
+          </div>
+          ${[1,2].map(() => `
+            <div style="margin-bottom:18px">
+              <div class="skeleton-line w-1-4" style="margin-bottom:8px;height:10px"></div>
+              <div class="skeleton" style="width:100%;height:44px;border-radius:var(--radius-sm)"></div>
+            </div>
+          `).join('')}
+          <div class="skeleton-btn" style="width:100%;margin-top:8px"></div>
+        </div>
+      </div>
+    </div>`;
+  }
+
   function render() {
     loading = false;
     const { esc, icon } = ZAP.utils;
