@@ -273,6 +273,9 @@
           `;
           pageContent = await renderNotifications();
           ZAP.pages.notifications._loaded = true;
+          ZAP.pages.notifications._cached = pageContent;
+        } else {
+          pageContent = ZAP.pages.notifications._cached;
         }
         break;
 
@@ -580,7 +583,7 @@
   ZAP.render = render;
   ZAP.app = { deleteNotification, updateUnreadCount };
   ZAP.pages = ZAP.pages || {};
-  ZAP.pages.notifications = { _loaded: false };
+  ZAP.pages.notifications = { _loaded: false, _cached: '' };
 
   // Initialize delegated truncation handler once
   ZAP.utils.initTruncHandler();
