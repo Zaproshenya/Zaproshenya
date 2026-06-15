@@ -64,6 +64,8 @@
     isGroup = true;
     groupData = null;
     guestName = '';
+    answered = false;
+    answerStatus = null;
 
     groupData = await ZAP.db.getGroupInvite(inviteId);
 
