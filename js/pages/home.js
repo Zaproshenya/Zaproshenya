@@ -65,6 +65,12 @@
 
   function renderSkeleton() {
     return `
+    <h1 class="page-title" style="margin-bottom:6px"><span class="skeleton-line" style="width:200px;height:28px;display:inline-block;vertical-align:middle"></span></h1>
+    <p class="page-subtitle" style="margin-bottom:20px"><span class="skeleton-line" style="width:260px;height:14px;display:inline-block;vertical-align:middle"></span></p>
+    <div class="tabs" style="margin-bottom:24px">
+      <div class="skeleton" style="width:150px;height:36px;border-radius:8px"></div>
+      <div class="skeleton" style="width:130px;height:36px;border-radius:8px"></div>
+    </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px">
       <div class="skeleton" style="width:60px;height:32px;border-radius:20px"></div>
       <div class="skeleton" style="width:90px;height:32px;border-radius:20px"></div>
@@ -107,8 +113,7 @@
           </div>`).join('')}
     </div>
 
-    ${!loaded ? renderSkeleton() :
-      shown.length === 0 ? `
+    ${shown.length === 0 ? `
         <div class="empty">
           <div class="empty-icon">✦</div>
           <p style="font-style:italic;font-size:1.05rem;margin-bottom:18px">
@@ -147,8 +152,6 @@
 
   function renderIncoming() {
     const { esc, TYPE_MAP, icon } = ZAP.utils;
-
-    if (!loaded) return renderSkeleton();
 
     if (incomingInvites.length === 0) {
       return `

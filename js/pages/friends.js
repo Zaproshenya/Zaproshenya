@@ -42,6 +42,8 @@
 
   function renderSkeleton() {
     return `
+    <h1 class="page-title" style="margin-bottom:6px"><span class="skeleton-line" style="width:120px;height:28px;display:inline-block;vertical-align:middle"></span></h1>
+    <p class="page-subtitle" style="margin-bottom:20px"><span class="skeleton-line" style="width:280px;height:14px;display:inline-block;vertical-align:middle"></span></p>
     <div style="margin-bottom:20px">
       <div class="skeleton" style="height:44px;border-radius:var(--radius-pill)"></div>
     </div>

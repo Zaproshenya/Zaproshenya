@@ -197,16 +197,14 @@
     return `
     <!-- Public / Private toggle -->
     <div class="warm-panel">
-      ${selectedFriends.length === 0 ? `
-        <div class="toggle-wrap" style="margin-bottom:14px">
-          <button class="toggle ${isPublic ? 'on' : ''}"
-            onclick="ZAP.pages.create.togglePublic(this)"
-            role="switch" aria-checked="${isPublic}" aria-label="Публічне або приватне запрошення"></button>
-          <span class="toggle-label">
-            ${isPublic ? `${icon('globe-hemisphere-west', 14)} Публічне — будь-хто може приєднатися за посиланням` : `${icon('lock', 14)} Приватне — тільки для обраних друзів`}
-          </span>
-        </div>
-      ` : ''}
+      <div class="toggle-wrap" style="margin-bottom:14px">
+        <button class="toggle ${isPublic ? 'on' : ''}"
+          onclick="ZAP.pages.create.togglePublic(this)"
+          role="switch" aria-checked="${isPublic}" aria-label="Публічне або приватне запрошення"></button>
+        <span class="toggle-label">
+          ${isPublic ? `${icon('globe-hemisphere-west', 14)} Публічне — будь-хто може приєднатися за посиланням` : `${icon('lock', 14)} Приватне — тільки для обраних друзів`}
+        </span>
+      </div>
 
       <div id="group-friends-section"${isPublic && selectedFriends.length === 0 ? ' style="display:none"' : ''}>
         <p style="font-size:.78rem;color:var(--muted);margin-bottom:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em">
@@ -351,12 +349,27 @@
         isPublic = false;
         el.classList.add('on');
       }
-      const tw = document.querySelector('.warm-panel > .toggle-wrap');
-      if (tw) tw.style.display = selectedFriends.length > 0 ? 'none' : '';
+      updateToggleState();
       const gf = document.getElementById('group-friends-section');
       if (gf) gf.style.display = '';
     }
     chk();
+  }
+
+  function updateToggleState() {
+    const tw = document.querySelector('.warm-panel > .toggle-wrap');
+    if (!tw) return;
+    const btn = tw.querySelector('.toggle');
+    const label = tw.querySelector('.toggle-label');
+    if (btn) {
+      btn.classList.toggle('on', isPublic);
+      btn.setAttribute('aria-checked', isPublic);
+    }
+    if (label) {
+      label.innerHTML = isPublic
+        ? `${ZAP.utils.icon('globe-hemisphere-west', 14)} Публічне — будь-хто може приєднатися за посиланням`
+        : `${ZAP.utils.icon('lock', 14)} Приватне — тільки для обраних друзів`;
+    }
   }
 
   function chk() {
