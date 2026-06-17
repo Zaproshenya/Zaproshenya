@@ -277,6 +277,71 @@
     });
   }
 
+  // ── SEO: Update meta tags for current route ──
+  function setMeta(route) {
+    const baseUrl = 'https://zaproshenya.pages.dev';
+    let path = '/' + route.page;
+    if (route.page === 'invite' && route.params.inviteId) {
+      path = '/i/' + route.params.inviteId;
+    } else if (route.page === 'invite' && route.params.b64) {
+      path = '/i/' + route.params.b64;
+    } else if (route.page === 'group-invite' && route.params.inviteId) {
+      path = '/g/' + route.params.inviteId;
+    } else if (route.page === 'user-profile' && route.params.uid) {
+      path = '/user/' + route.params.uid;
+    } else if (route.page === 'home') {
+      path = '/';
+    }
+    const canonical = baseUrl + path;
+
+    const descriptions = {
+      'home': 'Створюйте та надсилайте запрошення на зустрічі. Безкоштовний додаток для організації зустрічей з друзями.',
+      'create': 'Створіть нове запрошення на зустріч. Оберіть тип, дату та запросіть друзів.',
+      'login': 'Увійдіть у свій акаунт Запрошення.',
+      'register': 'Зареєструйтеся у додатку Запрошення.',
+      'profile': 'Ваш профіль у додатку Запрошення.',
+      'friends': 'Керуйте списком друзів у додатку Запрошення.',
+      'notifications': 'Ваші сповіщення у додатку Запрошення.',
+      'dashboard': 'Панель керування додатку Запрошення.',
+      'user-profile': 'Профіль користувача у додатку Запрошення.',
+      'invite': 'Перегляд запрошення у додатку Запрошення.',
+      'group-invite': 'Групове запрошення у додатку Запрошення.',
+    };
+    const desc = descriptions[route.page] || 'Створюйте та надсилайте запрошення на зустрічі';
+
+    let link = document.querySelector('link[rel="canonical"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'canonical';
+      document.head.appendChild(link);
+    }
+    link.href = canonical;
+
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.content = desc;
+
+    let ogUrl = document.querySelector('meta[property="og:url"]');
+    if (ogUrl) ogUrl.content = canonical;
+
+    let ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.content = document.title;
+
+    let ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.content = desc;
+
+    let ogImage = document.querySelector('meta[property="og:image"]');
+    if (ogImage) ogImage.content = 'https://files.catbox.moe/0m8wur.png';
+
+    let twTitle = document.querySelector('meta[name="twitter:title"]');
+    if (twTitle) twTitle.content = document.title;
+
+    let twDesc = document.querySelector('meta[name="twitter:description"]');
+    if (twDesc) twDesc.content = desc;
+
+    let twImage = document.querySelector('meta[name="twitter:image"]');
+    if (twImage) twImage.content = 'https://files.catbox.moe/0m8wur.png';
+  }
+
   // ── Expose ──
   ZAP.utils = {
     esc, icon, genId, genUserId, copyText, badge, roleBadge, divLine,
@@ -284,5 +349,6 @@
     TYPES, TYPE_MAP, inviteLink,
     confirm, alert, prompt,
     truncate, truncateBtn, truncateFull, initTruncHandler,
+    setMeta,
   };
 })();

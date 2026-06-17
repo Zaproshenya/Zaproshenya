@@ -39,6 +39,7 @@
     };
     const titleSuffix = pageTitles[route.page] || '';
     document.title = titleSuffix ? `Запрошення ✦ — ${titleSuffix}` : 'Запрошення ✦ — Безкоштовний додаток для запрошень';
+    ZAP.utils.setMeta(route);
 
     // Set real-time user action
     if (user && profile && ZAP.dbRef) {
