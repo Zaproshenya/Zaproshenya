@@ -130,7 +130,7 @@
       const statusText = online ? 'В мережі' : (f.lastSeen ? ZAP.utils.timeAgo(f.lastSeen) : '');
       return `
       <div class="friend-row" style="animation-delay:${i * 40}ms" data-uid="${f.uid}">
-        ${avatarHTML(f)}
+        ${avatarHTML(f._pf || f)}
         <div class="friend-row-info">
           <div class="friend-row-name">${esc(f.name)}</div>
           ${statusText ? `<div class="friend-row-status${online ? ' online' : ''}">${online ? '● ' : ''}${statusText}</div>` : ''}
