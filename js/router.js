@@ -5,7 +5,7 @@
 (function () {
   function parsePath() {
     const p = window.location.pathname.replace(/^\/+|\/+$/g, '');
-    if (!p) return { page: 'home', params: {} };
+    if (!p) return { page: 'landing', params: {} };
 
     // Invite: /i/{id}
     if (p.startsWith('i/')) {
@@ -28,10 +28,10 @@
     }
 
     // Simple pages
-    const simple = ['create', 'login', 'register', 'profile', 'friends', 'dashboard', 'notifications'];
+    const simple = ['home', 'create', 'login', 'register', 'profile', 'friends', 'dashboard', 'notifications', 'landing'];
     if (simple.includes(p)) return { page: p, params: {} };
 
-    return { page: 'home', params: {} };
+    return { page: 'landing', params: {} };
   }
 
   function go(page, params) {
@@ -43,7 +43,9 @@
       path = '/g/' + params.id;
     } else if (page === 'user-profile' && params?.uid) {
       path = '/user/' + params.uid;
-    } else if (page !== 'home') {
+    } else if (page === 'home') {
+      path = '/home';
+    } else if (page !== 'landing') {
       path = '/' + page;
     }
 

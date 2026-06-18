@@ -145,6 +145,20 @@
         </div>
       </div>
 
+      <!-- Show sender toggle -->
+      <div class="warm-panel">
+        <div class="toggle-wrap">
+          <button class="toggle ${formState.showSender !== false ? 'on' : ''}"
+            onclick="ZAP.pages.create.toggleShowSender(this)"
+            role="switch" aria-checked="${formState.showSender !== false}" aria-label="Показувати відправника"></button>
+          <span class="toggle-label">
+            ${formState.showSender !== false
+              ? `${icon('eye', 14)} Показувати від кого — отримувач бачитиме ваше ім'я`
+              : `${icon('eye-slash', 14)} Анонімне запрошення — відправник прихований`}
+          </span>
+        </div>
+      </div>
+
       <button id="sbtn" class="btn btn-dark btn-full" disabled onclick="ZAP.pages.create.submit()">
         Створити запрошення →
       </button>
@@ -408,6 +422,8 @@
         from: profile.name,
         creatorUid: user.uid,
         requireAuth,
+        showSender: formState.showSender !== false,
+        senderName: profile.name,
         status: 'pending',
         created: Date.now(),
       };
@@ -437,6 +453,8 @@
         creatorName: profile.name,
         isPublic,
         requireAuth,
+        showSender: formState.showSender !== false,
+        senderName: profile.name,
         isGroup: true,
         members: {},
         invited: {},
@@ -484,6 +502,22 @@
     chk();
   }
 
+  function toggleShowSender(btn) {
+    saveFormState();
+    formState.showSender = formState.showSender === false ? true : false;
+
+    btn.classList.toggle('on');
+    btn.setAttribute('aria-checked', formState.showSender !== false);
+    const label = btn.parentElement.querySelector('.toggle-label');
+    if (label) {
+      label.innerHTML = formState.showSender !== false
+        ? `${ZAP.utils.icon('eye', 14)} Показувати від кого — отримувач бачитиме ваше ім'я`
+        : `${ZAP.utils.icon('eye-slash', 14)} Анонімне запрошення — відправник прихований`;
+    }
+
+    chk();
+  }
+
   function filterFriends(query) {
     friendFilter = query.toLowerCase().trim();
     ZAP.render();
@@ -500,6 +534,6 @@
   ZAP.pages.create = {
     _loaded: false,
     render, load, setMode, togglePublic, toggleFriend, chk, submit, reset,
-    toggleRequireAuth, saveFormState, filterFriends, onMsgInput,
+    toggleRequireAuth, toggleShowSender, saveFormState, filterFriends, onMsgInput,
   };
 })();

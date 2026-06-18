@@ -208,6 +208,12 @@
             </div>` : ''}
           </div>
 
+          ${invData.showSender !== false ? `
+            <div style="text-align:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+              <span style="font-size:.82rem;color:var(--muted)">Від: <strong style="color:var(--ink)">${esc(invData.senderName || 'Невідомий')}</strong></span>
+            </div>
+          ` : ''}
+
           ${answered ? renderResult(answerStatus) : renderButtons(invData.id)}
 
           <div style="display:flex;justify-content:center;gap:16px;margin-top:28px;padding:18px 0;border-top:1px solid var(--border)">

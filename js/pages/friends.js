@@ -306,7 +306,15 @@
     ZAP.render();
 
     try {
-      const user = await ZAP.db.getUserById(query.toUpperCase());
+      // Check if it looks like a ZAP-ID (starts with ZAP)
+      let user = null;
+      if (query.toUpperCase().startsWith('ZAP')) {
+        user = await ZAP.db.getUserById(query.toUpperCase());
+      } else {
+        // Try login search
+        user = await ZAP.db.getUserByLogin(query.toLowerCase());
+      }
+      
       if (!user) {
         searchResult = 'not-found';
       } else if (user.uid === ZAP.auth.getUser()?.uid) {

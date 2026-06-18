@@ -25,6 +25,7 @@
 
     // Dynamic page title
     const pageTitles = {
+      'landing': '',
       'home': '',
       'create': 'Створити запрошення',
       'profile': 'Профіль',
@@ -96,6 +97,32 @@
     // ── Not yet initialized ──
     if (!authReady) {
       app.innerHTML = `<div class="page-loader"><div class="spinner"></div></div>`;
+      return;
+    }
+
+    // ── Landing page — redirect authenticated users to home ──
+    if (route.page === 'landing') {
+      if (user) {
+        ZAP.router.go('home');
+        return;
+      }
+      // Render landing page from ClaudeLanding.html
+      try {
+        const resp = await fetch('/main.html');
+        const html = await resp.text();
+        app.innerHTML = html;
+        // Execute inline scripts from the landing page
+        app.querySelectorAll('script').forEach(old => {
+          const s = document.createElement('script');
+          s.textContent = old.textContent;
+          document.body.appendChild(s);
+          old.remove();
+        });
+      } catch (e) {
+        app.innerHTML = `<div style="text-align:center;padding:80px 20px"><p>Помилка завантаження</p></div>`;
+      }
+      lastPage = route.page;
+      lastParamsStr = JSON.stringify(route.params);
       return;
     }
 
