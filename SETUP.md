@@ -7,7 +7,7 @@
 
 ### Крок 1: Увімкнення Authentication
 1. Перейдіть в [Firebase Console](https://console.firebase.google.com)
-2. Відкрийте ваш проект `zaproshennya-a1ea7`
+2. Відкрийте ваш проект `zaproshenya-82751`
 3. В лівому меню натисніть **Build → Authentication**
 4. Натисніть **Get Started**
 5. Перейдіть на вкладку **Sign-in method**
