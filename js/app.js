@@ -39,7 +39,11 @@
       'register': 'Реєстрація',
     };
     const titleSuffix = pageTitles[route.page] || '';
-    document.title = titleSuffix ? `Запрошення ✦ — ${titleSuffix}` : 'Запрошення ✦ — Безкоштовний додаток для запрошень';
+    if (route.page === 'landing') {
+      document.title = 'Запрошення ✦';
+    } else {
+      document.title = titleSuffix ? `Запрошення ✦ — ${titleSuffix}` : 'Запрошення ✦ — Безкоштовний додаток для запрошень';
+    }
     ZAP.utils.setMeta(route);
 
     // Set real-time user action

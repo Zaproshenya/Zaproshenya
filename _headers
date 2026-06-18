@@ -5,7 +5,13 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
 /*.html
-  Cache-Control: public, max-age=3600
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.css
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.js
+  Cache-Control: public, max-age=0, must-revalidate
 
 /sitemap.xml
   Content-Type: text/xml; charset=utf-8

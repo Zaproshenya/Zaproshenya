@@ -306,12 +306,12 @@
     ZAP.render();
 
     try {
-      // Check if it looks like a ZAP-ID (starts with ZAP)
       let user = null;
-      if (query.toUpperCase().startsWith('ZAP')) {
+      if (query.startsWith('@')) {
+        user = await ZAP.db.getUserByLogin(query.slice(1).toLowerCase());
+      } else if (query.toUpperCase().startsWith('ZAP')) {
         user = await ZAP.db.getUserById(query.toUpperCase());
       } else {
-        // Try login search
         user = await ZAP.db.getUserByLogin(query.toLowerCase());
       }
       
