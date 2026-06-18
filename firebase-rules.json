@@ -18,7 +18,7 @@
           ".validate": "newData.val() === data.val() || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'"
         },
         "avatar": {
-          ".validate": "newData.isString() && newData.val().length() < 100000"
+          ".validate": "newData.isString() && newData.val().length < 100000"
         },
         "fcmToken": {
           ".validate": "$uid === auth.uid"
