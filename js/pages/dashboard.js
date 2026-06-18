@@ -3,6 +3,8 @@
    ═══════════════════════════════════════════════════════ */
 
 (function () {
+  'use strict';
+
   let stats = null;
   let users = [];
   let reports = [];
@@ -866,7 +868,7 @@
   }
 
   async function modDeleteInvite(invId, type) {
-    if (!await ZAP.utils.confirm('Видалити це запрошення? Цю дію не можна скасувати.')) return;
+    if (!await ZAP.utils.confirmDialog('Видалити це запрошення? Цю дію не можна скасувати.')) return;
     try {
       var path = type === 'group' ? 'group-invites/' : 'invites/';
       await ZAP.dbRef.ref(path + invId).remove();
@@ -1199,13 +1201,13 @@
     let until = null;
     
     if (ban) {
-      const days = await ZAP.utils.prompt('На скільки днів забанити?', 'Залиште порожнім для перманентного бану');
+      const days = await ZAP.utils.promptDialog('На скільки днів забанити?', 'Залиште порожнім для перманентного бану');
       if (days === null) return; // cancelled
       if (days.trim() !== '' && !isNaN(Number(days))) {
         until = Date.now() + (Number(days) * 24 * 60 * 60 * 1000);
       }
     } else {
-      if (!await ZAP.utils.confirm('Ви впевнені, що хочете розбанити цього користувача?')) return;
+      if (!await ZAP.utils.confirmDialog('Ви впевнені, що хочете розбанити цього користувача?')) return;
     }
 
     try {
@@ -1235,7 +1237,7 @@
   }
 
   async function deleteReportedInvite(targetId, targetType, reportId) {
-    if (!await ZAP.utils.confirm('Видалити це запрошення та вирішити скаргу?')) return;
+    if (!await ZAP.utils.confirmDialog('Видалити це запрошення та вирішити скаргу?')) return;
     try {
       if (targetType === 'group-invite') {
         await ZAP.dbRef.ref('group-invites/' + targetId).remove();

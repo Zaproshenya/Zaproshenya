@@ -3,6 +3,8 @@
    ═══════════════════════════════════════════════════════ */
 
 (function () {
+  'use strict';
+
   let filter = 'all';
   let invites = [];
   let modalInv = null;
@@ -17,13 +19,30 @@
     if (!user) { loading = false; return; }
     invites = await ZAP.db.getUserInvites(user.uid);
 
-    // Sync statuses from Firebase
-    const statusSnap = await ZAP.dbRef.ref('statuses').get();
-    const statuses = statusSnap.exists() ? statusSnap.val() : {};
+    // Single targeted fetch of statuses for our invites (no global dump)
+    const inviteIds = invites.map(i => i.id).filter(Boolean);
+    const statuses = {};
+    if (inviteIds.length > 0) {
+      // Read only the statuses we care about, in parallel batches
+      const BATCH = 20;
+      for (let i = 0; i < inviteIds.length; i += BATCH) {
+        const batch = inviteIds.slice(i, i + BATCH);
+        const results = await Promise.all(
+          batch.map(id =>
+            ZAP.dbRef.ref('statuses/' + id).get()
+              .then(s => s.exists() ? [id, s.val()] : null)
+              .catch(() => null)
+          )
+        );
+        for (const r of results) {
+          if (r) statuses[r[0]] = r[1];
+        }
+      }
+    }
     invites.forEach(inv => {
       if (statuses[inv.id] && statuses[inv.id] !== inv.status) {
         inv.status = statuses[inv.id];
-        ZAP.db.updateInviteStatus(inv.id, statuses[inv.id], ZAP.auth.getUser().uid);
+        ZAP.db.updateInviteStatus(inv.id, statuses[inv.id], user.uid);
       }
     });
 
@@ -297,7 +316,7 @@
 
   async function deleteInv(id) {
     closeModal();
-    if (!await ZAP.utils.confirm('Видалити запрошення?')) return;
+    if (!await ZAP.utils.confirmDialog('Видалити запрошення?')) return;
     await ZAP.db.deleteInvite(id, ZAP.auth.getUser()?.uid);
     invites = invites.filter(i => i.id !== id);
     modalInv = null;
@@ -305,16 +324,18 @@
     ZAP.render();
   }
 
-  // Start real-time listener for status updates
+  // Start real-time listener for user-invites updates (scoped — not global statuses)
   function startListening() {
     const user = ZAP.auth.getUser();
     if (!user) return;
-    ZAP.db.listenStatuses(user.uid, statuses => {
+    ZAP.db.listenUserInvites(user.uid, newList => {
+      const newById = Object.fromEntries(newList.map(i => [i.id, i]));
       let changed = false;
       invites.forEach(inv => {
-        if (statuses[inv.id] && statuses[inv.id] !== inv.status) {
+        const fresh = newById[inv.id];
+        if (fresh && fresh.status && fresh.status !== inv.status) {
           const oldStatus = inv.status;
-          inv.status = statuses[inv.id];
+          inv.status = fresh.status;
           changed = true;
 
           // Toast notification

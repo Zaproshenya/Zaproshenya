@@ -1,60 +1,31 @@
 /* ═══════════════════════════════════════════════════════
    Crypto — AES-GCM encryption via Web Crypto API
-   ═══════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════════
+
+   ⚠️  This module is currently NOT used anywhere in the app.
+   ⚠️  The previous version used a hardcoded SALT and uid as key,
+   ⚠️  which provided NO real security (uid is publicly readable).
+   ⚠️
+   ⚠️  If you need client-side encryption, design it properly:
+   ⚠️    - derive key from user's password (not uid)
+   ⚠️    - use a unique random salt per user (stored in their profile)
+   ⚠️    - keep ciphertext + iv + salt in DB, never the key
+   ⚠️
+   ⚠️  Kept as a stub for future, properly-designed use.
+*/
 
 (function () {
-  const SALT = 'zaproshennya-salt-2024';
+  'use strict';
 
-  async function deriveKey(uid) {
-    const enc = new TextEncoder();
-    const keyMaterial = await crypto.subtle.importKey(
-      'raw', enc.encode(uid + SALT), 'PBKDF2', false, ['deriveKey']
-    );
-    return crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt: enc.encode(SALT), iterations: 100000, hash: 'SHA-256' },
-      keyMaterial,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['encrypt', 'decrypt']
-    );
-  }
-
-  async function encrypt(data, uid) {
-    try {
-      const key = await deriveKey(uid);
-      const enc = new TextEncoder();
-      const iv = crypto.getRandomValues(new Uint8Array(12));
-      const encrypted = await crypto.subtle.encrypt(
-        { name: 'AES-GCM', iv },
-        key,
-        enc.encode(JSON.stringify(data))
-      );
-      return {
-        iv: Array.from(iv),
-        data: Array.from(new Uint8Array(encrypted))
-      };
-    } catch (e) {
-      console.warn('Encrypt error:', e);
+  // Placeholder — disabled until properly designed
+  ZAP.crypto = {
+    encrypt: async function () {
+      console.warn('ZAP.crypto.encrypt is disabled — see js/crypto.js for details');
       return null;
-    }
-  }
-
-  async function decrypt(encryptedObj, uid) {
-    try {
-      const key = await deriveKey(uid);
-      const iv = new Uint8Array(encryptedObj.iv);
-      const data = new Uint8Array(encryptedObj.data);
-      const decrypted = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv },
-        key,
-        data
-      );
-      return JSON.parse(new TextDecoder().decode(decrypted));
-    } catch (e) {
-      console.warn('Decrypt error:', e);
+    },
+    decrypt: async function () {
+      console.warn('ZAP.crypto.decrypt is disabled — see js/crypto.js for details');
       return null;
-    }
-  }
-
-  ZAP.crypto = { encrypt, decrypt };
+    },
+  };
 })();

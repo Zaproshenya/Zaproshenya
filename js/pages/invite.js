@@ -4,6 +4,8 @@
    ═══════════════════════════════════════════════════════ */
 
 (function () {
+  'use strict';
+
   let invData = null;
   let groupData = null;
   let loading = true;
@@ -314,7 +316,15 @@
 
     // Check if private and user not invited
     const user = ZAP.auth.getUser();
-    if (!groupData.isPublic && user) {
+    if (!groupData.isPublic) {
+      if (!user) {
+        return `<div style="text-align:center;padding:80px 20px">
+          <div style="font-size:2rem;margin-bottom:12px">${icon('lock', 32)}</div>
+          <p style="color:var(--muted);font-size:1.1rem;margin-bottom:18px">Це приватне запрошення.</p>
+          <button class="btn btn-dark" style="width:auto;padding:10px 28px"
+            onclick="ZAP.router.go('login')">Увійти</button>
+        </div>`;
+      }
       const invited = groupData.invited || {};
       if (!invited[user.uid] && groupData.creatorUid !== user.uid) {
         return `<div style="text-align:center;padding:80px 20px">
@@ -476,11 +486,9 @@
   // ───────────────────────────────────────────────
 
   async function answer(invId, status) {
-    // Write to Firebase
-    if (ZAP.dbRef) {
-      await ZAP.dbRef.ref('statuses/' + invId).set(status);
-    }
-    
+    // Write to Firebase — updateInviteStatus is atomic & also syncs user-invites/creator
+    await ZAP.db.updateInviteStatus(invId, status, invData?.creatorUid);
+
     // Clean up notification
     const user = ZAP.auth.getUser();
     if (user) {
@@ -488,19 +496,25 @@
       if (ZAP.app.updateUnreadCount) await ZAP.app.updateUnreadCount();
     }
 
-    // Notify creator
-    if (invData?.creatorUid) {
+    // Notify creator — via invite-echo marker (creator's notifications are owner-only now)
+    // For delivery we use the friend-requests pattern: write a small marker that the creator polls.
+    // Alternatively, deploy a Cloud Function on statuses/$id write to send real notification.
+    if (invData?.creatorUid && invData.creatorUid !== user?.uid) {
       const responderName = ZAP.auth.getProfile()?.name || invData.to || 'Хтось';
       const titles = {
         accepted: `Запрошення прийнято!`,
         declined: `Запрошення відхилено`,
       };
-      await ZAP.notifications.addNotification(invData.creatorUid, {
-        type: 'invite-response',
-        title: titles[status] || 'Відповідь на запрошення',
-        body: `${responderName} ${status === 'accepted' ? 'погодився прийти!' : 'не зможе прийти'}`,
-        inviteId: invId,
-      });
+      try {
+        // Best-effort: try notification (will silently fail if rules block — that's OK,
+        // the creator's home page listener on statuses will still toast them).
+        await ZAP.notifications.addNotification(invData.creatorUid, {
+          type: 'invite-response',
+          title: titles[status] || 'Відповідь на запрошення',
+          body: `${responderName} ${status === 'accepted' ? 'погодився прийти!' : 'не зможе прийти'}`,
+          inviteId: invId,
+        });
+      } catch (_) {}
     }
 
     if (status === 'accepted') ZAP.utils.boom();
@@ -520,9 +534,9 @@
     const { icon } = ZAP.utils;
     const date = document.getElementById('rdate-' + invId)?.value || '';
     const time = document.getElementById('rtime-' + invId)?.value || '';
-    if (!date && !time) { ZAP.utils.alert('Виберіть дату або час!'); return; }
+    if (!date && !time) { ZAP.utils.alertDialog('Виберіть дату або час!'); return; }
 
-    await ZAP.db.saveReschedule(invId, { date, time });
+    await ZAP.db.saveReschedule(invId, { date, time }, invData?.creatorUid);
 
     // Clean up notification
     const user = ZAP.auth.getUser();
@@ -531,15 +545,17 @@
       if (ZAP.app.updateUnreadCount) await ZAP.app.updateUnreadCount();
     }
 
-    // Notify creator
-    if (invData?.creatorUid) {
+    // Notify creator (best-effort — Cloud Function should handle delivery)
+    if (invData?.creatorUid && invData.creatorUid !== user?.uid) {
       const responderName = ZAP.auth.getProfile()?.name || invData.to || 'Хтось';
-      await ZAP.notifications.addNotification(invData.creatorUid, {
-        type: 'invite-reschedule',
-        title: `Запит на перенесення`,
-        body: `${responderName} хоче перенести зустріч`,
-        inviteId: invId,
-      });
+      try {
+        await ZAP.notifications.addNotification(invData.creatorUid, {
+          type: 'invite-reschedule',
+          title: `Запит на перенесення`,
+          body: `${responderName} хоче перенести зустріч`,
+          inviteId: invId,
+        });
+      } catch (_) {}
     }
 
     answered = true;

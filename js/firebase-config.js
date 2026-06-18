@@ -15,6 +15,11 @@ ZAP.FIREBASE_CONFIG = {
   measurementId:     "G-B5VF0PHW3C"
 };
 
+// VAPID public key for Web Push.
+// Generate in Firebase Console → Project Settings → Cloud Messaging → Web Push certificates.
+// Replace the placeholder below with your actual public key BEFORE deploy.
+ZAP.VAPID_KEY = 'REPLACE_WITH_YOUR_VAPID_PUBLIC_KEY';
+
 try {
   ZAP.firebaseApp = firebase.initializeApp(ZAP.FIREBASE_CONFIG);
   ZAP.authInstance = firebase.auth();

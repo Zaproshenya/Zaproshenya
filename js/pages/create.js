@@ -3,6 +3,8 @@
    ═══════════════════════════════════════════════════════ */
 
 (function () {
+  'use strict';
+
   let mode = 'personal'; // 'personal' | 'group'
   let isPublic = true;
   let requireAuth = false;
@@ -425,8 +427,6 @@
         await ZAP.db.createInvite(inv);
         createdInv = inv;
       }
-
-      createdInv = inv;
     } else {
       // Group invite
       const title = document.getElementById('f-title')?.value.trim() || '';

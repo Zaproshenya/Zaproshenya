@@ -3,6 +3,8 @@
    ═══════════════════════════════════════════════════════ */
 
 (function () {
+  'use strict';
+
   function parsePath() {
     const p = window.location.pathname.replace(/^\/+|\/+$/g, '');
     if (!p) return { page: 'home', params: {} };

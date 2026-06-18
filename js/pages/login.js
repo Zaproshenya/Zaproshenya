@@ -3,6 +3,8 @@
    ═══════════════════════════════════════════════════════ */
 
 (function () {
+  'use strict';
+
   let activeTab = 'login'; // 'login' | 'register'
   let loading = false;
 
@@ -33,7 +35,6 @@
   }
 
   function render() {
-    loading = false;
     const { esc, icon } = ZAP.utils;
     return `
     <div class="auth-bg">

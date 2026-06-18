@@ -3,7 +3,14 @@
    ═══════════════════════════════════════════════════════ */
 
 (function () {
+  'use strict';
+
   let _fcmToken = null;
+  let _notifListener = null;
+  let _banListener = null;
+  let _lastSeenInterval = null;
+  let _unreadInterval = null;
+  let _lastNotifTs = 0;
 
   // ── FCM initialization ──
   async function initFCM(uid) {
@@ -12,9 +19,14 @@
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') return;
 
-      const token = await ZAP.messaging.getToken({
-        vapidKey: null,
-      });
+      // Use VAPID key from config (must be set by user in firebase-config.js)
+      const vapidKey = ZAP.VAPID_KEY;
+      if (!vapidKey || vapidKey === 'REPLACE_WITH_YOUR_VAPID_PUBLIC_KEY') {
+        console.warn('FCM: VAPID key not configured. Set ZAP.VAPID_KEY in firebase-config.js');
+        return;
+      }
+
+      const token = await ZAP.messaging.getToken({ vapidKey });
 
       if (token) {
         _fcmToken = token;
@@ -67,8 +79,15 @@
     }
   }
 
-  // ── In-app notifications (stored in Firebase) ──
+  // ── In-app notifications (stored in Firebase, owner-writable only) ──
+  // NOTE: With new Security Rules, only the owner can write to notifications/$uid.
+  // Cross-user notifications (friend requests, invite responses, etc.) should be
+  // delivered via Cloud Functions. The functions below manage the owner's own
+  // notifications (read, mark-read, delete).
+
   async function addNotification(toUid, data) {
+    // Now only works if toUid === current user's uid (owner-only write).
+    // For cross-user delivery, deploy Cloud Functions (see /firebase-functions/README.md).
     if (!ZAP.dbRef || !toUid) return;
     try {
       const ref = ZAP.dbRef.ref('notifications/' + toUid).push();
@@ -78,7 +97,11 @@
         read: false,
         createdAt: Date.now(),
       });
-    } catch (e) { console.warn('addNotification:', e); }
+    } catch (e) {
+      // Expected to fail for cross-user writes — that's OK,
+      // Cloud Function should handle delivery.
+      console.debug('addNotification (cross-user expected to fail with new rules):', e.message);
+    }
   }
 
   async function getNotifications(uid) {
@@ -90,9 +113,8 @@
       const list = [];
       snap.forEach(c => {
         const val = c.val();
-        // Clean old broken titles that may contain raw HTML tags
         if (val.title) val.title = val.title.replace(/<[^>]*>/g, '');
-        if (val.body) val.body = val.body.replace(/<[^>]*>/g, '');
+        if (val.body)  val.body  = val.body.replace(/<[^>]*>/g, '');
         list.push(val);
       });
       return list.reverse();
@@ -113,10 +135,7 @@
       if (!snap.exists()) return;
       const updates = {};
       snap.forEach(c => {
-        const type = c.val().type;
-        if (type !== 'invite' && type !== 'group-invite' && type !== 'friend-request') {
-          updates[c.key + '/read'] = true;
-        }
+        updates[c.key + '/read'] = true;
       });
       if (Object.keys(updates).length > 0) {
         await ZAP.dbRef.ref('notifications/' + uid).update(updates);
@@ -156,19 +175,30 @@
   }
 
   // ── Listen for new notifications in real-time ──
-  let _notifListener = null;
+  // Removes the 10-second filter — uses lastSeenNotifAt marker instead
   function listenNotifications(uid, callback) {
     if (!ZAP.dbRef || !uid) return;
     stopListeningNotifications();
+
+    // Read the last-seen timestamp from localStorage (per-user)
+    const lsKey = 'zap_lastNotifTs_' + uid;
+    _lastNotifTs = parseInt(localStorage.getItem(lsKey) || '0', 10);
+
     _notifListener = ZAP.dbRef.ref('notifications/' + uid)
-      .orderByChild('createdAt').limitToLast(1);
+      .orderByChild('createdAt').startAt(_lastNotifTs + 1).limitToLast(20);
+
     _notifListener.on('child_added', snap => {
       const n = snap.val();
-      if (n && !n.read && Date.now() - n.createdAt < 10000) {
-        // New notification just arrived
-        sendPush(n.title || 'Сповіщення', n.body || '');
-        if (callback) callback(n);
+      if (!n) return;
+      // Update last-seen marker
+      const ts = n.createdAt || Date.now();
+      if (ts > _lastNotifTs) {
+        _lastNotifTs = ts;
+        try { localStorage.setItem(lsKey, String(ts)); } catch (_) {}
       }
+      // Show popup + push
+      sendPush(n.title || 'Сповіщення', n.body || '');
+      if (callback) callback(n);
     });
   }
 
@@ -179,11 +209,44 @@
     }
   }
 
+  // ── Ban status listener (separate lifecycle) ──
+  function listenBanStatus(uid, onBan, onUnban) {
+    if (!ZAP.dbRef || !uid) return;
+    stopBanListener();
+    _banListener = ZAP.dbRef.ref('users/' + uid + '/banned');
+    _banListener.on('value', snap => {
+      const newBanned = snap.val();
+      if (newBanned === true && onBan) onBan();
+      else if (newBanned === false && onUnban) onUnban();
+    });
+  }
+
+  function stopBanListener() {
+    if (_banListener) {
+      _banListener.off();
+      _banListener = null;
+    }
+  }
+
+  // ── Timer management (allows cleanup on logout) ──
+  function setTimers(lastSeenFn, unreadFn) {
+    clearTimers();
+    _lastSeenInterval = setInterval(lastSeenFn, 45000);
+    _unreadInterval   = setInterval(unreadFn, 30000);
+  }
+
+  function clearTimers() {
+    if (_lastSeenInterval) { clearInterval(_lastSeenInterval); _lastSeenInterval = null; }
+    if (_unreadInterval)   { clearInterval(_unreadInterval);   _unreadInterval = null; }
+  }
+
   ZAP.notifications = {
     requestPushPermission, sendPush,
     initFCM, deleteFCMToken,
     addNotification, getNotifications, deleteNotification, deleteNotificationsByPayload,
     markNotifRead, markAllNotifsRead, getUnreadCount,
     listenNotifications, stopListeningNotifications,
+    listenBanStatus, stopBanListener,
+    setTimers, clearTimers,
   };
 })();

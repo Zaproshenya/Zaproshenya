@@ -3,6 +3,8 @@
    ═══════════════════════════════════════════════════════ */
 
 (function () {
+  'use strict';
+
   let editing = null; // 'name' | 'login' | 'password' | null
   let saving = false;
   let loading = true;
