@@ -3,8 +3,6 @@
    ═══════════════════════════════════════════════════════ */
 
 (function () {
-  'use strict';
-
   // ── HTML escape ──
   function esc(s) {
     return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -18,13 +16,8 @@
     return `<i class="ph ph-${name}" style="font-size:${sz}px;vertical-align:middle;line-height:1"></i>`;
   }
 
-  // ── Generate short ID — uses crypto.randomUUID when available ──
+  // ── Generate short ID ──
   function genId() {
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-      // Take first 16 chars of UUID v4 (still high-entropy & collision-free)
-      return crypto.randomUUID().replace(/-/g, '').slice(0, 16);
-    }
-    // Fallback for older browsers
     return Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-5);
   }
 
@@ -34,17 +27,6 @@
     let id = '';
     for (let i = 0; i < 6; i++) id += chars[Math.floor(Math.random() * chars.length)];
     return 'ZAP-' + id;
-  }
-
-  // ── Ukrainian pluralization helper ──
-  function pluralize(n, forms) {
-    // forms: [one, few, many] e.g. ['годину','години','годин']
-    const abs = Math.abs(n);
-    const mod10 = abs % 10;
-    const mod100 = abs % 100;
-    if (mod10 === 1 && mod100 !== 11) return forms[0];
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return forms[1];
-    return forms[2];
   }
 
   // ── Copy to clipboard ──
@@ -148,20 +130,11 @@
     const diff = Date.now() - timestamp;
     const mins = Math.floor(diff / 60000);
     if (mins < 1) return 'щойно';
-    if (mins < 60) {
-      const form = pluralize(mins, ['хвилину', 'хвилини', 'хвилин']);
-      return `${mins} ${form} тому`;
-    }
+    if (mins < 60) return `${mins} хв тому`;
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) {
-      const form = pluralize(hrs, ['годину', 'години', 'годин']);
-      return `${hrs} ${form} тому`;
-    }
+    if (hrs < 24) return `${hrs} год тому`;
     const days = Math.floor(hrs / 24);
-    if (days < 7) {
-      const form = pluralize(days, ['день', 'дні', 'днів']);
-      return `${days} ${form} тому`;
-    }
+    if (days < 7) return `${days} дн тому`;
     return formatDate(new Date(timestamp).toISOString().split('T')[0]);
   }
 
@@ -199,8 +172,8 @@
     return location.origin + '/i/' + invId;
   }
 
-  // ── Custom confirm (renamed to avoid shadowing window.confirm) ──
-  function confirmDialog(message) {
+  // ── Custom confirm ──
+  function confirm(message) {
     return new Promise(resolve => {
       const overlay = document.createElement('div');
       overlay.className = 'overlay';
@@ -215,12 +188,12 @@
         </div>`;
       document.body.appendChild(overlay);
       overlay.querySelector('#cup-yes').onclick = () => { overlay.remove(); resolve(true); };
-      overlay.querySelector('#cup-no').onclick  = () => { overlay.remove(); resolve(false); };
+      overlay.querySelector('#cup-no').onclick = () => { overlay.remove(); resolve(false); };
     });
   }
 
   // ── Custom alert ──
-  function alertDialog(message) {
+  function alert(message) {
     return new Promise(resolve => {
       const overlay = document.createElement('div');
       overlay.className = 'overlay';
@@ -236,7 +209,7 @@
   }
 
   // ── Custom prompt ──
-  function promptDialog(message, placeholder) {
+  function prompt(message, placeholder) {
     return new Promise(resolve => {
       const overlay = document.createElement('div');
       overlay.className = 'overlay';
@@ -256,7 +229,7 @@
       const input = overlay.querySelector('#cup-input');
       input.focus();
       input.onkeydown = e => { if (e.key === 'Enter') { overlay.remove(); resolve(input.value || ''); } };
-      overlay.querySelector('#cup-ok').onclick     = () => { overlay.remove(); resolve(input.value || ''); };
+      overlay.querySelector('#cup-ok').onclick = () => { overlay.remove(); resolve(input.value || ''); };
       overlay.querySelector('#cup-cancel').onclick = () => { overlay.remove(); resolve(null); };
     });
   }
@@ -299,8 +272,8 @@
       const expanded = span.classList.contains('expanded');
       const textEl = btn.querySelector('.tm-btn-text');
       if (textEl) textEl.textContent = expanded ? 'Приховати' : 'Показати більше';
-      const iconI = btn.querySelector('i');
-      if (iconI) iconI.className = expanded ? 'ph ph-caret-up' : 'ph ph-caret-down';
+      const icon = btn.querySelector('i');
+      if (icon) icon.className = expanded ? 'ph ph-caret-up' : 'ph ph-caret-down';
     });
   }
 
@@ -373,13 +346,8 @@
   ZAP.utils = {
     esc, icon, genId, genUserId, copyText, badge, roleBadge, divLine,
     boom, toast, formatDate, timeAgo, avatarHTML, spinner,
-    TYPES, TYPE_MAP, inviteLink, pluralize,
-    // Renamed to avoid shadowing window.confirm/alert/prompt:
-    confirm: confirmDialog,
-    alert: alertDialog,
-    prompt: promptDialog,
-    // Also expose under explicit names for clarity:
-    confirmDialog, alertDialog, promptDialog,
+    TYPES, TYPE_MAP, inviteLink,
+    confirm, alert, prompt,
     truncate, truncateBtn, truncateFull, initTruncHandler,
     setMeta,
   };

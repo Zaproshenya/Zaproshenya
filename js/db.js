@@ -3,8 +3,6 @@
    ═══════════════════════════════════════════════════════ */
 
 (function () {
-  'use strict';
-
   const db = () => ZAP.dbRef;
 
   // ═══════════════════════════════════════════════════════
@@ -14,12 +12,6 @@
   async function getUserByUid(uid) {
     if (!db()) return null;
     const snap = await db().ref('users/' + uid).get();
-    return snap.exists() ? snap.val() : null;
-  }
-
-  async function getPublicProfile(uid) {
-    if (!db()) return null;
-    const snap = await db().ref('profiles-public/' + uid).get();
     return snap.exists() ? snap.val() : null;
   }
 
@@ -48,27 +40,20 @@
 
   async function updateUserRole(uid, newRole) {
     if (!db()) return;
-    const updates = {};
-    updates['users/' + uid + '/role'] = newRole;
-    await db().ref().update(updates);
+    await db().ref('users/' + uid + '/role').set(newRole);
   }
 
   async function banUser(uid, banned, until = null) {
     if (!db()) return;
-    const updates = {};
-    updates['users/' + uid + '/banned'] = banned;
+    await db().ref('users/' + uid + '/banned').set(banned);
     if (banned) {
-      updates['users/' + uid + '/bannedAt'] = Date.now();
-      if (until) {
-        updates['users/' + uid + '/bannedUntil'] = until;
-      } else {
-        updates['users/' + uid + '/bannedUntil'] = null;
-      }
+      await db().ref('users/' + uid + '/bannedAt').set(Date.now());
+      if (until) await db().ref('users/' + uid + '/bannedUntil').set(until);
+      else await db().ref('users/' + uid + '/bannedUntil').remove();
     } else {
-      updates['users/' + uid + '/bannedAt'] = null;
-      updates['users/' + uid + '/bannedUntil'] = null;
+      await db().ref('users/' + uid + '/bannedAt').remove();
+      await db().ref('users/' + uid + '/bannedUntil').remove();
     }
-    await db().ref().update(updates);
   }
 
   // ═══════════════════════════════════════════════════════
@@ -77,19 +62,17 @@
 
   async function createInvite(inv) {
     if (!db()) return;
-    // Atomic multi-location write
-    const updates = {};
-    updates['invites/' + inv.id] = inv;
-    updates['statuses/' + inv.id] = 'pending';
+    await db().ref('invites/' + inv.id).set(inv);
+    await db().ref('statuses/' + inv.id).set('pending');
+    // Save to user's invite list
     if (inv.creatorUid) {
-      updates['user-invites/' + inv.creatorUid + '/' + inv.id] = {
+      await db().ref('user-invites/' + inv.creatorUid + '/' + inv.id).set({
         id: inv.id, to: inv.to, type: inv.type,
         date: inv.date, time: inv.time, status: 'pending',
         created: inv.created,
         recipientUid: inv.recipientUid || null,
-      };
+      });
     }
-    await db().ref().update(updates);
   }
 
   async function getInvite(invId) {
@@ -109,36 +92,28 @@
 
   async function updateInviteStatus(invId, status, uid) {
     if (!db()) return;
-    const updates = {};
-    updates['statuses/' + invId] = status;
+    await db().ref('statuses/' + invId).set(status);
+    // Update in user's invite list
     if (uid) {
-      updates['user-invites/' + uid + '/' + invId + '/status'] = status;
+      await db().ref('user-invites/' + uid + '/' + invId + '/status').set(status);
     }
-    await db().ref().update(updates);
   }
 
   async function deleteInvite(invId, uid) {
     if (!db()) return;
-    const updates = {};
-    updates['invites/' + invId] = null;
-    updates['statuses/' + invId] = null;
-    updates['reschedule/' + invId] = null;
+    await db().ref('invites/' + invId).remove();
+    await db().ref('statuses/' + invId).remove();
+    await db().ref('reschedule/' + invId).remove();
     if (uid) {
-      updates['user-invites/' + uid + '/' + invId] = null;
+      await db().ref('user-invites/' + uid + '/' + invId).remove();
     }
-    await db().ref().update(updates);
   }
 
   // ── Reschedule ──
-  async function saveReschedule(invId, data, creatorUid) {
+  async function saveReschedule(invId, data) {
     if (!db()) return;
-    const updates = {};
-    updates['reschedule/' + invId] = { ...data, ts: Date.now() };
-    updates['statuses/' + invId] = 'reschedule';
-    if (creatorUid) {
-      updates['user-invites/' + creatorUid + '/' + invId + '/status'] = 'reschedule';
-    }
-    await db().ref().update(updates);
+    await db().ref('reschedule/' + invId).set({ ...data, ts: Date.now() });
+    await db().ref('statuses/' + invId).set('reschedule');
   }
 
   async function getReschedule(invId) {
@@ -153,16 +128,15 @@
 
   async function createGroupInvite(inv) {
     if (!db()) return;
-    const updates = {};
-    updates['group-invites/' + inv.id] = inv;
+    await db().ref('group-invites/' + inv.id).set(inv);
+    // Save to creator's list
     if (inv.creatorUid) {
-      updates['user-invites/' + inv.creatorUid + '/' + inv.id] = {
+      await db().ref('user-invites/' + inv.creatorUid + '/' + inv.id).set({
         id: inv.id, type: inv.type, date: inv.date, time: inv.time,
         status: 'pending', created: inv.created, isGroup: true,
         title: inv.title || '',
-      };
+      });
     }
-    await db().ref().update(updates);
   }
 
   async function getGroupInvite(invId) {
@@ -189,17 +163,11 @@
 
   // Send group invite to friends via notifications
   async function sendGroupInviteToFriends(invId, friendUids, invData) {
-    if (!db()) return;
-    const updates = {};
     for (const fuid of friendUids) {
-      updates['group-invites/' + invId + '/invited/' + fuid] = {
+      await db().ref('group-invites/' + invId + '/invited/' + fuid).set({
         status: 'pending', sentAt: Date.now(),
-      };
-    }
-    await db().ref().update(updates);
-
-    // Send notifications (one per friend)
-    for (const fuid of friendUids) {
+      });
+      // Send notification
       await ZAP.notifications.addNotification(fuid, {
         type: 'group-invite',
         title: 'Групове запрошення',
@@ -212,7 +180,7 @@
   }
 
   // ═══════════════════════════════════════════════════════
-  // Friends — corrected to use friend-requests node + atomic operations
+  // Friends
   // ═══════════════════════════════════════════════════════
 
   async function sendFriendRequest(fromUid, toUid, fromName) {
@@ -221,92 +189,73 @@
     const existing = await db().ref('friends/' + fromUid + '/' + toUid).get();
     if (existing.exists()) throw new Error('Вже у друзях');
 
-    // Check if request already sent
-    const existingReq = await db().ref('friend-requests/' + toUid + '/' + fromUid).get();
-    if (existingReq.exists()) throw new Error('Запит вже надіслано');
+    // Check if request already sent (check recipient's notifications)
+    const notifsSnap = await db().ref('notifications/' + toUid)
+      .orderByChild('type').equalTo('friend-request').get();
+    if (notifsSnap.exists()) {
+      let alreadySent = false;
+      notifsSnap.forEach(c => { if (c.val().fromUid === fromUid) alreadySent = true; });
+      if (alreadySent) throw new Error('Запит вже надіслано');
+    }
 
-    // Atomic write: create friend-request entry
-    const updates = {};
-    updates['friend-requests/' + toUid + '/' + fromUid] = {
-      fromUid, fromName, sentAt: Date.now()
-    };
-    await db().ref().update(updates);
-
-    // Send notification (separately, since notifications are now owner-only write)
-    // We can't write to recipient's notifications anymore, so we rely on
-    // client-side real-time listener on friend-requests node instead.
-    // For backwards compat we still send via the Cloud Function (if configured),
-    // OR keep an in-app signal via friend-requests node above.
+    // Send notification (no cross-user write)
+    await ZAP.notifications.addNotification(toUid, {
+      type: 'friend-request',
+      title: 'Запит на дружбу',
+      body: `${fromName} хоче додати вас у друзі`,
+      fromUid, fromName,
+    });
 
     return 'sent';
   }
 
   async function acceptFriendRequest(myUid, fromUid) {
     if (!db()) return;
-
+    
     // Check if already friends (idempotent operation)
     const alreadyFriends = await db().ref('friends/' + myUid + '/' + fromUid).get();
     if (alreadyFriends.exists()) {
-      // Still clean up the request
-      await db().ref('friend-requests/' + myUid + '/' + fromUid).remove();
       return;
     }
-
+    
     const myProfile = await getUserByUid(myUid);
     const theirProfile = await getUserByUid(fromUid);
 
-    // Atomic bidirectional friend write + remove request
-    const updates = {};
-    updates['friends/' + myUid + '/' + fromUid] = {
-      uid: fromUid, name: theirProfile?.name || '', addedAt: Date.now()
-    };
-    updates['friends/' + fromUid + '/' + myUid] = {
-      uid: myUid, name: myProfile?.name || '', addedAt: Date.now()
-    };
-    updates['friend-requests/' + myUid + '/' + fromUid] = null;
+    // Write ONLY to own friends list
+    await db().ref('friends/' + myUid + '/' + fromUid).set({
+      uid: fromUid, name: theirProfile?.name || '', addedAt: Date.now(),
+    });
 
-    // Clean up any matching notifications on both sides
-    await db().ref().update(updates);
-
-    // Notify the other user (via friend-requests/$fromUid/$myUid = accepted marker)
-    // Since notifications are owner-write-only, we use a special "echo" via
-    // friend-requests to signal the other client to refresh their friends list.
-    try {
-      await db().ref('friend-requests/' + fromUid + '/' + myUid + '_accepted').set({
-        fromUid: myUid,
-        fromName: myProfile?.name || '',
-        acceptedAt: Date.now()
-      });
-    } catch (e) {
-      // Best-effort — if the rule doesn't allow this write, the other user
-      // will discover friendship on next app open.
-    }
+    // Notify the other user to add us
+    await ZAP.notifications.addNotification(fromUid, {
+      type: 'friend-accepted',
+      title: '✓ Запит прийнято',
+      body: `${myProfile?.name || 'Хтось'} прийняв вашу пропозицію дружби`,
+      fromUid: myUid, fromName: myProfile?.name || '',
+    });
   }
 
   async function declineFriendRequest(myUid, fromUid) {
     if (!db()) return;
-    await db().ref('friend-requests/' + myUid + '/' + fromUid).remove();
+    // Remove only from own
+    const req = await db().ref('friend-requests/' + myUid + '/' + fromUid).get();
+    if (req.exists()) {
+      await db().ref('friend-requests/' + myUid + '/' + fromUid).remove();
+    }
   }
 
   async function removeFriend(myUid, friendUid) {
     if (!db()) return;
-    // Atomic bidirectional delete
-    const updates = {};
-    updates['friends/' + myUid + '/' + friendUid] = null;
-    updates['friends/' + friendUid + '/' + myUid] = null;
-    await db().ref().update(updates);
-
-    // Signal the other user via friend-requests node (echo)
-    try {
-      const myProfile = await getUserByUid(myUid);
-      await db().ref('friend-requests/' + friendUid + '/' + myUid + '_removed').set({
-        fromUid: myUid,
-        fromName: myProfile?.name || '',
-        removedAt: Date.now()
-      });
-    } catch (e) {
-      // Best-effort
-    }
+    // Remove only from own list
+    await db().ref('friends/' + myUid + '/' + friendUid).remove();
+    // Notify the other user
+    const myProfile = await getUserByUid(myUid);
+    await ZAP.notifications.addNotification(friendUid, {
+      type: 'friend-removed',
+      title: 'Друга видалено',
+      body: `${myProfile?.name || 'Хтось'} видалив вас з друзів`,
+      fromUid: myUid, fromName: myProfile?.name || '',
+    });
   }
 
   async function getFriends(uid) {
@@ -316,18 +265,16 @@
     const list = [];
     snap.forEach(c => { list.push(c.val()); });
 
-    // PARALLEL fetch of fresh profile data (avoids N+1)
-    const profiles = await Promise.all(
-      list.map(f => getPublicProfile(f.uid).catch(() => null))
-    );
-    profiles.forEach((pf, i) => {
+    // Fetch fresh profile data (avatar + name) for each friend
+    for (const f of list) {
+      const pf = await getUserByUid(f.uid);
       if (pf) {
-        if (pf.avatar)    list[i].avatar    = pf.avatar;
-        if (pf.name)      list[i].name      = pf.name;
-        if (pf.uniqueId)  list[i].uniqueId  = pf.uniqueId;
-        if (pf.lastSeen)  list[i].lastSeen  = pf.lastSeen;
+        if (pf.avatar) f.avatar = pf.avatar;
+        if (pf.name) f.name = pf.name;
+        if (pf.uniqueId) f.uniqueId = pf.uniqueId;
+        if (pf.lastSeen) f.lastSeen = pf.lastSeen;
       }
-    });
+    }
     return list;
   }
 
@@ -336,43 +283,8 @@
     const snap = await db().ref('friend-requests/' + uid).get();
     if (!snap.exists()) return [];
     const list = [];
-    snap.forEach(c => {
-      const v = c.val();
-      // Skip echo markers (keys ending with _accepted/_removed)
-      if (c.key.endsWith('_accepted') || c.key.endsWith('_removed')) return;
-      list.push(v);
-    });
-    return list.sort((a, b) => (b.sentAt || 0) - (a.sentAt || 0));
-  }
-
-  /**
-   * Get friendship "echo" events: accept/remove notifications from other users.
-   * Used by the client to refresh friends list when remote state changes.
-   */
-  async function getFriendEchoes(uid) {
-    if (!db()) return [];
-    const snap = await db().ref('friend-requests/' + uid).get();
-    if (!snap.exists()) return [];
-    const echoes = [];
-    const toDelete = [];
-    snap.forEach(c => {
-      if (c.key.endsWith('_accepted')) {
-        echoes.push({ type: 'accepted', data: c.val() });
-        toDelete.push(c.key);
-      } else if (c.key.endsWith('_removed')) {
-        echoes.push({ type: 'removed', data: c.val() });
-        toDelete.push(c.key);
-      }
-    });
-    // Clean up echoes after reading
-    if (toDelete.length > 0) {
-      const updates = {};
-      for (const k of toDelete) {
-        updates['friend-requests/' + uid + '/' + k] = null;
-      }
-      try { await db().ref().update(updates); } catch (_) {}
-    }
-    return echoes;
+    snap.forEach(c => { list.push(c.val()); });
+    return list;
   }
 
   // ═══════════════════════════════════════════════════════
@@ -385,7 +297,7 @@
     await ref.set({
       id: ref.key,
       ...report,
-      status: 'pending',
+      status: 'pending', // pending, resolved, dismissed
       createdAt: Date.now(),
     });
   }
@@ -402,81 +314,74 @@
   async function resolveReport(reportId, action, moderatorUid) {
     if (!db()) return;
     await db().ref('reports/' + reportId).update({
-      status: action,
+      status: action, // 'resolved' or 'dismissed'
       resolvedBy: moderatorUid,
       resolvedAt: Date.now(),
     });
   }
 
   // ═══════════════════════════════════════════════════════
-  // Stats (for dashboard) — uses precomputed stats + paginated lists
+  // Stats (for dashboard)
   // ═══════════════════════════════════════════════════════
 
   async function getStats() {
     if (!db()) return {};
 
-    // Read precomputed aggregate counters (Cloud Function should maintain these)
-    let statsSnap = null;
-    try {
-      statsSnap = await db().ref('stats').get();
-    } catch (e) { console.warn('stats read failed:', e); }
+    let usersSnap = null, invitesSnap = null, groupSnap = null, reportsSnap = null;
+    let statusesSnap = null, friendsSnap = null;
 
-    const stats = statsSnap?.exists() ? statsSnap.val() : {};
-
-    // Load paginated lists for tables (limit to last 200 — admin can paginate further)
-    let usersSnap = null, reportsSnap = null;
-    let personalInvitesSnap = null, groupSnap = null, statusesSnap = null;
-
-    try {
-      usersSnap = await db().ref('users').orderByChild('createdAt').limitToLast(200).get();
-    } catch (e) { console.warn('users read failed:', e); }
-    try {
-      personalInvitesSnap = await db().ref('invites').orderByChild('created').limitToLast(200).get();
-    } catch (e) { console.warn('invites read failed:', e); }
-    try {
-      groupSnap = await db().ref('group-invites').orderByChild('created').limitToLast(200).get();
-    } catch (e) { console.warn('group-invites read failed:', e); }
-    try {
-      statusesSnap = await db().ref('statuses').get();
-    } catch (e) { console.warn('statuses read failed:', e); }
-    try {
-      reportsSnap = await db().ref('reports').orderByChild('createdAt').limitToLast(100).get();
-    } catch (e) { console.warn('reports read failed:', e); }
+    console.log('[DASH] getStats start', Date.now());
+    try { usersSnap = await db().ref('users').get(); console.log('[DASH] 1/6 users OK', Date.now()); } catch (e) { console.warn('[DASH] 1/6 users FAIL:', e); }
+    try { invitesSnap = await db().ref('invites').get(); console.log('[DASH] 2/6 invites OK', Date.now()); } catch (e) { console.warn('[DASH] 2/6 invites FAIL:', e); }
+    try { groupSnap = await db().ref('group-invites').get(); console.log('[DASH] 3/6 group-invites OK', Date.now()); } catch (e) { console.warn('[DASH] 3/6 group-invites FAIL:', e); }
+    try { reportsSnap = await db().ref('reports').get(); console.log('[DASH] 4/6 reports OK', Date.now()); } catch (e) { console.warn('[DASH] 4/6 reports FAIL:', e); }
+    try { statusesSnap = await db().ref('statuses').get(); console.log('[DASH] 5/6 statuses OK', Date.now()); } catch (e) { console.warn('[DASH] 5/6 statuses FAIL:', e); }
+    try { friendsSnap = await db().ref('friends').get(); console.log('[DASH] 6/6 friends OK', Date.now()); } catch (e) { console.warn('[DASH] 6/6 friends FAIL:', e); }
 
     const users = [];
     if (usersSnap && usersSnap.exists()) usersSnap.forEach(c => { users.push(c.val()); });
 
+    let totalInvites = 0;
+    let personalInvitesCount = 0;
+    let groupInvitesCount = 0;
+    const typeCounts = {};
     const personalInvites = [];
-    if (personalInvitesSnap && personalInvitesSnap.exists()) {
-      personalInvitesSnap.forEach(c => {
+    const groupInvites = [];
+
+    if (invitesSnap && invitesSnap.exists()) {
+      invitesSnap.forEach(c => {
+        totalInvites++;
+        personalInvitesCount++;
         const inv = c.val();
         inv.id = c.key;
         personalInvites.push(inv);
+        if (inv && inv.type) {
+          typeCounts[inv.type] = (typeCounts[inv.type] || 0) + 1;
+        }
       });
     }
-
-    const groupInvites = [];
     if (groupSnap && groupSnap.exists()) {
       groupSnap.forEach(c => {
+        totalInvites++;
+        groupInvitesCount++;
         const inv = c.val();
         inv.id = c.key;
         inv.isGroup = true;
         groupInvites.push(inv);
+        if (inv && inv.type) {
+          typeCounts[inv.type] = (typeCounts[inv.type] || 0) + 1;
+        }
       });
     }
 
-    // Compute type counts from loaded lists
-    const typeCounts = {};
-    for (const inv of [...personalInvites, ...groupInvites]) {
-      if (inv && inv.type) typeCounts[inv.type] = (typeCounts[inv.type] || 0) + 1;
-    }
-
-    // Active users (last 7 days)
+    // Count active users (last 7 days)
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const activeUsers = users.filter(u => u.lastSeen > weekAgo).length;
 
     // Status counts
-    let acceptedInvites = 0, declinedInvites = 0, rescheduleInvites = 0;
+    let acceptedInvites = 0;
+    let declinedInvites = 0;
+    let rescheduleInvites = 0;
     if (statusesSnap && statusesSnap.exists()) {
       statusesSnap.forEach(c => {
         const val = c.val();
@@ -486,9 +391,13 @@
       });
     }
 
-    // Roles & ban count
-    let founderCount = 0, techAdminCount = 0, moderatorCount = 0;
-    let regularUserCount = 0, bannedCount = 0;
+    // Roles and ban count
+    let founderCount = 0;
+    let techAdminCount = 0;
+    let moderatorCount = 0;
+    let regularUserCount = 0;
+    let bannedCount = 0;
+
     users.forEach(u => {
       if (u.banned) bannedCount++;
       if (u.role === 'founder') founderCount++;
@@ -498,7 +407,9 @@
     });
 
     // Reports breakdown
-    let pendingReports = 0, resolvedReports = 0, dismissedReports = 0;
+    let pendingReports = 0;
+    let resolvedReports = 0;
+    let dismissedReports = 0;
     if (reportsSnap && reportsSnap.exists()) {
       reportsSnap.forEach(c => {
         const val = c.val();
@@ -508,13 +419,25 @@
       });
     }
 
-    // Prefer precomputed totals from Cloud Function; fall back to counts
+    // Friend connections
+    let totalFriendsConnections = 0;
+    if (friendsSnap && friendsSnap.exists()) {
+      friendsSnap.forEach(userNode => {
+        const val = userNode.val();
+        if (val) {
+          totalFriendsConnections += Object.keys(val).length;
+        }
+      });
+    }
+    // Divide by 2 because friendships are bidirectionally saved (A is friend of B, B is friend of A)
+    totalFriendsConnections = Math.floor(totalFriendsConnections / 2);
+
     return {
-      totalUsers: stats.totalUsers ?? users.length,
-      totalInvites: stats.totalInvites ?? (personalInvites.length + groupInvites.length),
-      acceptedInvites: stats.acceptedInvites ?? acceptedInvites,
-      declinedInvites: stats.declinedInvites ?? declinedInvites,
-      rescheduleInvites: stats.rescheduleInvites ?? rescheduleInvites,
+      totalUsers: users.length,
+      totalInvites,
+      acceptedInvites,
+      declinedInvites,
+      rescheduleInvites,
       activeUsers,
       bannedCount,
       roleCounts: {
@@ -529,10 +452,10 @@
         dismissed: dismissedReports,
         total: pendingReports + resolvedReports + dismissedReports
       },
-      totalFriendsConnections: stats.totalFriendsConnections ?? 0,
+      totalFriendsConnections,
       users,
-      personalInvitesCount: stats.personalInvitesCount ?? personalInvites.length,
-      groupInvitesCount: stats.groupInvitesCount ?? groupInvites.length,
+      personalInvitesCount,
+      groupInvitesCount,
       typeCounts,
       personalInvites,
       groupInvites,
@@ -540,51 +463,22 @@
   }
 
   // ═══════════════════════════════════════════════════════
-  // Real-time listeners — scoped to user's own data only
+  // Real-time listeners
   // ═══════════════════════════════════════════════════════
+
+  function listenStatuses(uid, callback) {
+    if (!db()) return;
+    db().ref('statuses').on('value', snap => {
+      callback(snap.val() || {});
+    });
+  }
 
   function listenUserInvites(uid, callback) {
     if (!db()) return;
-    return db().ref('user-invites/' + uid).on('value', snap => {
+    db().ref('user-invites/' + uid).on('value', snap => {
       const list = [];
       if (snap.exists()) snap.forEach(c => { list.push(c.val()); });
       callback(list.sort((a, b) => (b.created || 0) - (a.created || 0)));
-    });
-  }
-
-  function listenFriendRequests(uid, callback) {
-    if (!db()) return;
-    return db().ref('friend-requests/' + uid).on('value', snap => {
-      if (!snap.exists()) { callback([]); return; }
-      const list = [];
-      snap.forEach(c => {
-        const v = c.val();
-        if (c.key.endsWith('_accepted') || c.key.endsWith('_removed')) return;
-        list.push(v);
-      });
-      callback(list.sort((a, b) => (b.sentAt || 0) - (a.sentAt || 0)));
-    });
-  }
-
-  function listenFriends(uid, callback) {
-    if (!db()) return;
-    return db().ref('friends/' + uid).on('value', async snap => {
-      if (!snap.exists()) { callback([]); return; }
-      const list = [];
-      snap.forEach(c => { list.push(c.val()); });
-      // Fetch fresh profile data in parallel
-      const profiles = await Promise.all(
-        list.map(f => getPublicProfile(f.uid).catch(() => null))
-      );
-      profiles.forEach((pf, i) => {
-        if (pf) {
-          if (pf.avatar)    list[i].avatar    = pf.avatar;
-          if (pf.name)      list[i].name      = pf.name;
-          if (pf.uniqueId)  list[i].uniqueId  = pf.uniqueId;
-          if (pf.lastSeen)  list[i].lastSeen  = pf.lastSeen;
-        }
-      });
-      callback(list);
     });
   }
 
@@ -599,19 +493,22 @@
 
   async function sendInviteToFriend(inv, friendUid) {
     if (!db()) return;
-    // Save invite atomically
+    // Save invite
     await createInvite(inv);
-
-    // Send notification (must be via Cloud Function; client now can't write to other's notifications)
-    // For now, we rely on a Cloud Function on invites/$id create that sends notification to recipientUid.
-    // Alternatively, we keep an invite-recipient marker the recipient polls via getUserInvites.
-    // (See Cloud Function scaffold in /firebase-functions/)
+    // Send notification
+    await ZAP.notifications.addNotification(friendUid, {
+      type: 'invite',
+      title: 'Нове запрошення',
+      body: `${inv.from || 'Хтось'} запрошує вас: ${ZAP.utils.TYPE_MAP[inv.type]?.l || 'Зустріч'}`,
+      inviteId: inv.id,
+      fromUid: inv.creatorUid,
+      fromName: inv.from || '',
+    });
   }
 
   ZAP.db = {
     // Users
-    getUserByUid, getPublicProfile, getUserByLogin, getUserById,
-    getAllUsers, updateUserRole, banUser,
+    getUserByUid, getUserByLogin, getUserById, getAllUsers, updateUserRole, banUser,
     // Invites
     createInvite, getInvite, getUserInvites, updateInviteStatus, deleteInvite,
     saveReschedule, getReschedule,
@@ -620,13 +517,13 @@
     updateGroupMemberStatus, sendGroupInviteToFriends,
     // Friends
     sendFriendRequest, acceptFriendRequest, declineFriendRequest,
-    removeFriend, getFriends, getFriendRequests, getFriendEchoes,
+    removeFriend, getFriends, getFriendRequests,
     // Reports
     createReport, getReports, resolveReport,
     // Stats
     getStats,
     // Real-time
-    listenUserInvites, listenFriendRequests, listenFriends, stopListening,
+    listenStatuses, listenUserInvites, stopListening,
     // Direct invite
     sendInviteToFriend,
   };

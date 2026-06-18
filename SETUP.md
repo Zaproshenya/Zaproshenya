@@ -1,9 +1,5 @@
 # Запрошення ✦ — Інструкція з налаштування
 
-> ⚠️ **ВАЖЛИВО**: Ця версія містить критичні виправлення безпеки.
-> Перед запуском обов'язково прочитайте **[README_FIXES.md](./README_FIXES.md)** — там описані
-> всі зміни, нові Firebase Security Rules, VAPID-ключі та Cloud Functions, які треба встановити.
-
 ## 1. Firebase (Realtime Database & Auth)
 
 Цей проект працює повністю на безкоштовному тарифі Firebase і не вимагає прив'язки банківської картки.
@@ -11,7 +7,7 @@
 
 ### Крок 1: Увімкнення Authentication
 1. Перейдіть в [Firebase Console](https://console.firebase.google.com)
-2. Відкрийте ваш проект `zaproshenya-82751`
+2. Відкрийте ваш проект `zaproshennya-a1ea7`
 3. В лівому меню натисніть **Build → Authentication**
 4. Натисніть **Get Started**
 5. Перейдіть на вкладку **Sign-in method**

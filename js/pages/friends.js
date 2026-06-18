@@ -3,8 +3,6 @@
    ═══════════════════════════════════════════════════════ */
 
 (function () {
-  'use strict';
-
   let friends = [];
   let requests = [];
   let searchResult = null;
@@ -327,11 +325,11 @@
   async function acceptReq(fromUid) {
     const me = ZAP.auth.getUser();
     if (!me) return;
-
+    
     // Mark as processed immediately to prevent duplicate clicks
     processedRequests.add(fromUid);
     ZAP.render();
-
+    
     try {
       await ZAP.db.acceptFriendRequest(me.uid, fromUid);
       requests = requests.filter(r => r.fromUid !== fromUid);
@@ -348,11 +346,11 @@
   async function declineReq(fromUid) {
     const me = ZAP.auth.getUser();
     if (!me) return;
-
+    
     // Mark as processed immediately to prevent duplicate clicks
     processedRequests.add(fromUid);
     ZAP.render();
-
+    
     await ZAP.db.declineFriendRequest(me.uid, fromUid);
     requests = requests.filter(r => r.fromUid !== fromUid);
     await ZAP.notifications.deleteNotificationsByPayload(me.uid, 'friend-request', 'fromUid', fromUid);
@@ -361,7 +359,7 @@
   }
 
   async function removeFriend(friendUid, friendName) {
-    if (!await ZAP.utils.confirmDialog(`Видалити ${friendName} з друзів?`)) return;
+    if (!await ZAP.utils.confirm(`Видалити ${friendName} з друзів?`)) return;
     const me = ZAP.auth.getUser();
     if (!me) return;
     await ZAP.db.removeFriend(me.uid, friendUid);

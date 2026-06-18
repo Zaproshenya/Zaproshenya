@@ -3,8 +3,6 @@
    ═══════════════════════════════════════════════════════ */
 
 (function () {
-  'use strict';
-
   let userData = null;
   let friendStatus = 'none'; // 'none' | 'friend' | 'pending-sent' | 'pending-received'
   let loading = true;
@@ -19,12 +17,11 @@
     // Check friend status
     const me = ZAP.auth.getUser();
     if (me && userData) {
-      // Are we already friends?
       const friendSnap = await ZAP.dbRef.ref('friends/' + me.uid + '/' + uid).get();
       if (friendSnap.exists()) {
         friendStatus = 'friend';
       } else {
-        // Check pending requests in BOTH directions
+        // Check pending requests
         try {
           const sentSnap = await ZAP.dbRef.ref('friend-requests/' + uid + '/' + me.uid).get();
           if (sentSnap.exists()) {
@@ -141,12 +138,16 @@
 
     try {
       const result = await ZAP.db.sendFriendRequest(me.uid, userData.uid, myProfile.name);
-      friendStatus = 'pending-sent';
-      ZAP.utils.toast(`Запит надіслано`, 'success');
+      if (result === 'auto-accepted') {
+        friendStatus = 'friend';
+        ZAP.utils.toast(`${userData.name} тепер ваш друг!`, 'success');
+      } else {
+        friendStatus = 'pending-sent';
+        ZAP.utils.toast(`Запит надіслано`, 'success');
+      }
       ZAP.render();
     } catch (e) {
-      const msg = e.message || 'Не вдалося надіслати запит';
-      ZAP.utils.toast(msg, 'error');
+      ZAP.utils.toast('Не вдалося надіслати запит. Спробуйте пізніше', 'error');
     }
   }
 

@@ -1,6 +1,4 @@
 (function () {
-  'use strict';
-
   function addControls(page) {
     // Topbar: add dashboard button before user section
     var topRight = document.querySelector('.topbar-right');

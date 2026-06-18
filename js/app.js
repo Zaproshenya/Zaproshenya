@@ -3,8 +3,6 @@
    ═══════════════════════════════════════════════════════ */
 
 (function () {
-  'use strict';
-
   let authReady = false;
   let unreadCount = 0;
   let lastPage = '';
@@ -125,7 +123,7 @@
         profile.banned = false;
         profile.bannedUntil = null;
       } else {
-        // Determine ban status text with proper Ukrainian pluralization
+        // Determine ban status text (Task 1)
         let banStatusTitle = 'Назавжди заблокований';
         let banStatusBody = 'Ваш акаунт було <strong>перманентно</strong> заблоковано модератором.';
 
@@ -135,24 +133,11 @@
           const hoursLeft = Math.ceil(msLeft / (60 * 60 * 1000));
           const minsLeft = Math.ceil(msLeft / (60 * 1000));
 
-          let amount, unitForm;
-          if (daysLeft > 1) {
-            amount = daysLeft;
-            unitForm = ZAP.utils.pluralize(daysLeft, ['день', 'дні', 'днів']);
-          } else if (hoursLeft > 1) {
-            amount = hoursLeft;
-            unitForm = ZAP.utils.pluralize(hoursLeft, ['годину', 'години', 'годин']);
-          } else {
-            amount = minsLeft;
-            unitForm = ZAP.utils.pluralize(minsLeft, ['хвилину', 'хвилини', 'хвилин']);
-          }
-
-          banStatusTitle = `Заблокований на ${amount} ${unitForm}`;
+          banStatusTitle = `Заблокований на ${daysLeft > 1 ? daysLeft + ' ' + (daysLeft <= 4 ? 'дні' : 'днів') : hoursLeft > 1 ? hoursLeft + ' год' : minsLeft + ' хв'}`;
 
           const untilDate = new Date(profile.bannedUntil);
           const untilStr = untilDate.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-          const shortUnit = daysLeft > 1 ? 'дн.' : hoursLeft > 1 ? 'год.' : 'хв.';
-          banStatusBody = `До розблокування залишилось: <strong>${amount} ${shortUnit}</strong><br><span style="color:var(--muted);font-size:.85rem">Розблокування: ${untilStr}</span>`;
+          banStatusBody = `До розблокування залишилось: <strong>${daysLeft > 1 ? daysLeft + ' дн.' : hoursLeft > 1 ? hoursLeft + ' год.' : minsLeft + ' хв.'}</strong><br><span style="color:var(--muted);font-size:.85rem">Розблокування: ${untilStr}</span>`;
         }
 
         app.innerHTML = `
@@ -523,17 +508,17 @@
     ${notifs.map((n, i) => {
       const notifIcon = iconMap[n.type] || phIcon('info',20);
       let actionBtn = '';
-      const isProcessed = (n.type === 'friend-request' && n.fromUid && friendUids.has(n.fromUid));
+      const isProcessed = (n.type === 'friend-request' && n.fromUid && friendUids.has(n.fromUid)) || processedReqs.has(n.fromUid);
 
       if (n.type === 'friend-request' && n.fromUid) {
         if (isProcessed) {
           actionBtn = `<span class="status-text">Запит прийнято</span>`;
         } else {
           actionBtn = `
-            <button class="btn btn-gold btn-sm"
-              onclick="ZAP.app.acceptNotifFriend('${n.fromUid}', this)">Прийняти</button>
-            <button class="btn btn-outline btn-sm"
-              onclick="ZAP.app.declineNotifFriend('${n.fromUid}', this)">Відхилити</button>
+            <button class="btn btn-gold btn-sm" 
+              onclick="ZAP.pages.friends.acceptReq('${n.fromUid}');processedReqs.add('${n.fromUid}');this.closest('.notif-item').remove()">Прийняти</button>
+            <button class="btn btn-outline btn-sm" 
+              onclick="ZAP.pages.friends.declineReq('${n.fromUid}');processedReqs.add('${n.fromUid}');this.closest('.notif-item').remove()">Відхилити</button>
           `;
         }
       } else if ((n.type === 'invite' || n.type === 'group-invite') && n.inviteId) {
@@ -600,49 +585,9 @@
     if (unreadCount === 0 && badge) badge.remove();
   }
 
-  // ── Accept friend request directly from notifications tab ──
-  async function acceptNotifFriend(fromUid, btn) {
-    const user = ZAP.auth.getUser();
-    if (!user || !fromUid) return;
-    const item = btn.closest('.notif-item');
-    if (item) {
-      item.style.transition = 'opacity 0.2s, transform 0.2s';
-      item.style.opacity = '0';
-      item.style.transform = 'translateX(20px)';
-      setTimeout(() => item.remove(), 220);
-    }
-    try {
-      await ZAP.pages.friends.acceptReq(fromUid);
-      await ZAP.notifications.deleteNotificationsByPayload(user.uid, 'friend-request', 'fromUid', fromUid);
-      await updateUnreadCount();
-    } catch (e) {
-      ZAP.utils.toast('Не вдалося прийняти запит', 'error');
-    }
-  }
-
-  // ── Decline friend request directly from notifications tab ──
-  async function declineNotifFriend(fromUid, btn) {
-    const user = ZAP.auth.getUser();
-    if (!user || !fromUid) return;
-    const item = btn.closest('.notif-item');
-    if (item) {
-      item.style.transition = 'opacity 0.2s, transform 0.2s';
-      item.style.opacity = '0';
-      item.style.transform = 'translateX(20px)';
-      setTimeout(() => item.remove(), 220);
-    }
-    try {
-      await ZAP.pages.friends.declineReq(fromUid);
-      await ZAP.notifications.deleteNotificationsByPayload(user.uid, 'friend-request', 'fromUid', fromUid);
-      await updateUnreadCount();
-    } catch (e) {
-      ZAP.utils.toast('Не вдалося відхилити запит', 'error');
-    }
-  }
-
   // ── Init ──
   ZAP.render = render;
-  ZAP.app = { deleteNotification, updateUnreadCount, acceptNotifFriend, declineNotifFriend };
+  ZAP.app = { deleteNotification, updateUnreadCount };
   ZAP.isRendering = () => _rendering;
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.notifications = { _loaded: false, _cached: '' };
@@ -667,84 +612,60 @@
       await updateUnreadCount();
       // Initialize FCM for push notifications
       ZAP.notifications.initFCM(user.uid);
-
-      // Periodic timers (managed — cleared on logout)
-      ZAP.notifications.setTimers(
-        () => {
-          const u = ZAP.auth.getUser();
-          if (u && ZAP.dbRef) {
-            const ts = Date.now();
-            const updates = {};
-            updates['users/' + u.uid + '/lastSeen'] = ts;
-            updates['profiles-public/' + u.uid + '/lastSeen'] = ts;
-            ZAP.dbRef.ref().update(updates).catch(() => {});
-          }
-        },
-        updateUnreadCount
-      );
+      // Periodic unread count update
+      setInterval(updateUnreadCount, 30000);
+      
+      // Presence heartbeat: update lastSeen every 45s
+      setInterval(() => {
+        const u = ZAP.auth.getUser();
+        if (u && ZAP.dbRef) {
+          ZAP.dbRef.ref('users/' + u.uid + '/lastSeen').set(Date.now()).catch(() => {});
+        }
+      }, 45000);
 
       // Start real-time notification listener with popup
-      // NOTE: Auto-accept/auto-remove of friends has been removed for security.
-      // Friend accept/remove is now driven by friend-requests echo markers,
-      // which the client polls and applies with explicit user-side handling.
       ZAP.notifications.listenNotifications(user.uid, (notif) => {
         showNotifPopup(notif);
+        // Auto-process friend-accepted: add the other user to our friends list
+        if (notif.type === 'friend-accepted' && notif.fromUid) {
+          ZAP.db.acceptFriendRequest(user.uid, notif.fromUid).catch(() => {});
+        }
+        // Auto-process friend-removed: remove the other user from our friends list
+        if (notif.type === 'friend-removed' && notif.fromUid) {
+          ZAP.dbRef.ref('friends/' + user.uid + '/' + notif.fromUid).remove().catch(() => {});
+        }
       });
       // Request push permission
       ZAP.notifications.requestPushPermission();
 
-      // Process friend-requests echoes (accepted/removed by other user)
-      // — this is the safe replacement for auto-accept via notifications.
-      const processEchoes = async () => {
-        try {
-          const echoes = await ZAP.db.getFriendEchoes(user.uid);
-          for (const e of echoes) {
-            if (e.type === 'accepted' && e.data?.fromUid) {
-              // The other user accepted our friend request — refresh our friends list
-              if (ZAP.pages.friends?._loaded) {
-                ZAP.pages.friends._loaded = false;
-                if (ZAP.router.parsePath().page === 'friends') ZAP.render();
-              }
-            } else if (e.type === 'removed' && e.data?.fromUid) {
-              // The other user removed us — refresh our friends list
-              if (ZAP.pages.friends?._loaded) {
-                ZAP.pages.friends._loaded = false;
-                if (ZAP.router.parsePath().page === 'friends') ZAP.render();
-              }
-            }
-          }
-        } catch (_) {}
-      };
-      processEchoes();
-      setInterval(processEchoes, 60000);
-
-      // ── Task 3: Real-time ban status listener (managed — cleared on logout) ──
-      ZAP.notifications.listenBanStatus(
-        user.uid,
-        // onBan
-        () => {
+      // ── Task 3: Real-time ban status listener ──
+      // Watch banned/bannedUntil fields — if admin bans while user is online,
+      // they immediately lose access without needing a page reload.
+      if (ZAP.dbRef) {
+        ZAP.dbRef.ref('users/' + user.uid + '/banned').on('value', snap => {
           const profile = ZAP.auth.getProfile();
           if (!profile) return;
-          ZAP.dbRef.ref('users/' + user.uid).once('value', fullSnap => {
-            if (fullSnap.exists()) {
-              const updated = fullSnap.val();
-              profile.banned = updated.banned;
-              profile.bannedUntil = updated.bannedUntil || null;
-            } else {
-              profile.banned = true;
-            }
+          const newBanned = snap.val();
+          if (newBanned === true && !profile.banned) {
+            // User just got banned — re-fetch full profile to get bannedUntil, then re-render
+            ZAP.dbRef.ref('users/' + user.uid).once('value', fullSnap => {
+              if (fullSnap.exists()) {
+                const updated = fullSnap.val();
+                profile.banned = updated.banned;
+                profile.bannedUntil = updated.bannedUntil || null;
+              } else {
+                profile.banned = true;
+              }
+              ZAP.render();
+            });
+          } else if (newBanned === false && profile.banned) {
+            // User got unbanned — restore access
+            profile.banned = false;
+            profile.bannedUntil = null;
             ZAP.render();
-          });
-        },
-        // onUnban
-        () => {
-          const profile = ZAP.auth.getProfile();
-          if (!profile || !profile.banned) return;
-          profile.banned = false;
-          profile.bannedUntil = null;
-          ZAP.render();
-        }
-      );
+          }
+        });
+      }
     }
     render();
   });
