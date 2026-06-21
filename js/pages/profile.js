@@ -88,13 +88,14 @@
     return `
     <!-- Profile Hero Banner -->
     <div class="profile-hero">
+      <div class="profile-hero-star">✦</div>
       <div class="profile-hero-inner">
         <div class="profile-avatar-wrap">
           <div class="profile-avatar-ring">
             ${avatarHTML(profile, 'xl')}
           </div>
           <label class="profile-avatar-edit" title="Змінити аватар" id="avatar-edit-btn">
-            ${icon('camera', 16)}
+            ${icon('camera', 14)}
             <input type="file" accept="image/*" style="display:none"
               onchange="ZAP.pages.profile.uploadAvatar(this.files[0])"/>
           </label>
@@ -105,7 +106,13 @@
             ${roleBadge(profile.role)}
             <span class="profile-id">${esc(profile.uniqueId)}</span>
           </div>
-          <div class="profile-hero-login">@${esc(profile.login)} · з ${memberSince}</div>
+          <div class="profile-hero-login">
+            ${icon('user', 11)}
+            @${esc(profile.login)}
+            <span style="opacity:.4;margin:0 2px">&middot;</span>
+            ${icon('calendar', 11)}
+            з ${memberSince}
+          </div>
         </div>
       </div>
     </div>
@@ -117,15 +124,15 @@
         <div class="profile-stat-label">Запрошень</div>
       </div>
       <div class="profile-stat-card">
-        <div class="profile-stat-num">${stats ? stats.totalFriends : '—'}</div>
+        <div class="profile-stat-num" style="background:linear-gradient(135deg,#4a90d9,#6eb3f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 6px rgba(74,144,217,.25))">${stats ? stats.totalFriends : '—'}</div>
         <div class="profile-stat-label">Друзів</div>
       </div>
       <div class="profile-stat-card">
-        <div class="profile-stat-num" style="background:linear-gradient(135deg,var(--green),#4caf88);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${stats ? stats.acceptedCount : '—'}</div>
+        <div class="profile-stat-num" style="background:linear-gradient(135deg,var(--green),#56c68a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 6px rgba(45,122,79,.25))">${stats ? stats.acceptedCount : '—'}</div>
         <div class="profile-stat-label">Прийнято</div>
       </div>
       <div class="profile-stat-card">
-        <div class="profile-stat-num" style="background:linear-gradient(135deg,var(--muted),#a0968c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${stats ? stats.pendingCount : '—'}</div>
+        <div class="profile-stat-num" style="background:linear-gradient(135deg,#a08878,#c4b0a0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${stats ? stats.pendingCount : '—'}</div>
         <div class="profile-stat-label">Очікує</div>
       </div>
     </div>
