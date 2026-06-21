@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   Page — Friends & Friend Requests
+   Page — Friends & Friend Requests — Premium Redesign
    ═══════════════════════════════════════════════════════ */
 
 (function () {
@@ -8,9 +8,9 @@
   let searchResult = null;
   let searchLoading = false;
   let tab = 'friends'; // 'friends' | 'requests' | 'invites'
-  let friendInvites = []; // invites from friends
+  let friendInvites = [];
   let loaded = false;
-  let processedRequests = new Set(); // Track processed friend requests by fromUid
+  let processedRequests = new Set();
 
   async function load() {
     loaded = false;
@@ -19,15 +19,11 @@
     friends = await ZAP.db.getFriends(user.uid);
     requests = await ZAP.db.getFriendRequests(user.uid);
 
-    // Mark requests as processed if user is already a friend
     const friendUids = new Set(friends.map(f => f.uid));
     requests.forEach(req => {
-      if (friendUids.has(req.fromUid)) {
-        processedRequests.add(req.fromUid);
-      }
+      if (friendUids.has(req.fromUid)) processedRequests.add(req.fromUid);
     });
 
-    // Load friend invites from notifications (unread only, last 7 days)
     const notifs = await ZAP.notifications.getNotifications(user.uid);
     const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
     const now = Date.now();
@@ -42,26 +38,32 @@
 
   function renderSkeleton() {
     return `
-    <h1 class="page-title" style="margin-bottom:6px"><span class="skeleton-line" style="width:120px;height:28px;display:inline-block;vertical-align:middle"></span></h1>
-    <p class="page-subtitle" style="margin-bottom:20px"><span class="skeleton-line" style="width:280px;height:14px;display:inline-block;vertical-align:middle"></span></p>
-    <div style="margin-bottom:20px">
-      <div class="skeleton" style="height:44px;border-radius:var(--radius-pill)"></div>
-    </div>
-    <div style="display:flex;gap:4px;margin-bottom:20px;background:var(--warm);border-radius:var(--radius-sm);padding:4px">
-      <div class="skeleton" style="flex:1;height:40px;border-radius:var(--radius-sm)"></div>
-      <div class="skeleton" style="flex:1;height:40px;border-radius:var(--radius-sm)"></div>
-      <div class="skeleton" style="flex:1;height:40px;border-radius:var(--radius-sm)"></div>
-    </div>
-    ${[1,2,3,4].map(() => `
-      <div class="skeleton-card" style="display:flex;align-items:center;gap:12px;padding:12px 16px">
-        <div class="skeleton-circle" style="width:40px;height:40px;flex-shrink:0"></div>
-        <div style="flex:1;min-width:0">
-          <div class="skeleton-line w-1-2" style="margin-bottom:6px;height:14px"></div>
-          <div class="skeleton-line w-1-4" style="height:12px"></div>
-        </div>
-        <div class="skeleton" style="width:32px;height:32px;border-radius:50%;flex-shrink:0"></div>
+    <div class="friends-header">
+      <div>
+        <div class="skeleton-line" style="width:140px;height:26px;margin-bottom:8px"></div>
+        <div class="skeleton-line" style="width:260px;height:13px"></div>
       </div>
-    `).join('')}`;
+    </div>
+    <div style="margin-bottom:20px">
+      <div class="skeleton" style="height:48px;border-radius:var(--radius-sm)"></div>
+    </div>
+    <div class="mode-tabs" style="margin-bottom:20px">
+      <div class="skeleton" style="flex:1;height:42px;border-radius:10px"></div>
+      <div class="skeleton" style="flex:1;height:42px;border-radius:10px"></div>
+      <div class="skeleton" style="flex:1;height:42px;border-radius:10px"></div>
+    </div>
+    <div class="friend-list">
+      ${[1,2,3,4].map(() => `
+        <div class="friend-row" style="animation:none">
+          <div class="skeleton-circle" style="width:42px;height:42px;flex-shrink:0"></div>
+          <div style="flex:1;min-width:0">
+            <div class="skeleton-line w-1-3" style="margin-bottom:6px;height:14px"></div>
+            <div class="skeleton-line w-1-4" style="height:11px"></div>
+          </div>
+          <div class="skeleton" style="width:32px;height:32px;border-radius:50%;flex-shrink:0"></div>
+        </div>
+      `).join('')}
+    </div>`;
   }
 
   function render() {
@@ -69,34 +71,51 @@
     const { esc, avatarHTML, icon } = ZAP.utils;
 
     return `
-    <h1 class="page-title">Друзі</h1>
-    <p class="page-subtitle">Додавайте друзів та надсилайте запрошення напряму</p>
+    <!-- Page header -->
+    <div class="friends-header">
+      <div>
+        <h1 class="friends-title">Друзі</h1>
+        <p class="friends-subtitle">Додавайте друзів та надсилайте запрошення напряму</p>
+      </div>
+    </div>
 
-    <!-- Search by ID -->
-    <div class="friend-search">
-      <input id="friend-search-input" placeholder="Введіть ID (наприклад ZAP-A7F3K2)"
-        aria-label="Пошук друга за ID" maxlength="10"
-        onkeydown="if(event.key==='Enter')ZAP.pages.friends.search()"/>
-      <button class="btn btn-dark" onclick="ZAP.pages.friends.search()" ${searchLoading ? 'disabled' : ''}>
-        ${searchLoading ? icon('clock', 14) : `${icon('magnifying-glass', 14)} Знайти`}
+    <!-- Search bar -->
+    <div class="friends-search-bar">
+      <div class="friends-search-input-wrap">
+        <span class="friends-search-icon">${icon('magnifying-glass', 18)}</span>
+        <input id="friend-search-input"
+          placeholder="Введіть ID (ZAP-XXXXXX) або логін (@name)"
+          aria-label="Пошук друга за ID або логіном" maxlength="12"
+          onkeydown="if(event.key==='Enter')ZAP.pages.friends.search()"
+          oninput="ZAP.pages.friends.clearSearch()"/>
+      </div>
+      <button class="btn btn-dark" onclick="ZAP.pages.friends.search()" ${searchLoading ? 'disabled' : ''}
+        style="flex-shrink:0;padding:12px 20px">
+        ${searchLoading ? icon('circle-notch', 16) : 'Знайти'}
       </button>
     </div>
 
     ${searchResult !== null ? renderSearchResult() : ''}
 
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab ${tab === 'friends' ? 'active' : ''}"
+    <!-- Tab bar -->
+    <div class="mode-tabs">
+      <button class="mode-tab ${tab === 'friends' ? 'active' : ''}"
         onclick="ZAP.pages.friends.setTab('friends')">
-        ${icon('users', 18)} Друзі ${friends.length > 0 ? `(${friends.length})` : ''}
+        ${icon('users', 16)}
+        Друзі
+        ${friends.length > 0 ? `<span class="tab-count">${friends.length}</span>` : ''}
       </button>
-      <button class="tab ${tab === 'requests' ? 'active' : ''}"
+      <button class="mode-tab ${tab === 'requests' ? 'active' : ''}"
         onclick="ZAP.pages.friends.setTab('requests')">
-        ${icon('hand-waving', 18)} Запити ${requests.length > 0 ? `(${requests.length})` : ''}
+        ${icon('hand-waving', 16)}
+        Запити
+        ${requests.length > 0 ? `<span class="tab-count" style="background:rgba(192,57,43,.15);color:var(--red)">${requests.length}</span>` : ''}
       </button>
-      <button class="tab ${tab === 'invites' ? 'active' : ''}"
+      <button class="mode-tab ${tab === 'invites' ? 'active' : ''}"
         onclick="ZAP.pages.friends.setTab('invites')">
-        ${icon('paper-plane-tilt', 18)} Запрошення ${friendInvites.length > 0 ? `(${friendInvites.length})` : ''}
+        ${icon('paper-plane-tilt', 16)}
+        Запрошення
+        ${friendInvites.length > 0 ? `<span class="tab-count">${friendInvites.length}</span>` : ''}
       </button>
     </div>
 
@@ -114,41 +133,46 @@
   }
 
   function renderFriendsList() {
-    const { icon } = ZAP.utils;
+    const { esc, avatarHTML, icon } = ZAP.utils;
+
     if (friends.length === 0) {
       return `
-      <div class="empty">
-        <div class="empty-icon"><i class="ph ph-users" style="font-size:3rem"></i></div>
-        <p class="empty-desc" style="margin-bottom:8px">Ще немає друзів</p>
-        <p style="font-size:.88rem;color:var(--muted)">Знайдіть друзів за їх унікальним ID</p>
+      <div class="friends-empty">
+        <div class="friends-empty-icon">${icon('users-three', 40)}</div>
+        <div class="friends-empty-title">Ще немає друзів</div>
+        <p class="friends-empty-sub">
+          Введіть унікальний ID (ZAP-XXXXXX) або @логін у пошуковий рядок вище, щоб знайти друга
+        </p>
       </div>`;
     }
 
-    return `<div class="friend-list">
-    ${friends.map((f, i) => {
-      const { esc, avatarHTML, icon } = ZAP.utils;
-      const online = isOnline(f);
-      const statusText = online ? 'В мережі' : (f.lastSeen ? ZAP.utils.timeAgo(f.lastSeen) : '');
-      return `
-      <div class="friend-row" style="animation-delay:${i * 40}ms" data-uid="${f.uid}">
-        ${avatarHTML(f._pf || f)}
-        <div class="friend-row-info">
-          <div class="friend-row-name">${esc(f.name)}</div>
-          ${statusText ? `<div class="friend-row-status${online ? ' online' : ''}">${online ? '● ' : ''}${statusText}</div>` : ''}
-        </div>
-        <button class="friend-menu-btn" onclick="ZAP.pages.friends.toggleMenu(event, '${f.uid}')" title="Дії">${icon('dots-three-vertical', 20)}</button>
-      </div>`;
-    }).join('')}
+    return `
+    <div class="friend-list">
+      ${friends.map((f, i) => {
+        const online = isOnline(f);
+        const statusText = online ? 'В мережі' : (f.lastSeen ? ZAP.utils.timeAgo(f.lastSeen) : '');
+        return `
+        <div class="friend-row" style="animation-delay:${i * 35}ms" data-uid="${f.uid}">
+          <div style="position:relative;flex-shrink:0">
+            ${avatarHTML(f._pf || f)}
+            ${online ? '<span class="friend-online-dot"></span>' : ''}
+          </div>
+          <div class="friend-row-info">
+            <div class="friend-row-name">${esc(f.name)}</div>
+            ${statusText ? `<div class="friend-row-status${online ? ' online' : ''}">${statusText}</div>` : ''}
+          </div>
+          <button class="friend-menu-btn" onclick="ZAP.pages.friends.toggleMenu(event, '${f.uid}')" title="Дії">
+            ${icon('dots-three-vertical', 20)}
+          </button>
+        </div>`;
+      }).join('')}
     </div>`;
   }
 
   let openMenuUid = null;
   function toggleMenu(e, uid) {
     e.stopPropagation();
-    if (openMenuUid === uid) {
-      closeMenu();
-      return;
-    }
+    if (openMenuUid === uid) { closeMenu(); return; }
     closeMenu();
     const row = e.target.closest('.friend-row');
     if (!row) return;
@@ -159,127 +183,144 @@
     const btn = e.target.closest('.friend-menu-btn');
     if (btn) {
       const rect = btn.getBoundingClientRect();
-      menu.style.position = 'fixed';
-      menu.style.top = (rect.bottom + 4) + 'px';
+      menu.style.top = (rect.bottom + 6) + 'px';
       menu.style.right = (window.innerWidth - rect.right) + 'px';
-      menu.style.zIndex = '999';
-      if (rect.bottom + 130 > window.innerHeight) {
+      if (rect.bottom + 140 > window.innerHeight) {
         menu.style.top = 'auto';
-        menu.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
+        menu.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
       }
     }
     menu.innerHTML = `
       <button class="friend-menu-item" onclick="ZAP.pages.friends.goProfile('${uid}')">
-        ${ZAP.utils.icon('user', 16)} Профіль
+        ${ZAP.utils.icon('user', 16)} Переглянути профіль
       </button>
       <button class="friend-menu-item" onclick="ZAP.pages.friends.goInvite()">
         ${ZAP.utils.icon('paper-plane-tilt', 16)} Запросити
       </button>
       <button class="friend-menu-item danger" onclick="ZAP.pages.friends.removeFriend('${uid}','${ZAP.utils.esc(f.name)}')">
-        ${ZAP.utils.icon('x', 16)} Видалити з друзів
-      </button>
-    `;
+        ${ZAP.utils.icon('user-minus', 16)} Видалити з друзів
+      </button>`;
     document.body.appendChild(menu);
     openMenuUid = uid;
     setTimeout(() => document.addEventListener('click', closeMenu, { once: true }), 10);
   }
+
   function closeMenu() {
-    const m = document.querySelector('.friend-menu');
-    if (m) m.remove();
+    document.querySelector('.friend-menu')?.remove();
     openMenuUid = null;
   }
+
   function goProfile(uid) { closeMenu(); ZAP.router.go('user-profile', { uid }); }
   function goInvite() { closeMenu(); ZAP.router.go('create'); }
 
   function renderRequests() {
-    const { icon } = ZAP.utils;
+    const { icon, avatarHTML, esc, timeAgo } = ZAP.utils;
+
     if (requests.length === 0) {
       return `
-      <div class="empty">
-        <div class="empty-icon">${icon('hand-waving', 32)}</div>
-        <p class="empty-desc">Немає запитів на дружбу</p>
+      <div class="friends-empty">
+        <div class="friends-empty-icon">${icon('hand-waving', 40)}</div>
+        <div class="friends-empty-title">Немає запитів</div>
+        <p class="friends-empty-sub">Нові запити на дружбу з'являться тут</p>
       </div>`;
     }
 
-    return requests.map((req, i) => {
-      const isProcessed = processedRequests.has(req.fromUid);
-      return `
-      <div class="friend-card ${isProcessed ? 'processed' : ''}" style="animation-delay:${i * 40}ms">
-        <div class="avatar">${(req.fromName || '?').charAt(0).toUpperCase()}</div>
-        <div class="friend-info">
-          <div class="friend-name">${ZAP.utils.esc(req.fromName)}</div>
-          <div style="font-size:.78rem;color:var(--muted)">${ZAP.utils.timeAgo(req.sentAt)}</div>
-        </div>
-        ${isProcessed ? `
-          <div class="friend-actions processed-status">
-            <span class="status-text">Запит прийнято</span>
+    return `
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${requests.map((req, i) => {
+        const isProcessed = processedRequests.has(req.fromUid);
+        return `
+        <div class="friend-request-card ${isProcessed ? 'processed' : ''}" style="animation-delay:${i * 35}ms">
+          <div class="avatar" style="flex-shrink:0">${(req.fromName || '?').charAt(0).toUpperCase()}</div>
+          <div class="friend-request-info">
+            <div class="friend-request-name">${esc(req.fromName)}</div>
+            <div class="friend-request-time">${timeAgo(req.sentAt)}</div>
           </div>
-        ` : `
-          <div class="friend-actions">
-            <button class="btn btn-gold btn-sm"
-              onclick="ZAP.pages.friends.acceptReq('${req.fromUid}')">${icon('check', 14)} Прийняти</button>
-            <button class="btn btn-outline btn-sm"
-              onclick="ZAP.pages.friends.declineReq('${req.fromUid}')">${icon('x', 14)}</button>
-          </div>
-        `}
-      </div>
-    `}).join('');
+          ${isProcessed ? `
+            <span class="friend-accepted-badge">${icon('check-circle', 14)} Прийнято</span>
+          ` : `
+            <div class="friend-request-actions">
+              <button class="btn btn-gold btn-sm"
+                onclick="ZAP.pages.friends.acceptReq('${req.fromUid}')">
+                ${icon('check', 14)} Прийняти
+              </button>
+              <button class="btn-icon"
+                onclick="ZAP.pages.friends.declineReq('${req.fromUid}')"
+                title="Відхилити" style="border-radius:8px;width:36px;height:36px">
+                ${icon('x', 16)}
+              </button>
+            </div>
+          `}
+        </div>`;
+      }).join('')}
+    </div>`;
   }
 
   function renderFriendInvites() {
-    const { icon } = ZAP.utils;
+    const { icon, esc, timeAgo } = ZAP.utils;
+
     if (friendInvites.length === 0) {
       return `
-      <div class="empty">
-        <div class="empty-icon">${icon('paper-plane-tilt', 32)}</div>
-        <p style="font-style:italic;font-size:1.05rem;margin-bottom:8px">Немає запрошень від друзів</p>
-        <p style="font-size:.88rem;color:var(--muted)">Коли друзі надішлють вам запрошення, вони з'являться тут</p>
+      <div class="friends-empty">
+        <div class="friends-empty-icon">${icon('paper-plane-tilt', 40)}</div>
+        <div class="friends-empty-title">Немає запрошень від друзів</div>
+        <p class="friends-empty-sub">Коли друзі надішлють вам запрошення — вони з'являться тут</p>
       </div>`;
     }
 
-    return friendInvites.map((n, i) => `
-      <div class="notif-item unread" style="animation-delay:${i * 40}ms">
-        <div class="notif-icon">${n.type === 'group-invite' ? icon('users', 18) : icon('paper-plane-tilt', 18)}</div>
-        <div class="notif-body">
-          <div class="notif-text">${ZAP.utils.esc(n.body)}</div>
-          <div class="notif-time">${ZAP.utils.timeAgo(n.createdAt)}</div>
-          <div class="notif-actions">
+    return `
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${friendInvites.map((n, i) => `
+        <div class="notif-item unread" style="animation-delay:${i * 35}ms">
+          <div class="notif-icon-wrap ${n.type === 'group-invite' ? 'type-group-invite' : 'type-invite'}">
+            ${n.type === 'group-invite' ? icon('users', 18) : icon('paper-plane-tilt', 18)}
+          </div>
+          <div class="notif-body">
+            <div class="notif-title">${esc(n.body || 'Запрошення')}</div>
+            <div class="notif-time">
+              <span class="notif-dot"></span>
+              ${timeAgo(n.createdAt)}
+            </div>
             ${n.inviteId ? `
+            <div class="notif-actions">
               <button class="btn btn-gold btn-sm"
                 onclick="ZAP.router.go('${n.type === 'group-invite' ? 'group-invite' : 'invite'}', {id:'${n.inviteId}'})">
                 Переглянути
               </button>
-            ` : ''}
+            </div>` : ''}
           </div>
         </div>
-      </div>
-    `).join('');
+      `).join('')}
+    </div>`;
   }
 
   function renderSearchResult() {
+    const { icon, esc, avatarHTML } = ZAP.utils;
+
     if (searchResult === 'not-found') {
       return `
-      <div style="background:var(--red-bg);border-radius:10px;padding:14px 18px;margin-bottom:20px;animation:fadeUp .3s ease">
-        <p style="font-size:.9rem;color:var(--red)">${icon('x-circle', 14)} Користувача з таким ID не знайдено</p>
+      <div class="search-result-card search-not-found">
+        <span>${icon('x-circle', 16)}</span>
+        <p>Користувача з таким ID або логіном не знайдено</p>
       </div>`;
     }
 
     if (searchResult === 'self') {
       return `
-      <div style="background:var(--warm);border-radius:10px;padding:14px 18px;margin-bottom:20px;animation:fadeUp .3s ease">
-        <p style="font-size:.9rem;color:var(--muted)">${icon('user-circle', 14)} Це ваш власний ID</p>
+      <div class="search-result-card search-self">
+        <span>${icon('user-circle', 16)}</span>
+        <p>Це ваш власний обліковий запис</p>
       </div>`;
     }
 
     if (searchResult && typeof searchResult === 'object') {
-      const { esc, avatarHTML, roleBadge } = ZAP.utils;
       return `
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:20px;animation:fadeUp .3s ease">
+      <div class="search-result-card search-found">
         <div style="display:flex;align-items:center;gap:14px">
-          ${avatarHTML(searchResult)}
-          <div style="flex:1">
-            <div style="font-weight:600">${esc(searchResult.name)}</div>
-            <div style="font-size:.78rem;color:var(--muted)">${esc(searchResult.uniqueId)}</div>
+          ${avatarHTML(searchResult, 'md')}
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:.95rem">${esc(searchResult.name)}</div>
+            <div style="font-size:.78rem;color:var(--muted);font-family:monospace">${esc(searchResult.uniqueId)}</div>
           </div>
           <button class="btn btn-dark btn-sm"
             onclick="ZAP.router.go('user-profile', {uid:'${searchResult.uid}'})">
@@ -290,6 +331,15 @@
     }
 
     return '';
+  }
+
+  function clearSearch() {
+    if (searchResult !== null) {
+      searchResult = null;
+      // Don't re-render full page, just hide the result
+      const el = document.querySelector('.search-result-card');
+      if (el) el.remove();
+    }
   }
 
   function setTab(t) {
@@ -315,7 +365,7 @@
       } else {
         user = await ZAP.db.getUserByLogin(query.toLowerCase());
       }
-      
+
       if (!user) {
         searchResult = 'not-found';
       } else if (user.uid === ZAP.auth.getUser()?.uid) {
@@ -334,18 +384,15 @@
   async function acceptReq(fromUid) {
     const me = ZAP.auth.getUser();
     if (!me) return;
-    
-    // Mark as processed immediately to prevent duplicate clicks
     processedRequests.add(fromUid);
     ZAP.render();
-    
     try {
       await ZAP.db.acceptFriendRequest(me.uid, fromUid);
       requests = requests.filter(r => r.fromUid !== fromUid);
       friends = await ZAP.db.getFriends(me.uid);
       await ZAP.notifications.deleteNotificationsByPayload(me.uid, 'friend-request', 'fromUid', fromUid);
       if (ZAP.app.updateUnreadCount) await ZAP.app.updateUnreadCount();
-      ZAP.utils.toast(`Друга додано`, 'success');
+      ZAP.utils.toast('Друга додано ✓', 'success');
       ZAP.render();
     } catch (e) {
       ZAP.utils.toast('Не вдалося прийняти запит. Спробуйте пізніше', 'error');
@@ -355,11 +402,8 @@
   async function declineReq(fromUid) {
     const me = ZAP.auth.getUser();
     if (!me) return;
-    
-    // Mark as processed immediately to prevent duplicate clicks
     processedRequests.add(fromUid);
     ZAP.render();
-    
     await ZAP.db.declineFriendRequest(me.uid, fromUid);
     requests = requests.filter(r => r.fromUid !== fromUid);
     await ZAP.notifications.deleteNotificationsByPayload(me.uid, 'friend-request', 'fromUid', fromUid);
@@ -380,6 +424,7 @@
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.friends = {
     _loaded: false,
-    render, load, setTab, search, acceptReq, declineReq, removeFriend, toggleMenu, goProfile, goInvite,
+    render, load, setTab, search, clearSearch, acceptReq, declineReq, removeFriend,
+    toggleMenu, goProfile, goInvite,
   };
 })();

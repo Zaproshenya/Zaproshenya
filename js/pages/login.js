@@ -1,59 +1,73 @@
 /* ═══════════════════════════════════════════════════════
-   Page — Login / Register
+   Page — Login / Register — Premium Redesign
    ═══════════════════════════════════════════════════════ */
 
 (function () {
   let activeTab = 'login'; // 'login' | 'register'
   let loading = false;
-
-  function renderSkeleton() {
-    return `
-    <div class="auth-bg">
-      <div class="auth-card">
-        <div class="auth-header" style="text-align:center">
-          <div class="skeleton-circle" style="width:48px;height:48px;margin:0 auto 8px;background:rgba(255,255,255,.2)"></div>
-          <div class="skeleton-line w-1-2" style="margin:0 auto;height:24px;background:rgba(255,255,255,.3)"></div>
-          <div class="skeleton-line w-3-4" style="margin:8px auto 0;height:14px;background:rgba(255,255,255,.2)"></div>
-        </div>
-        <div class="auth-body">
-          <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid var(--border)">
-            <div class="skeleton" style="flex:1;height:40px;border-radius:0"></div>
-            <div class="skeleton" style="flex:1;height:40px;border-radius:0"></div>
-          </div>
-          ${[1,2].map(() => `
-            <div style="margin-bottom:18px">
-              <div class="skeleton-line w-1-4" style="margin-bottom:8px;height:10px"></div>
-              <div class="skeleton" style="width:100%;height:44px;border-radius:var(--radius-sm)"></div>
-            </div>
-          `).join('')}
-          <div class="skeleton-btn" style="width:100%;margin-top:8px"></div>
-        </div>
-      </div>
-    </div>`;
-  }
+  let showPass = false;
+  let showNewPass = false;
 
   function render() {
     loading = false;
     const { esc, icon } = ZAP.utils;
     return `
     <div class="auth-bg">
-      <div class="auth-card">
+      <div class="auth-wrap">
 
-        <div class="auth-header">
-          <span class="auth-header-icon">✦</span>
-          <div class="auth-header-title">Запрошення</div>
-          <div class="auth-header-sub">Створюйте та надсилайте запрошення на зустрічі</div>
+        <!-- Branding side (visible on wide screens) -->
+        <div class="auth-brand">
+          <div class="auth-brand-logo">✦</div>
+          <div class="auth-brand-name">Запрошення</div>
+          <p class="auth-brand-desc">
+            Створюйте та надсилайте красиві запрошення на зустрічі.<br>
+            Безкоштовно і зручно.
+          </p>
+          <div class="auth-brand-features">
+            <div class="auth-brand-feature">
+              ${icon('paper-plane-tilt', 18)} Миттєве надсилання
+            </div>
+            <div class="auth-brand-feature">
+              ${icon('bell', 18)} Сповіщення в реальному часі
+            </div>
+            <div class="auth-brand-feature">
+              ${icon('users', 18)} Групові та особисті запрошення
+            </div>
+          </div>
         </div>
 
-        <div class="auth-body">
-          <div class="auth-tabs">
-            <button class="auth-tab ${activeTab === 'login' ? 'active' : ''}"
-              onclick="ZAP.pages.login.setTab('login')">Вхід</button>
-            <button class="auth-tab ${activeTab === 'register' ? 'active' : ''}"
-              onclick="ZAP.pages.login.setTab('register')">Реєстрація</button>
+        <!-- Auth card -->
+        <div class="auth-card">
+          <!-- Header -->
+          <div class="auth-header">
+            <div class="auth-header-logo">✦</div>
+            <div class="auth-header-title">
+              ${activeTab === 'login' ? 'З поверненням!' : 'Приєднатись'}
+            </div>
+            <div class="auth-header-sub">
+              ${activeTab === 'login'
+                ? 'Увійдіть, щоб побачити свої запрошення'
+                : 'Створіть безкоштовний акаунт за хвилину'}
+            </div>
           </div>
 
-          ${activeTab === 'login' ? renderLoginForm() : renderRegisterForm()}
+          <!-- Tab switcher -->
+          <div class="auth-tab-bar">
+            <button class="auth-tab-btn ${activeTab === 'login' ? 'active' : ''}"
+              onclick="ZAP.pages.login.setTab('login')">
+              Вхід
+            </button>
+            <button class="auth-tab-btn ${activeTab === 'register' ? 'active' : ''}"
+              onclick="ZAP.pages.login.setTab('register')">
+              Реєстрація
+            </button>
+            <div class="auth-tab-slider ${activeTab === 'register' ? 'right' : ''}"></div>
+          </div>
+
+          <!-- Body -->
+          <div class="auth-body">
+            ${activeTab === 'login' ? renderLoginForm() : renderRegisterForm()}
+          </div>
         </div>
 
       </div>
@@ -64,24 +78,47 @@
     const { icon } = ZAP.utils;
     return `
     <div class="auth-form" id="login-form">
-      <div>
-        <label class="lbl">Логін</label>
-        <input id="login-login" type="text" placeholder="Ваш логін" autocomplete="username"
-          onkeydown="if(event.key==='Enter')ZAP.pages.login.doLogin()"/>
+      <div class="auth-field">
+        <label class="auth-field-label" for="login-login">
+          ${icon('user', 14)} Логін
+        </label>
+        <input id="login-login" type="text"
+          placeholder="Ваш логін" autocomplete="username"
+          onkeydown="if(event.key==='Enter')document.getElementById('login-pass').focus()"/>
       </div>
-      <div>
-        <label class="lbl">Пароль</label>
-        <input id="login-pass" type="password" placeholder="Ваш пароль" autocomplete="current-password"
-          onkeydown="if(event.key==='Enter')ZAP.pages.login.doLogin()"/>
+
+      <div class="auth-field">
+        <label class="auth-field-label" for="login-pass">
+          ${icon('lock', 14)} Пароль
+        </label>
+        <div class="auth-pass-wrap">
+          <input id="login-pass" type="${showPass ? 'text' : 'password'}"
+            placeholder="Ваш пароль" autocomplete="current-password"
+            onkeydown="if(event.key==='Enter')ZAP.pages.login.doLogin()"/>
+          <button class="auth-pass-toggle" type="button"
+            onclick="ZAP.pages.login.togglePass()"
+            title="${showPass ? 'Приховати' : 'Показати'} пароль">
+            ${icon(showPass ? 'eye-slash' : 'eye', 16)}
+          </button>
+        </div>
       </div>
+
       <div class="form-error" id="login-error"></div>
-      <button class="btn btn-dark btn-full" id="login-btn"
+
+      <button class="btn btn-dark btn-full auth-submit-btn" id="login-btn"
         onclick="ZAP.pages.login.doLogin()" ${loading ? 'disabled' : ''}>
-        ${loading ? `${icon('clock', 14)} Зачекайте...` : 'Увійти →'}
+        ${loading
+          ? `<span class="auth-loading-dots"><span></span><span></span><span></span></span>`
+          : `Увійти ${icon('arrow-right', 16)}`}
       </button>
-      <div class="auth-footer">
+
+      <div class="auth-divider"><span>або</span></div>
+
+      <div class="auth-footer-link">
         Ще немає акаунту?
-        <button onclick="ZAP.pages.login.setTab('register')">Зареєструватися</button>
+        <button onclick="ZAP.pages.login.setTab('register')" class="auth-link-btn">
+          Зареєструватися
+        </button>
       </div>
     </div>`;
   }
@@ -90,35 +127,67 @@
     const { icon } = ZAP.utils;
     return `
     <div class="auth-form" id="register-form">
-      <div>
-        <label class="lbl">Ім'я</label>
-        <input id="reg-name" type="text" placeholder="Як вас звати?" autocomplete="name"/>
+      <div class="auth-field">
+        <label class="auth-field-label" for="reg-name">
+          ${icon('identification-card', 14)} Ім'я
+        </label>
+        <input id="reg-name" type="text"
+          placeholder="Як вас звати?" autocomplete="name" maxlength="15"/>
       </div>
-      <div>
-        <label class="lbl">Логін</label>
-        <input id="reg-login" type="text" placeholder="Латиниця, цифри, _ (мін. 3)" autocomplete="username"/>
+
+      <div class="auth-field">
+        <label class="auth-field-label" for="reg-login">
+          ${icon('at', 14)} Логін
+        </label>
+        <input id="reg-login" type="text"
+          placeholder="Латиниця, цифри, _ (3–10 символів)"
+          autocomplete="username" maxlength="10"/>
       </div>
-      <div>
-        <label class="lbl">Пароль</label>
-        <input id="reg-pass" type="password" placeholder="Мінімум 6 символів" autocomplete="new-password"/>
+
+      <div class="auth-field">
+        <label class="auth-field-label" for="reg-pass">
+          ${icon('lock', 14)} Пароль
+        </label>
+        <div class="auth-pass-wrap">
+          <input id="reg-pass" type="${showNewPass ? 'text' : 'password'}"
+            placeholder="Мінімум 6 символів" autocomplete="new-password"/>
+          <button class="auth-pass-toggle" type="button"
+            onclick="ZAP.pages.login.toggleNewPass()"
+            title="${showNewPass ? 'Приховати' : 'Показати'} пароль">
+            ${icon(showNewPass ? 'eye-slash' : 'eye', 16)}
+          </button>
+        </div>
       </div>
-      <div>
-        <label class="lbl">Пароль ще раз</label>
-        <input id="reg-pass2" type="password" placeholder="Повторіть пароль" autocomplete="new-password"
+
+      <div class="auth-field">
+        <label class="auth-field-label" for="reg-pass2">
+          ${icon('check-circle', 14)} Підтвердити пароль
+        </label>
+        <input id="reg-pass2" type="password"
+          placeholder="Повторіть пароль" autocomplete="new-password"
           onkeydown="if(event.key==='Enter')ZAP.pages.login.doRegister()"/>
       </div>
-      <div class="form-error" id="reg-error"></div>
-      <label class="terms-check">
+
+      <label class="auth-terms-check">
         <input type="checkbox" id="reg-terms"/>
+        <span class="auth-terms-box"></span>
         <span>Я приймаю <a href="/terms" target="_blank">умови користування</a></span>
       </label>
-      <button class="btn btn-dark btn-full" id="reg-btn"
+
+      <div class="form-error" id="reg-error"></div>
+
+      <button class="btn btn-dark btn-full auth-submit-btn" id="reg-btn"
         onclick="ZAP.pages.login.doRegister()" ${loading ? 'disabled' : ''}>
-        ${loading ? `${icon('clock', 14)} Зачекайте...` : 'Створити акаунт →'}
+        ${loading
+          ? `<span class="auth-loading-dots"><span></span><span></span><span></span></span>`
+          : `Створити акаунт ${icon('arrow-right', 16)}`}
       </button>
-      <div class="auth-footer">
+
+      <div class="auth-footer-link">
         Вже маєте акаунт?
-        <button onclick="ZAP.pages.login.setTab('login')">Увійти</button>
+        <button onclick="ZAP.pages.login.setTab('login')" class="auth-link-btn">
+          Увійти
+        </button>
       </div>
     </div>`;
   }
@@ -126,6 +195,16 @@
   function setTab(tab) {
     activeTab = tab;
     loading = false;
+    ZAP.render();
+  }
+
+  function togglePass() {
+    showPass = !showPass;
+    ZAP.render();
+  }
+
+  function toggleNewPass() {
+    showNewPass = !showNewPass;
     ZAP.render();
   }
 
@@ -153,7 +232,6 @@
     } catch (e) {
       loading = false;
       ZAP.render();
-      // Wait for DOM update then show error
       setTimeout(() => {
         let msg = 'Помилка входу';
         if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') {
@@ -178,8 +256,7 @@
       showError('reg-error', 'Заповніть всі поля');
       return;
     }
-    const terms = document.getElementById('reg-terms')?.checked;
-    if (!terms) {
+    if (!document.getElementById('reg-terms')?.checked) {
       showError('reg-error', 'Прийміть умови користування');
       return;
     }
@@ -203,11 +280,13 @@
         if (e.code === 'auth/email-already-in-use') {
           msg = 'Цей логін вже зайнятий';
         } else if (e.code === 'auth/weak-password') {
-          msg = 'Пароль занадто простий. Використайте мінімум 6 символів';
+          msg = 'Пароль занадто простий. Мінімум 6 символів';
         } else if (e.code === 'auth/too-many-requests') {
           msg = 'Забагато спроб. Спробуйте пізніше';
         } else if (e.code === 'auth/network-request-failed') {
           msg = 'Помилка мережі. Перевірте з\'єднання';
+        } else if (e.message) {
+          msg = e.message;
         }
         showError('reg-error', msg);
       }, 50);
@@ -215,5 +294,5 @@
   }
 
   ZAP.pages = ZAP.pages || {};
-  ZAP.pages.login = { render, setTab, doLogin, doRegister };
+  ZAP.pages.login = { render, setTab, doLogin, doRegister, togglePass, toggleNewPass };
 })();

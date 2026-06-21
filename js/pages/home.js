@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   Page — Home (My Invitations)
+   Page — Home (My Invitations) — Premium Redesign
    ═══════════════════════════════════════════════════════ */
 
 (function () {
@@ -49,52 +49,7 @@
     const { esc, badge, TYPE_MAP, inviteLink, copyText, icon } = ZAP.utils;
     const incomingCount = incomingInvites.length;
 
-    return `
-    <h1 class="page-title">Запрошення</h1>
-    <p class="page-subtitle">Статуси оновлюються автоматично ✦</p>
-
-    <div class="tabs">
-      <button class="tab ${activeTab === 'outgoing' ? 'active' : ''}"
-        onclick="ZAP.pages.home.setTab('outgoing')">Мої запрошення</button>
-      <button class="tab ${activeTab === 'incoming' ? 'active' : ''}"
-        onclick="ZAP.pages.home.setTab('incoming')">Від друзів${incomingCount > 0 ? `<span class="tab-count">${incomingCount}</span>` : ''}</button>
-    </div>
-
-    ${activeTab === 'outgoing' ? renderOutgoing() : renderIncoming()}`;
-  }
-
-  function renderSkeleton() {
-    return `
-    <h1 class="page-title" style="margin-bottom:6px"><span class="skeleton-line" style="width:200px;height:28px;display:inline-block;vertical-align:middle"></span></h1>
-    <p class="page-subtitle" style="margin-bottom:20px"><span class="skeleton-line" style="width:260px;height:14px;display:inline-block;vertical-align:middle"></span></p>
-    <div class="tabs" style="margin-bottom:24px">
-      <div class="skeleton" style="width:150px;height:36px;border-radius:8px"></div>
-      <div class="skeleton" style="width:130px;height:36px;border-radius:8px"></div>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px">
-      <div class="skeleton" style="width:60px;height:32px;border-radius:20px"></div>
-      <div class="skeleton" style="width:90px;height:32px;border-radius:20px"></div>
-      <div class="skeleton" style="width:80px;height:32px;border-radius:20px"></div>
-      <div class="skeleton" style="width:100px;height:32px;border-radius:20px"></div>
-      <div class="skeleton" style="width:110px;height:32px;border-radius:20px"></div>
-    </div>
-    ${[1,2,3,4,5].map(() => `
-      <div class="skeleton-card" style="display:flex;align-items:center;gap:14px;padding:16px 20px">
-        <div class="skeleton-circle" style="width:48px;height:48px;flex-shrink:0"></div>
-        <div style="flex:1;min-width:0">
-          <div class="skeleton-line w-3-4" style="margin-bottom:8px;height:16px"></div>
-          <div class="skeleton-line w-1-2" style="height:14px"></div>
-        </div>
-        <div class="skeleton" style="width:100px;height:32px;border-radius:8px;flex-shrink:0"></div>
-      </div>
-    `).join('')}`;
-  }
-
-  function renderOutgoing() {
-    const { esc, badge, TYPE_MAP, inviteLink, copyText, icon } = ZAP.utils;
-    const f = filter;
-    const shown = f === 'all' ? invites : invites.filter(i => i.status === f);
-
+    // Stats for outgoing
     const counts = {
       all: invites.length,
       pending: invites.filter(i => i.status === 'pending').length,
@@ -104,50 +59,142 @@
     };
 
     return `
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px" id="filter-bar">
-      ${[['all','Всі'],['pending','Очікують'],['accepted','Прийняті'],['declined','Відхилені'],['reschedule','Перенесення']]
-        .map(([v, l]) => `
-          <div class="pill-wrap">
-            <button class="pill ${f === v ? 'on' : ''}"
-              onclick="ZAP.pages.home.setFilter('${v}')">${l}${counts[v] > 0 ? `<span class="pill-count">${counts[v]}</span>` : ''}</button>
-          </div>`).join('')}
+    <!-- Page header -->
+    <div class="home-header">
+      <div class="home-header-left">
+        <h1 class="home-title">Мої запрошення</h1>
+        <p class="home-subtitle">Статуси оновлюються автоматично ✦</p>
+      </div>
+      <button class="btn-create-fab" onclick="ZAP.router.go('create')" title="Нове запрошення">
+        ${icon('plus', 20)}
+        <span>Нове</span>
+      </button>
     </div>
 
-    ${shown.length === 0 ? `
-        <div class="empty">
-          <div class="empty-icon">✦</div>
-          <p style="font-style:italic;font-size:1.05rem;margin-bottom:18px">
-            ${f === 'all' ? 'Ще немає запрошень' : 'Немає запрошень з таким статусом'}
-          </p>
-          <button class="btn btn-dark" style="width:auto;padding:10px 28px"
-            onclick="ZAP.router.go('create')">Створити перше</button>
+    <!-- Quick stats row -->
+    ${invites.length > 0 ? `
+    <div class="home-stats-row">
+      ${[
+        { key: 'all',        label: 'Всі',        cls: '' },
+        { key: 'pending',    label: 'Очікують',   cls: 'stat-pending' },
+        { key: 'accepted',   label: 'Прийняті',   cls: 'stat-accepted' },
+        { key: 'declined',   label: 'Відхилені',  cls: 'stat-declined' },
+        { key: 'reschedule', label: 'Перенос',    cls: 'stat-reschedule' },
+      ].map(({ key, label, cls }) => `
+        <button class="home-stat-chip ${filter === key && activeTab === 'outgoing' ? 'active' : ''} ${cls}"
+          onclick="ZAP.pages.home.setFilterAndTab('${key}')">
+          <span class="home-stat-num">${counts[key]}</span>
+          <span class="home-stat-label">${label}</span>
+        </button>
+      `).join('')}
+    </div>` : ''}
+
+    <!-- Tab bar -->
+    <div class="home-tabs">
+      <button class="home-tab ${activeTab === 'outgoing' ? 'active' : ''}"
+        onclick="ZAP.pages.home.setTab('outgoing')">
+        ${icon('paper-plane-tilt', 16)} Відправлені
+      </button>
+      <button class="home-tab ${activeTab === 'incoming' ? 'active' : ''}"
+        onclick="ZAP.pages.home.setTab('incoming')">
+        ${icon('inbox', 16)} Від друзів
+        ${incomingCount > 0 ? `<span class="home-tab-badge">${incomingCount}</span>` : ''}
+      </button>
+    </div>
+
+    ${activeTab === 'outgoing' ? renderOutgoing() : renderIncoming()}`;
+  }
+
+  function renderSkeleton() {
+    return `
+    <div class="home-header">
+      <div class="home-header-left">
+        <div class="skeleton-line" style="width:220px;height:26px;margin-bottom:8px"></div>
+        <div class="skeleton-line" style="width:280px;height:13px"></div>
+      </div>
+      <div class="skeleton" style="width:96px;height:40px;border-radius:var(--radius-pill)"></div>
+    </div>
+    <div class="home-stats-row">
+      ${[1,2,3,4,5].map(() => `
+        <div class="skeleton" style="flex:1;height:62px;border-radius:12px"></div>
+      `).join('')}
+    </div>
+    <div class="home-tabs" style="margin-bottom:24px">
+      <div class="skeleton" style="flex:1;height:40px;border-radius:8px"></div>
+      <div class="skeleton" style="flex:1;height:40px;border-radius:8px"></div>
+    </div>
+    ${[1,2,3,4].map((_, i) => `
+      <div class="home-inv-card" style="animation:none;margin-bottom:10px">
+        <div class="skeleton" style="width:44px;height:44px;border-radius:12px;flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div class="skeleton-line w-3-4" style="margin-bottom:6px;height:14px"></div>
+          <div class="skeleton-line w-1-2" style="height:12px"></div>
         </div>
-      ` : shown.map((inv, i) => {
-        const t = TYPE_MAP[inv.type] || TYPE_MAP.other;
-        return `
-        <div class="inv-card status-${inv.status}" style="animation-delay:${i * 40}ms"
-          onclick="ZAP.pages.home.openModal('${inv.id}')">
-          <div style="font-size:1.8rem;flex-shrink:0">${t.e}</div>
-          <div style="flex:1;min-width:0">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
-              <span style="font-weight:600;font-size:1rem">${esc(inv.to || inv.title || 'Групове')}</span>
-              ${badge(inv.status)}
-              ${inv.isGroup ? `<span class="badge badge-pending">${icon('users', 14)} Група</span>` : ''}
-            </div>
-            <div style="color:var(--muted);font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-              ${t.l} · ${esc(inv.date)} ${esc(inv.time || '')}
-            </div>
+        <div class="skeleton" style="width:90px;height:32px;border-radius:8px;flex-shrink:0"></div>
+      </div>
+    `).join('')}`;
+  }
+
+  function renderOutgoing() {
+    const { esc, badge, TYPE_MAP, inviteLink, icon } = ZAP.utils;
+    const f = filter;
+    const shown = f === 'all' ? invites : invites.filter(i => i.status === f);
+
+    if (shown.length === 0) {
+      return `
+      <div class="home-empty">
+        <div class="home-empty-icon">
+          ${f === 'all' ? icon('paper-plane-tilt', 40) : icon('funnel', 40)}
+        </div>
+        <div class="home-empty-title">
+          ${f === 'all' ? 'Ще немає запрошень' : 'Немає запрошень з таким статусом'}
+        </div>
+        <p class="home-empty-sub">
+          ${f === 'all' ? 'Створіть перше запрошення і поділіться ним з другом' : 'Спробуйте обрати інший фільтр'}
+        </p>
+        ${f === 'all' ? `
+          <button class="btn btn-dark" style="width:auto;padding:12px 32px;margin-top:4px"
+            onclick="ZAP.router.go('create')">
+            ${icon('plus', 16)} Створити запрошення
+          </button>
+        ` : `
+          <button class="btn-ghost" onclick="ZAP.pages.home.setFilter('all')">
+            Показати всі
+          </button>
+        `}
+      </div>`;
+    }
+
+    return shown.map((inv, i) => {
+      const t = TYPE_MAP[inv.type] || TYPE_MAP.other;
+      const link = inv.isGroup
+        ? location.origin + '/g/' + inv.id
+        : inviteLink(inv.id);
+      return `
+      <div class="home-inv-card status-${inv.status}" style="animation-delay:${i * 35}ms"
+        onclick="ZAP.pages.home.openModal('${inv.id}')">
+        <div class="home-inv-emoji">${t.e}</div>
+        <div class="home-inv-body">
+          <div class="home-inv-title">
+            ${esc(inv.to || inv.title || 'Групове запрошення')}
+            ${inv.isGroup ? `<span class="home-inv-group-badge">${icon('users', 12)} Група</span>` : ''}
           </div>
-          <div onclick="event.stopPropagation()" style="flex-shrink:0">
-            <button id="copy-${inv.id}"
-              onclick="ZAP.utils.copyText('${inviteLink(inv.id).replace(/'/g,"\\'")}', this)"
-              style="background:var(--warm);border:none;border-radius:8px;padding:7px 13px;font-size:.8rem;color:var(--muted)">
-              ${icon('link', 14)} Копіювати
-            </button>
+          <div class="home-inv-meta">
+            ${t.l}
+            ${inv.date ? ` · ${esc(inv.date)}` : ''}
+            ${inv.time ? ` · ${esc(inv.time)}` : ''}
           </div>
-        </div>`;
-      }).join('')
-    }`;
+        </div>
+        <div class="home-inv-right">
+          ${badge(inv.status)}
+          <button class="home-copy-btn" id="copy-${inv.id}"
+            onclick="event.stopPropagation();ZAP.utils.copyText('${link.replace(/'/g,"\\'")}', this)"
+            title="Копіювати посилання">
+            ${icon('link', 14)}
+          </button>
+        </div>
+      </div>`;
+    }).join('');
   }
 
   function renderIncoming() {
@@ -155,30 +202,32 @@
 
     if (incomingInvites.length === 0) {
       return `
-      <div class="empty">
-        <div class="empty-icon">${icon('paper-plane-tilt', 32)}</div>
-        <p style="font-style:italic;font-size:1.05rem;margin-bottom:8px">Немає запрошень від друзів</p>
-        <p style="font-size:.88rem;color:var(--muted)">Коли друзі надішлють вам запрошення, вони з'являться тут</p>
+      <div class="home-empty">
+        <div class="home-empty-icon">${icon('inbox', 40)}</div>
+        <div class="home-empty-title">Немає вхідних запрошень</div>
+        <p class="home-empty-sub">Коли друзі надішлють вам запрошення, вони з'являться тут</p>
       </div>`;
     }
 
     return incomingInvites.map((n, i) => {
       const isGroup = n.type === 'group-invite';
       return `
-      <div class="inv-card" style="animation-delay:${i * 40}ms;cursor:pointer"
+      <div class="home-inv-card" style="animation-delay:${i * 35}ms;cursor:pointer"
         onclick="ZAP.router.go('${isGroup ? 'group-invite' : 'invite'}', {id:'${n.inviteId}'})">
-        <div style="font-size:1.8rem;flex-shrink:0">${isGroup ? icon('users', 28) : icon('paper-plane-tilt', 28)}</div>
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
-            <span style="font-weight:600;font-size:1rem">${esc(n.body || 'Запрошення')}</span>
-            <span class="badge badge-pending">${isGroup ? 'Група' : 'Особисте'}</span>
-          </div>
-          <div style="color:var(--muted);font-size:.85rem">${ZAP.utils.timeAgo(n.createdAt)}</div>
+        <div class="home-inv-emoji" style="background:var(--gold-dim);border-radius:12px;width:44px;height:44px;display:flex;align-items:center;justify-content:center">
+          ${isGroup ? icon('users', 22) : icon('paper-plane-tilt', 22)}
         </div>
-        <div onclick="event.stopPropagation()" style="flex-shrink:0">
+        <div class="home-inv-body">
+          <div class="home-inv-title">${esc(n.body || 'Нове запрошення')}</div>
+          <div class="home-inv-meta">
+            ${isGroup ? 'Групове' : 'Особисте'} · ${ZAP.utils.timeAgo(n.createdAt)}
+          </div>
+        </div>
+        <div class="home-inv-right">
+          <span class="badge badge-pending">Нове</span>
           <button class="btn btn-gold btn-sm"
-            onclick="ZAP.router.go('${isGroup ? 'group-invite' : 'invite'}', {id:'${n.inviteId}'})">
-            Переглянути
+            onclick="event.stopPropagation();ZAP.router.go('${isGroup ? 'group-invite' : 'invite'}', {id:'${n.inviteId}'})">
+            Відкрити
           </button>
         </div>
       </div>`;
@@ -194,62 +243,75 @@
 
     return `
     <div class="overlay" onclick="ZAP.pages.home.closeModal()">
-      <div class="modal" onclick="event.stopPropagation()">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:1.7rem">${t.e}</span>
+      <div class="modal" onclick="event.stopPropagation()" style="max-width:420px">
+        <!-- Modal header -->
+        <div class="modal-hdr">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="modal-emoji-wrap">${t.e}</div>
             <div>
-              <div style="font-weight:600;font-size:1.05rem">${esc(inv.to || inv.title || 'Групове')}</div>
-              <div style="color:var(--muted);font-size:.82rem">${t.l}</div>
+              <div class="modal-inv-name">${esc(inv.to || inv.title || 'Групове')}</div>
+              <div class="modal-inv-type">${t.l}${inv.isGroup ? ` · ${icon('users', 13)} Групове` : ''}</div>
             </div>
           </div>
           <div style="display:flex;gap:8px;align-items:center">
             ${badge(inv.status)}
-            <button onclick="ZAP.pages.home.closeModal()"
-              class="modal-close">${icon('x', 20)}</button>
+            <button onclick="ZAP.pages.home.closeModal()" class="modal-close">${icon('x', 18)}</button>
           </div>
         </div>
 
-        ${divLine()}
-
-        <div style="margin-bottom:14px">
-          <div class="detail-row">
-            <span class="detail-icon">${icon('calendar-blank', 18)}</span>
-            <span class="detail-label">Дата</span>
-            <span class="detail-value">${esc(inv.date)}</span>
+        <!-- Details -->
+        <div class="modal-details">
+          <div class="modal-detail-row">
+            <span class="modal-detail-icon">${icon('calendar-blank', 17)}</span>
+            <span class="modal-detail-label">Дата</span>
+            <span class="modal-detail-value">${esc(inv.date) || '—'}</span>
           </div>
-          <div class="detail-row">
-            <span class="detail-icon">${icon('clock', 18)}</span>
-            <span class="detail-label">Час</span>
-            <span class="detail-value">${esc(inv.time || '')}</span>
+          <div class="modal-detail-row">
+            <span class="modal-detail-icon">${icon('clock', 17)}</span>
+            <span class="modal-detail-label">Час</span>
+            <span class="modal-detail-value">${esc(inv.time || '—')}</span>
           </div>
+          ${inv.place ? `
+          <div class="modal-detail-row">
+            <span class="modal-detail-icon">${icon('map-pin', 17)}</span>
+            <span class="modal-detail-label">Місце</span>
+            <span class="modal-detail-value">${esc(inv.place)}</span>
+          </div>` : ''}
+          ${inv.msg ? `
+          <div class="modal-detail-row">
+            <span class="modal-detail-icon">${icon('chat-circle-dots', 17)}</span>
+            <span class="modal-detail-label">Текст</span>
+            <span class="modal-detail-value" style="font-style:italic">${esc(inv.msg)}</span>
+          </div>` : ''}
           ${inv.status === 'reschedule' ? `
-            <div id="modal-resc-${inv.id}"
-              style="margin-top:8px;padding:10px 13px;background:rgba(201,146,42,.08);border-radius:8px;border-left:3px solid var(--gold)">
-              <p style="font-size:.75rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.08em;font-weight:500">Пропозиція отримувача</p>
-              <p style="font-size:.95rem;color:var(--ink)" id="reschedule-info-${inv.id}">${icon('clock', 14)} Завантаження...</p>
-            </div>` : ''}
+          <div id="modal-resc-${inv.id}"
+            style="margin-top:4px;padding:12px 14px;background:rgba(201,146,42,.06);border-radius:10px;border-left:3px solid var(--gold)">
+            <p style="font-size:.7rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.1em;font-weight:600">Пропозиція отримувача</p>
+            <p style="font-size:.95rem;color:var(--ink)" id="reschedule-info-${inv.id}">${icon('clock', 14)} Завантаження...</p>
+          </div>` : ''}
         </div>
 
-        <div class="link-box">
-          <p style="font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-bottom:8px">Посилання</p>
-          <div class="link-text">${esc(link)}</div>
-          <div style="display:flex;gap:8px">
+        <!-- Link box -->
+        <div class="modal-link-box">
+          <p style="font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:8px">${icon('link', 14)} Посилання</p>
+          <div class="modal-link-url">${esc(link)}</div>
+          <div style="display:flex;gap:8px;margin-top:10px">
             <button id="mcopy"
               onclick="ZAP.utils.copyText('${link.replace(/'/g,"\\'")}', this)"
-              style="flex:1;background:var(--ink);color:var(--paper);border:none;border-radius:9px;padding:9px;font-size:.85rem">
-               ${icon('link', 14)} Скопіювати
+              class="btn btn-dark" style="flex:1;padding:10px 14px;font-size:.88rem">
+              ${icon('copy', 14)} Скопіювати
             </button>
             <button onclick="ZAP.pages.home.closeModal();ZAP.router.go('${inv.isGroup ? 'group-invite' : 'invite'}', {id:'${inv.id}'})"
-              style="flex:1;background:none;border:1px solid var(--border);border-radius:9px;padding:9px;font-size:.85rem;color:var(--muted)">
+              class="btn btn-outline" style="flex:1;padding:10px 14px;font-size:.88rem">
               ${icon('eye', 14)} Переглянути
             </button>
           </div>
         </div>
 
         <button onclick="ZAP.pages.home.deleteInv('${inv.id}')"
-          style="display:block;margin:14px auto 0;background:none;border:none;color:var(--red);font-size:.85rem;text-decoration:underline;cursor:pointer">
-          Видалити
+          style="display:flex;align-items:center;gap:5px;margin:12px auto 0;background:none;border:none;color:var(--muted);font-size:.82rem;cursor:pointer;padding:4px 8px;border-radius:6px;transition:color .15s"
+          onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">
+          ${icon('trash', 14)} Видалити запрошення
         </button>
       </div>
     </div>`;
@@ -258,8 +320,7 @@
   async function openModal(id) {
     const inv = invites.find(i => i.id === id);
     if (!inv) return;
-    
-    // Remove existing if any
+
     const existing = document.getElementById('home-modal-container');
     if (existing) existing.remove();
 
@@ -268,7 +329,6 @@
     container.innerHTML = renderModal(inv);
     document.body.appendChild(container);
 
-    // Load reschedule info if needed
     if (inv.status === 'reschedule') {
       const resc = await ZAP.db.getReschedule(id);
       const el = document.getElementById('reschedule-info-' + id);
@@ -295,6 +355,12 @@
     ZAP.render();
   }
 
+  function setFilterAndTab(f) {
+    filter = f;
+    activeTab = 'outgoing';
+    ZAP.render();
+  }
+
   async function deleteInv(id) {
     closeModal();
     if (!await ZAP.utils.confirm('Видалити запрошення?')) return;
@@ -305,7 +371,6 @@
     ZAP.render();
   }
 
-  // Start real-time listener for status updates
   function startListening() {
     const user = ZAP.auth.getUser();
     if (!user) return;
@@ -313,11 +378,8 @@
       let changed = false;
       invites.forEach(inv => {
         if (statuses[inv.id] && statuses[inv.id] !== inv.status) {
-          const oldStatus = inv.status;
           inv.status = statuses[inv.id];
           changed = true;
-
-          // Toast notification
           if (inv.status === 'accepted') {
             ZAP.utils.toast(`${inv.to || 'Хтось'} прийняв запрошення!`, 'success');
           } else if (inv.status === 'declined') {
@@ -337,6 +399,6 @@
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.home = {
     _loaded: false,
-    render, load, setTab, setFilter, openModal, closeModal, deleteInv, startListening,
+    render, load, setTab, setFilter, setFilterAndTab, openModal, closeModal, deleteInv, startListening,
   };
 })();
