@@ -270,7 +270,7 @@
   border-radius: var(--radius-xl);
   padding: 40px 32px 52px;
   overflow: hidden;
-  margin-bottom: -24px;
+  margin-bottom: -16px;
   box-shadow: 0 8px 40px rgba(0,0,0,.18);
 }
 /* Animated gradient orb top-right */
@@ -299,7 +299,7 @@
 .profile-hero::after {
   content: '';
   position: absolute;
-  bottom: 0; left: 0; right: 0; height: 40px;
+  bottom: 0; left: 0; right: 0; height: 28px;
   background: var(--paper);
   clip-path: ellipse(60% 100% at 50% 100%);
 }
@@ -403,21 +403,13 @@
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 28px 8px 20px;
+  padding: 32px 8px 20px;
   box-shadow: 0 6px 28px rgba(0,0,0,.07);
   position: relative;
   z-index: 10;
   overflow: hidden;
 }
-.profile-stats::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--gold), #e8b84b, var(--gold));
-  background-size: 200% 100%;
-  animation: shimmer 3s linear infinite;
-}
+
 .profile-stat-card {
   text-align: center;
   position: relative;
