@@ -268,7 +268,7 @@
   position: relative;
   background: linear-gradient(135deg, #1a120a 0%, #2d2010 60%, #3d2c14 100%);
   border-radius: var(--radius-xl);
-  padding: 40px 32px 56px;
+  padding: 40px 32px 48px;
   overflow: hidden;
 }
 .profile-hero::before {
@@ -359,11 +359,11 @@
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 16px;
+  padding: 24px 16px;
   box-shadow: 0 4px 20px rgba(0,0,0,.06);
   position: relative;
   z-index: 10;
-  margin-top: -20px; /* pull up slightly over the hero banner to fill gap */
+  margin-top: 0; /* pull up slightly over the hero banner to fill gap */
 }
 .profile-stat-card {
   text-align: center;
