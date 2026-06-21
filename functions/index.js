@@ -6,7 +6,7 @@ admin.initializeApp();
  * Triggered when a new notification is written to `/notifications/{uid}/{notifId}`.
  * Sends a push notification via FCM if the user has a registered FCM token.
  */
-exports.sendPushNotification = functions.database.ref('/notifications/{uid}/{notifId}')
+exports.sendPushNotification = functions.region('europe-west1').database.ref('/notifications/{uid}/{notifId}')
   .onCreate(async (snapshot, context) => {
     const uid = context.params.uid;
     const notif = snapshot.val();
