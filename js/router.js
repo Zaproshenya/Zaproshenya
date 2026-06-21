@@ -35,7 +35,10 @@
   }
 
   function go(page, params) {
-    if (ZAP.isRendering && ZAP.isRendering()) return;
+    if (ZAP.isRendering && ZAP.isRendering()) {
+      setTimeout(() => go(page, params), 0);
+      return;
+    }
     let path = '/';
     if (page === 'invite' && params?.id) {
       path = '/i/' + params.id;
