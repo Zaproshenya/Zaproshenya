@@ -13,7 +13,7 @@
       if (permission !== 'granted') return;
 
       const token = await ZAP.messaging.getToken({
-        vapidKey: 'N8BqZLr5M2q2BLuh-zvgWQnN-OcG5fTVADl4aorxjwE',
+        vapidKey: 'BGfTmcxPeL2Y6-YVjUv--G-rUP0sD5WrWBiV2lxuRFySQx65UD3HlPKOPhxw4W2ZaLWZPGKaYeHuSAM5RPpeaFk',
       });
 
       if (token) {
