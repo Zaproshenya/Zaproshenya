@@ -82,15 +82,14 @@
     <!-- Search bar -->
     <div class="friends-search-bar">
       <div class="friends-search-input-wrap">
-        <span class="friends-search-icon">${icon('magnifying-glass', 18)}</span>
-        <input id="friend-search-input"
-          placeholder="Введіть ID (ZAP-XXXXXX) або логін (@name)"
-          aria-label="Пошук друга за ID або логіном" maxlength="12"
-          onkeydown="if(event.key==='Enter')ZAP.pages.friends.search()"
-          oninput="ZAP.pages.friends.clearSearch()"/>
-      </div>
+      <span class="friends-search-icon">${icon('magnifying-glass', 18)}</span>
+      <input id="friend-search-input"
+        placeholder="Введіть ID (ZAP-XXXXXX) або логін (@name)"
+        aria-label="Пошук друга за ID або логіном" maxlength="12"
+        onkeydown="if(event.key==='Enter')ZAP.pages.friends.search()"/>
+    </div>
       <button class="btn btn-dark" onclick="ZAP.pages.friends.search()" ${searchLoading ? 'disabled' : ''}
-        style="flex-shrink:0;padding:12px 20px">
+        style="flex-shrink:0;padding:12px 20px;width:auto">
         ${searchLoading ? icon('circle-notch', 16) : 'Знайти'}
       </button>
     </div>
@@ -336,9 +335,7 @@
   function clearSearch() {
     if (searchResult !== null) {
       searchResult = null;
-      // Don't re-render full page, just hide the result
-      const el = document.querySelector('.search-result-card');
-      if (el) el.remove();
+      ZAP.render();
     }
   }
 
@@ -350,7 +347,13 @@
   async function search() {
     const input = document.getElementById('friend-search-input');
     const query = input?.value.trim();
-    if (!query) return;
+    if (!query) {
+      if (searchResult !== null) {
+        searchResult = null;
+        ZAP.render();
+      }
+      return;
+    }
 
     searchLoading = true;
     searchResult = null;
@@ -425,6 +428,6 @@
   ZAP.pages.friends = {
     _loaded: false,
     render, load, setTab, search, clearSearch, acceptReq, declineReq, removeFriend,
-    toggleMenu, goProfile, goInvite,
+    toggleMenu, goProfile, goInvite, closeMenu,
   };
 })();

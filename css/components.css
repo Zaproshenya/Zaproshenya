@@ -116,25 +116,50 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 
 /* ── Cards ── */
 .inv-card {
-  background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius-card);
-  padding: 16px 20px; margin-bottom: 12px; cursor: pointer;
-  display: flex; align-items: center; gap: 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 15px 18px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
   transition: box-shadow .2s var(--ease), transform .15s var(--ease), border-color .2s;
   animation: fadeUp .4s var(--ease) both;
+  position: relative;
+  overflow: hidden;
 }
-.inv-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+/* Colored left accent line */
+.inv-card::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 3px;
+  background: var(--border);
+  transition: background .2s;
+}
+.inv-card:hover {
+  box-shadow: 0 6px 24px rgba(0,0,0,.08);
+  transform: translateY(-2px);
+  border-color: rgba(201,146,42,.25);
+}
+.inv-card:hover::before { background: var(--gold); }
 .inv-card:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
-.inv-card.status-accepted  { border-left: 4px solid var(--green); }
-.inv-card.status-declined  { border-left: 4px solid var(--red); }
-.inv-card.status-pending   { border-left: 4px solid var(--gold); }
-.inv-card.status-reschedule{ border-left: 4px solid var(--gold); }
+.inv-card.status-accepted::before  { background: var(--green); }
+.inv-card.status-accepted  { border-color: rgba(45,122,79,.18); }
+.inv-card.status-declined::before  { background: var(--red); }
+.inv-card.status-declined  { border-color: rgba(192,57,43,.15); }
+.inv-card.status-pending::before   { background: var(--gold); }
+.inv-card.status-reschedule::before{ background: var(--gold); }
 
 @media (max-width: 768px) {
-  .inv-card { padding: 14px 16px; gap: 12px; }
+  .inv-card { padding: 13px 15px; gap: 12px; }
 }
+
 
 /* ── Badges ── */
 .badge {

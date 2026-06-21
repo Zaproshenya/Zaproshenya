@@ -367,9 +367,11 @@
   text-align: center;
   transition: box-shadow .2s, transform .15s;
   animation: fadeUp .4s var(--ease) both;
+  /* Shadow needed so white card is visible on dark hero background */
+  box-shadow: 0 2px 12px rgba(0,0,0,.08);
 }
 .profile-stat-card:hover {
-  box-shadow: var(--shadow);
+  box-shadow: 0 6px 24px rgba(0,0,0,.14);
   transform: translateY(-3px);
 }
 .profile-stat-num {
@@ -466,7 +468,7 @@
   padding: 20px 0;
 }
 
-/* ── User profile (viewing others) ── */
+/* ── User profile (viewing others) — kept for compat ── */
 .user-profile-card {
   text-align: center; padding: 40px 32px;
   background: var(--card); border-radius: var(--radius-card);
@@ -481,6 +483,128 @@
 .user-profile-actions {
   display: flex; gap: 10px; margin-top: 20px; justify-content: center;
 }
+
+/* ── User profile page — Premium Redesign ── */
+.uprofile-wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: 32px;
+}
+.uprofile-back-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: none; border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 8px 18px; font-size: .85rem;
+  color: var(--muted); cursor: pointer;
+  transition: all .2s;
+  margin-bottom: 24px;
+}
+.uprofile-back-btn:hover { border-color: var(--gold); color: var(--ink); }
+
+/* Hero card */
+.uprofile-hero {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 40px 28px 32px;
+  text-align: center;
+  box-shadow: 0 4px 32px rgba(0,0,0,.06);
+  animation: pop .45s cubic-bezier(.34,1.56,.64,1) both;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.uprofile-hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 80px;
+  background: linear-gradient(135deg, #1a120a 0%, #2d2010 100%);
+  z-index: 0;
+}
+
+/* Avatar ring */
+.uprofile-avatar-wrap {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 16px;
+  z-index: 1;
+}
+.uprofile-avatar-ring {
+  display: inline-flex;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, rgba(201,146,42,.3), rgba(201,146,42,.1));
+  border: 2px solid rgba(201,146,42,.35);
+  transition: border-color .2s;
+}
+.uprofile-avatar-ring.online {
+  border-color: var(--green);
+  background: linear-gradient(135deg, rgba(45,122,79,.35), rgba(45,122,79,.1));
+}
+.uprofile-avatar-ring .avatar-xl { margin: 0; }
+.uprofile-online-badge {
+  position: absolute;
+  bottom: -2px; left: 50%; transform: translateX(-50%);
+  background: var(--green); color: #fff;
+  font-size: .6rem; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 10px;
+  border: 2px solid var(--card);
+  white-space: nowrap;
+}
+
+/* Name and badges */
+.uprofile-name {
+  font-family: var(--font-heading);
+  font-size: 1.8rem; font-style: italic; font-weight: 600;
+  color: var(--ink); margin-bottom: 8px; z-index: 1; position: relative;
+}
+.uprofile-badges {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  flex-wrap: wrap; margin-bottom: 8px; z-index: 1; position: relative;
+}
+.uprofile-since {
+  font-size: .78rem; color: var(--muted);
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  margin-bottom: 20px; z-index: 1; position: relative;
+}
+
+/* Actions row */
+.uprofile-actions {
+  display: flex; gap: 10px; justify-content: center;
+  flex-wrap: wrap; z-index: 1; position: relative;
+}
+
+/* Info card below hero */
+.uprofile-info-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  animation: fadeUp .4s var(--ease) .1s both;
+}
+.uprofile-friend-status {
+  display: flex; align-items: center; gap: 14px;
+  padding: 18px 20px;
+  background: var(--green-bg);
+  border-left: 3px solid var(--green);
+}
+.uprofile-friend-status.pending {
+  background: var(--gold-dim);
+  border-left-color: var(--gold);
+}
+.uprofile-friend-status-icon { color: var(--green); flex-shrink: 0; }
+.uprofile-friend-status.pending .uprofile-friend-status-icon { color: var(--gold); }
+.uprofile-friend-status-title { font-weight: 600; font-size: .9rem; margin-bottom: 2px; }
+.uprofile-friend-status-sub { font-size: .78rem; color: var(--muted); }
+.uprofile-info-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px 20px;
+  font-size: .84rem; color: var(--muted);
+}
+.uprofile-info-icon { color: var(--gold); flex-shrink: 0; margin-top: 2px; }
+.uprofile-info-text { line-height: 1.5; }
 
 /* ── Friends page ── */
 .friend-card {
@@ -1087,6 +1211,7 @@
   cursor: pointer; flex-shrink: 0;
   transition: background .2s, transform .15s, box-shadow .2s;
   box-shadow: 0 4px 14px rgba(0,0,0,.15);
+  white-space: nowrap;
 }
 .btn-create-fab:hover {
   background: #2d2418;
@@ -1094,6 +1219,17 @@
   box-shadow: 0 6px 20px rgba(0,0,0,.2);
 }
 .btn-create-fab i { color: var(--gold); }
+
+/* On small screens: icon-only pill */
+@media (max-width: 440px) {
+  .btn-create-fab span { display: none; }
+  .btn-create-fab {
+    width: 40px; height: 40px;
+    padding: 0; border-radius: 50%;
+    justify-content: center;
+  }
+}
+
 
 /* Stats chips row */
 .home-stats-row {
