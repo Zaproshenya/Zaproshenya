@@ -306,7 +306,7 @@
 }
 
 /* ── Avatar ── */
-.profile-avatar-wrap { position: relative; flex-shrink: 0; }
+.profile-avatar-wrap { position: relative; flex-shrink: 0; z-index: 1; }
 .profile-avatar-ring {
   width: 106px; height: 106px;
   border-radius: 50%;
@@ -350,6 +350,7 @@
   display: flex; align-items: center; justify-content: center;
   transition: transform .25s var(--ease), box-shadow .25s var(--ease);
   box-shadow: 0 4px 14px rgba(201,146,42,.5);
+  z-index: 2;
 }
 .profile-avatar-edit:hover {
   transform: scale(1.18) rotate(-8deg);
