@@ -99,7 +99,7 @@
         <div class="uprofile-name">${esc(userData.name)}</div>
         <div class="uprofile-badges">
           ${roleBadge(userData.role)}
-          <span class="profile-id" style="font-size:.7rem">${esc(userData.uniqueId)}</span>
+          <span class="uprofile-id">${esc(userData.uniqueId)}</span>
         </div>
         ${memberSince ? `<div class="uprofile-since">${icon('calendar-blank', 13)} З ${memberSince}</div>` : ''}
 
