@@ -92,6 +92,7 @@
   font-size: 2.2rem; display: block; margin-bottom: 4px;
   animation: heartbeat 2s ease-in-out infinite;
 }
+.envelope-top .envelope-emoji { color: #fff; }
 .envelope-type {
   font-size: .68rem; letter-spacing: .18em;
   color: rgba(255,255,255,.5); text-transform: uppercase;
