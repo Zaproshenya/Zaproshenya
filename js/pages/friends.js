@@ -65,6 +65,7 @@
   }
 
   function render() {
+    if (!loaded) return renderSkeleton();
     const { esc, avatarHTML, icon } = ZAP.utils;
 
     return `
@@ -99,7 +100,7 @@
       </button>
     </div>
 
-    ${!loaded ? renderSkeleton() : renderTab()}`;
+    ${renderTab()}`;
   }
 
   function renderTab() {

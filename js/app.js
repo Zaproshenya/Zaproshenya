@@ -482,8 +482,8 @@
   // ── Notifications skeleton ──
   function renderNotificationsSkeleton() {
     return `
-    <h1 class="page-title" style="margin-bottom:6px">Сповіщення</h1>
-    <p class="page-subtitle" style="margin-bottom:26px">Ваші останні сповіщення</p>
+    <h1 class="page-title" style="margin-bottom:6px"><span class="skeleton-line" style="width:160px;height:28px;display:inline-block;vertical-align:middle"></span></h1>
+    <p class="page-subtitle" style="margin-bottom:26px"><span class="skeleton-line" style="width:220px;height:14px;display:inline-block;vertical-align:middle"></span></p>
     ${[1,2,3,4].map(() => `
       <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;animation:none">
         <div class="skeleton-circle" style="width:40px;height:40px;flex-shrink:0"></div>
