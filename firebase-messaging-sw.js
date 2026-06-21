@@ -19,16 +19,10 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const title = payload.notification?.title || 'Запрошення ✦';
-  const body = payload.notification?.body || '';
-  const url = payload.data?.url || '/';
-
-  self.registration.showNotification(title, {
-    body,
-    icon: 'https://files.catbox.moe/0m8wur.png',
-    badge: 'https://files.catbox.moe/0m8wur.png',
-    data: { url },
-  });
+  console.log('[FCM SW] Received background message ', payload);
+  // No need to manually call showNotification() here because the payload 
+  // already contains a 'notification' block, which FCM automatically 
+  // displays. Manual execution causes duplicate notifications.
 });
 
 self.addEventListener('notificationclick', (event) => {
