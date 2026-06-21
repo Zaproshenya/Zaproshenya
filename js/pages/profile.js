@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   Page — Profile & Settings
+   Page — Profile & Settings (Premium Redesign)
    ═══════════════════════════════════════════════════════ */
 
 (function () {
@@ -42,35 +42,36 @@
 
   function renderSkeleton() {
     return `
-    <div class="profile-header" style="flex-direction:column;align-items:center;text-align:center">
-      <div class="skeleton-circle" style="width:96px;height:96px;margin-bottom:16px"></div>
-      <div class="skeleton-line w-1-2" style="margin:0 auto 8px;height:24px"></div>
-      <div class="skeleton" style="width:80px;height:20px;border-radius:20px;margin:0 auto 4px"></div>
-      <div class="skeleton-line w-1-4" style="margin:0 auto;height:14px"></div>
-    </div>
-    <div class="profile-section">
-      <div class="skeleton-line w-1-4" style="margin-bottom:18px;height:12px"></div>
-      ${[1,2,3].map(() => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(0,0,0,.05)">
-          <div>
-            <div class="skeleton-line w-1-4" style="margin-bottom:6px;height:10px"></div>
-            <div class="skeleton-line w-1-2" style="height:14px"></div>
-          </div>
-          <div class="skeleton" style="width:80px;height:32px;border-radius:var(--radius-pill)"></div>
+    <div class="profile-hero" style="margin-bottom:-28px">
+      <div class="profile-hero-inner">
+        <div class="skeleton-circle" style="width:100px;height:100px;flex-shrink:0"></div>
+        <div style="flex:1">
+          <div class="skeleton-line w-1-2" style="margin-bottom:10px;height:22px"></div>
+          <div class="skeleton-line w-1-4" style="height:14px"></div>
         </div>
+      </div>
+    </div>
+    <div class="profile-stats" style="padding-top:36px">
+      ${[1,2,3,4].map(() => `
+        <div class="skeleton" style="height:80px;border-radius:var(--radius-card)"></div>
       `).join('')}
     </div>
     <div class="profile-section">
-      <div class="skeleton-line w-1-4" style="margin-bottom:18px;height:12px"></div>
-      ${[1,2].map(() => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(0,0,0,.05)">
-          <div>
-            <div class="skeleton-line w-1-4" style="margin-bottom:6px;height:10px"></div>
-            <div class="skeleton-line w-1-2" style="height:14px"></div>
+      <div class="profile-section-header">
+        <div class="skeleton" style="width:32px;height:32px;border-radius:8px"></div>
+        <div class="skeleton-line w-1-4" style="height:12px"></div>
+      </div>
+      <div class="profile-section-content">
+        ${[1,2,3].map(() => `
+          <div class="profile-field">
+            <div>
+              <div class="skeleton-line w-1-4" style="margin-bottom:6px;height:10px"></div>
+              <div class="skeleton-line w-1-2" style="height:14px"></div>
+            </div>
+            <div class="skeleton" style="width:80px;height:32px;border-radius:var(--radius-pill)"></div>
           </div>
-          <div class="skeleton" style="width:80px;height:32px;border-radius:var(--radius-pill)"></div>
-        </div>
-      `).join('')}
+        `).join('')}
+      </div>
     </div>`;
   }
 
@@ -80,123 +81,168 @@
 
     const { esc, avatarHTML, roleBadge, icon } = ZAP.utils;
 
+    const memberSince = profile.createdAt
+      ? new Date(profile.createdAt).toLocaleDateString('uk-UA', { year: 'numeric', month: 'long' })
+      : '—';
+
     return `
-    <h1 class="page-title">Профіль</h1>
-    <p class="page-subtitle">Налаштування вашого акаунту</p>
-
-    <!-- Profile header -->
-    <div class="profile-header">
-      <div class="profile-avatar-wrap">
-        ${avatarHTML(profile, 'xl')}
-        <label class="profile-avatar-edit" title="Змінити аватар">
-          ${icon('camera', 18)}
-          <input type="file" accept="image/*" style="display:none"
-            onchange="ZAP.pages.profile.uploadAvatar(this.files[0])"/>
-        </label>
-      </div>
-      <div class="profile-info">
-        <h2>${esc(profile.name)}</h2>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px">
-          ${roleBadge(profile.role)}
-          <span class="profile-id">${esc(profile.uniqueId)}</span>
+    <!-- Profile Hero Banner -->
+    <div class="profile-hero">
+      <div class="profile-hero-inner">
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar-ring">
+            ${avatarHTML(profile, 'xl')}
+          </div>
+          <label class="profile-avatar-edit" title="Змінити аватар" id="avatar-edit-btn">
+            ${icon('camera', 16)}
+            <input type="file" accept="image/*" style="display:none"
+              onchange="ZAP.pages.profile.uploadAvatar(this.files[0])"/>
+          </label>
         </div>
-        <div style="font-size:.82rem;color:var(--muted);margin-top:6px">@${esc(profile.login)}</div>
+        <div class="profile-hero-info">
+          <div class="profile-hero-name">${esc(profile.name)}</div>
+          <div class="profile-hero-meta">
+            ${roleBadge(profile.role)}
+            <span class="profile-id">${esc(profile.uniqueId)}</span>
+          </div>
+          <div class="profile-hero-login">@${esc(profile.login)} · з ${memberSince}</div>
+        </div>
       </div>
     </div>
 
-    <!-- Personal info section -->
-    <div class="profile-section">
-      <div class="profile-section-title">Особисті дані</div>
-
-      <!-- Name -->
-      <div class="profile-field">
-        <div>
-          <div class="profile-field-label">Ім'я</div>
-          <div class="profile-field-value">${esc(profile.name)}</div>
-        </div>
-        <button class="btn-outline btn-sm" onclick="ZAP.pages.profile.startEdit('name')">Змінити</button>
+    <!-- Stats Grid -->
+    <div class="profile-stats">
+      <div class="profile-stat-card">
+        <div class="profile-stat-num">${stats ? stats.totalInvites : '—'}</div>
+        <div class="profile-stat-label">Запрошень</div>
       </div>
-
-      <!-- Login -->
-      <div class="profile-field">
-        <div>
-          <div class="profile-field-label">Логін</div>
-          <div class="profile-field-value">@${esc(profile.login)}</div>
-        </div>
-        <button class="btn-outline btn-sm" onclick="ZAP.pages.profile.startEdit('login')">Змінити</button>
+      <div class="profile-stat-card">
+        <div class="profile-stat-num">${stats ? stats.totalFriends : '—'}</div>
+        <div class="profile-stat-label">Друзів</div>
       </div>
-
-      <!-- Unique ID -->
-      <div class="profile-field">
-        <div>
-          <div class="profile-field-label">Унікальний ID</div>
-          <div class="profile-field-value" style="font-family:monospace">${esc(profile.uniqueId)}</div>
-        </div>
-        <button class="btn-outline btn-sm"
-          onclick="ZAP.utils.copyText('${esc(profile.uniqueId)}', this)">Копіювати</button>
+      <div class="profile-stat-card">
+        <div class="profile-stat-num" style="background:linear-gradient(135deg,var(--green),#4caf88);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${stats ? stats.acceptedCount : '—'}</div>
+        <div class="profile-stat-label">Прийнято</div>
+      </div>
+      <div class="profile-stat-card">
+        <div class="profile-stat-num" style="background:linear-gradient(135deg,var(--muted),#a0968c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${stats ? stats.pendingCount : '—'}</div>
+        <div class="profile-stat-label">Очікує</div>
       </div>
     </div>
 
-    <!-- Security section -->
+    <!-- Personal Info -->
     <div class="profile-section">
-      <div class="profile-section-title">Безпека</div>
-
-      <div class="profile-field">
-        <div>
-          <div class="profile-field-label">Пароль</div>
-          <div class="profile-field-value">••••••••</div>
-        </div>
-        <button class="btn-outline btn-sm" onclick="ZAP.pages.profile.startEdit('password')">Змінити</button>
+      <div class="profile-section-header">
+        <div class="profile-section-icon">${icon('user', 16)}</div>
+        <div class="profile-section-title">Особисті дані</div>
       </div>
-    </div>
+      <div class="profile-section-content">
 
-    <!-- Stats section -->
-    <div class="profile-section">
-      <div class="profile-section-title">Статистика</div>
-      <div class="profile-field">
-        <div class="profile-field-label">Дата реєстрації</div>
-        <div class="profile-field-value">${ZAP.utils.formatDate(new Date(profile.createdAt).toISOString().split('T')[0])}</div>
-      </div>
-      ${stats ? `
+        <!-- Name -->
         <div class="profile-field">
-          <div class="profile-field-label">Створені запрошення</div>
-          <div class="profile-field-value">${stats.totalInvites}</div>
+          <div>
+            <div class="profile-field-label">Ім'я</div>
+            <div class="profile-field-value">${esc(profile.name)}</div>
+          </div>
+          <button class="btn-outline btn-sm" onclick="ZAP.pages.profile.startEdit('name')">Змінити</button>
         </div>
+
+        <!-- Login -->
         <div class="profile-field">
-          <div class="profile-field-label">Типи (Персональні / Групове)</div>
-          <div class="profile-field-value">
-            ${icon('user', 14)} ${stats.personalCount} / ${icon('users', 14)} ${stats.groupCount}
+          <div>
+            <div class="profile-field-label">Логін</div>
+            <div class="profile-field-value">@${esc(profile.login)}</div>
+          </div>
+          <button class="btn-outline btn-sm" onclick="ZAP.pages.profile.startEdit('login')">Змінити</button>
+        </div>
+
+        <!-- Unique ID -->
+        <div class="profile-field">
+          <div>
+            <div class="profile-field-label">Унікальний ID</div>
+            <div class="profile-field-value" style="font-family:monospace;font-size:.88rem">${esc(profile.uniqueId)}</div>
+          </div>
+          <button class="btn-outline btn-sm"
+            onclick="ZAP.utils.copyText('${esc(profile.uniqueId)}', this)">Копіювати</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security -->
+    <div class="profile-section">
+      <div class="profile-section-header">
+        <div class="profile-section-icon">${icon('shield-check', 16)}</div>
+        <div class="profile-section-title">Безпека</div>
+      </div>
+      <div class="profile-section-content">
+        <div class="profile-field">
+          <div>
+            <div class="profile-field-label">Пароль</div>
+            <div class="profile-field-value" style="letter-spacing:.15em;font-size:1.1rem">••••••••</div>
+          </div>
+          <button class="btn-outline btn-sm" onclick="ZAP.pages.profile.startEdit('password')">Змінити</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Detail -->
+    ${stats ? `
+    <div class="profile-section">
+      <div class="profile-section-header">
+        <div class="profile-section-icon">${icon('chart-bar', 16)}</div>
+        <div class="profile-section-title">Статистика</div>
+      </div>
+      <div class="profile-section-content">
+        <div class="profile-field">
+          <div>
+            <div class="profile-field-label">Дата реєстрації</div>
+            <div class="profile-field-value">${ZAP.utils.formatDate(new Date(profile.createdAt).toISOString().split('T')[0])}</div>
           </div>
         </div>
         <div class="profile-field">
-          <div class="profile-field-label">Статуси відповідей</div>
-          <div class="profile-field-value" style="display:flex;gap:6px">
-            <span class="badge badge-accepted" style="font-size:0.75rem">${icon('check', 14)} ${stats.acceptedCount} прийнято</span>
-            <span class="badge badge-declined" style="font-size:0.75rem">${icon('x', 14)} ${stats.declinedCount} відхилено</span>
+          <div>
+            <div class="profile-field-label">Типи запрошень</div>
+            <div class="profile-field-value" style="display:flex;align-items:center;gap:12px">
+              <span style="display:flex;align-items:center;gap:5px">${icon('user', 14)} ${stats.personalCount} <span style="color:var(--muted);font-weight:400">персональних</span></span>
+              <span style="color:var(--border)">·</span>
+              <span style="display:flex;align-items:center;gap:5px">${icon('users', 14)} ${stats.groupCount} <span style="color:var(--muted);font-weight:400">групових</span></span>
+            </div>
           </div>
         </div>
         <div class="profile-field">
-          <div class="profile-field-label">Кількість друзів</div>
-          <div class="profile-field-value">${icon('users', 14)} ${stats.totalFriends}</div>
+          <div>
+            <div class="profile-field-label">Відповіді на запрошення</div>
+            <div class="profile-field-value" style="display:flex;gap:8px;flex-wrap:wrap">
+              <span class="badge badge-accepted">${icon('check', 12)} ${stats.acceptedCount} прийнято</span>
+              <span class="badge badge-declined">${icon('x', 12)} ${stats.declinedCount} відхилено</span>
+              <span class="badge badge-pending">${icon('clock', 12)} ${stats.pendingCount} очікує</span>
+            </div>
+          </div>
         </div>
-      ` : ''}
+      </div>
     </div>
+    ` : ''}
 
-    <!-- Danger zone -->
-    <div class="profile-section" style="border-color:rgba(192,57,43,.2)">
-      <div class="profile-section-title" style="color:var(--red)">Небезпечна зона</div>
-      <p style="font-size:.88rem;color:var(--muted);margin-bottom:14px">
-        Видалення акаунту є незворотнім. Усі ваші дані будуть стерті.
-      </p>
-      <button class="btn btn-red btn-sm" onclick="ZAP.pages.profile.confirmDelete()">
-        ${icon('trash', 14)} Видалити акаунт
-      </button>
+    <!-- Danger Zone -->
+    <div class="profile-danger">
+      <div class="profile-danger-header">
+        <div class="profile-danger-icon">${icon('warning', 16)}</div>
+        <div class="profile-danger-title">Небезпечна зона</div>
+      </div>
+      <div class="profile-danger-body">
+        <p style="font-size:.88rem;color:var(--muted);margin-bottom:16px;line-height:1.6">
+          Видалення акаунту є незворотнім. Усі ваші дані, запрошення та список друзів будуть безповоротно видалені.
+        </p>
+        <button class="btn btn-red btn-sm" onclick="ZAP.pages.profile.confirmDelete()">
+          ${icon('trash', 14)} Видалити акаунт
+        </button>
+      </div>
     </div>
 
     <!-- Logout -->
-    <div style="text-align:center;margin-top:16px">
-      <button class="btn-ghost" onclick="ZAP.pages.profile.doLogout()" style="color:var(--red)">
-        Вийти з акаунту
+    <div class="profile-logout">
+      <button class="btn-ghost" onclick="ZAP.pages.profile.doLogout()" style="color:var(--red);font-size:.9rem;display:flex;align-items:center;gap:6px">
+        ${icon('sign-out', 16)} Вийти з акаунту
       </button>
     </div>`;
   }
@@ -384,9 +430,12 @@
     modal.onclick = e => { if (e.target === modal) modal.remove(); };
     modal.innerHTML = `
       <div class="modal" onclick="event.stopPropagation()">
-        <h3 class="modal-title" style="color:var(--red)">${icon('trash', 20)} Видалити акаунт?</h3>
-        <p style="color:var(--muted);font-size:.9rem;margin-bottom:16px">
-          Ця дія незворотня. Всі ваші дані, запрошення та друзі будуть видалені.
+        <div style="text-align:center;margin-bottom:20px">
+          <div style="width:56px;height:56px;border-radius:50%;background:var(--red-bg);border:2px solid rgba(192,57,43,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.4rem;color:var(--red)">${icon('trash', 24)}</div>
+          <h3 class="modal-title" style="color:var(--red);margin-bottom:0">Видалити акаунт?</h3>
+        </div>
+        <p style="color:var(--muted);font-size:.9rem;margin-bottom:20px;text-align:center;line-height:1.6">
+          Ця дія незворотня. Всі ваші дані, запрошення та друзі будуть видалені назавжди.
         </p>
         <div class="form-group">
           <label class="lbl">Введіть пароль для підтвердження</label>

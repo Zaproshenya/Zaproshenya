@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   Page — Create Invitation (Personal + Group)
+   Page — Create Invitation (Personal + Group) — Premium Redesign
    ═══════════════════════════════════════════════════════ */
 
 (function () {
@@ -13,6 +13,19 @@
   let done = false;
   let createdInv = null;
   let formState = {};
+  let selectedType = '';
+
+  // All event types with emoji — synced with ZAP.utils.TYPES values
+  const EVENT_TYPES = [
+    { v: 'date',     e: '🌹', l: 'Побачення'  },
+    { v: 'walk',     e: '🍃', l: 'Прогулянка' },
+    { v: 'birthday', e: '🎂', l: 'День нар.'  },
+    { v: 'party',    e: '🥂', l: 'Вечірка'    },
+    { v: 'cinema',   e: '🎬', l: 'Кіно'       },
+    { v: 'coffee',   e: '☕', l: 'Кава'       },
+    { v: 'travel',   e: '✈️', l: 'Подорож'    },
+    { v: 'other',    e: '✨', l: 'Інше'       },
+  ];
 
   async function load() {
     loading = true;
@@ -24,6 +37,7 @@
     requireAuth = false;
     formState = {};
     friendFilter = '';
+    selectedType = EVENT_TYPES[0].v;
     const user = ZAP.auth.getUser();
     if (user) {
       friends = await ZAP.db.getFriends(user.uid);
@@ -34,223 +48,335 @@
 
   function renderSkeleton() {
     return `
-    <div class="skeleton-line w-1-2" style="margin-bottom:8px;height:28px"></div>
-    <div class="skeleton-line w-3-4" style="margin-bottom:24px;height:14px"></div>
-    <div style="display:flex;gap:4px;margin-bottom:28px;background:var(--warm);border-radius:var(--radius-sm);padding:4px">
-      <div class="skeleton" style="flex:1;height:40px;border-radius:var(--radius-sm)"></div>
-      <div class="skeleton" style="flex:1;height:40px;border-radius:var(--radius-sm)"></div>
+    <div class="create-header">
+      <div class="skeleton-line w-1-2" style="margin-bottom:8px;height:28px"></div>
+      <div class="skeleton-line w-3-4" style="height:14px"></div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:24px">
-      <div>
-        <div class="skeleton-line w-1-4" style="margin-bottom:8px;height:10px"></div>
-        <div class="skeleton" style="width:100%;height:44px;border-radius:var(--radius-sm)"></div>
+    <div class="mode-tabs" style="margin-bottom:28px">
+      <div class="skeleton" style="flex:1;height:44px;border-radius:10px"></div>
+      <div class="skeleton" style="flex:1;height:44px;border-radius:10px"></div>
+    </div>
+    <div class="form-section">
+      <div class="form-section-header">
+        <div class="skeleton" style="width:28px;height:28px;border-radius:8px"></div>
+        <div class="skeleton-line w-1-4" style="height:12px"></div>
       </div>
-      <div>
-        <div class="skeleton-line w-1-4" style="margin-bottom:8px;height:10px"></div>
-        <div class="skeleton" style="width:100%;height:88px;border-radius:var(--radius-sm)"></div>
+      <div class="form-section-body">
+        <div class="skeleton" style="width:100%;height:44px;border-radius:8px"></div>
+        <div class="skeleton" style="width:100%;height:88px;border-radius:8px"></div>
       </div>
-      <div>
-        <div class="skeleton-line w-1-4" style="margin-bottom:8px;height:10px"></div>
-        <div class="skeleton" style="width:100%;height:44px;border-radius:var(--radius-sm)"></div>
+    </div>
+    <div class="form-section">
+      <div class="form-section-header">
+        <div class="skeleton" style="width:28px;height:28px;border-radius:8px"></div>
+        <div class="skeleton-line w-1-4" style="height:12px"></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <div>
-          <div class="skeleton-line w-1-4" style="margin-bottom:8px;height:10px"></div>
-          <div class="skeleton" style="width:100%;height:44px;border-radius:var(--radius-sm)"></div>
+      <div class="form-section-body">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+          ${[1,2,3,4,5,6,7,8].map(() => `<div class="skeleton" style="height:72px;border-radius:12px"></div>`).join('')}
         </div>
-        <div>
-          <div class="skeleton-line w-1-4" style="margin-bottom:8px;height:10px"></div>
-          <div class="skeleton" style="width:100%;height:44px;border-radius:var(--radius-sm)"></div>
-        </div>
       </div>
-      <div>
-        <div class="skeleton-line w-1-4" style="margin-bottom:8px;height:10px"></div>
-        <div class="skeleton" style="width:100%;height:44px;border-radius:var(--radius-sm)"></div>
-      </div>
-      <div class="skeleton-btn" style="width:100%"></div>
-    </div>`;
+    </div>
+    <div class="skeleton-btn" style="width:100%;margin-top:8px"></div>`;
   }
 
   function render() {
     if (loading) return renderSkeleton();
-    const { esc, TYPES, icon } = ZAP.utils;
+    const { esc, icon } = ZAP.utils;
     const today = new Date().toISOString().split('T')[0];
-    const profile = ZAP.auth.getProfile();
 
     if (done && createdInv) return renderDone();
 
-    return `
-    <h1 class="page-title">Нове запрошення</h1>
-    <p class="page-subtitle">Заповніть деталі — посилання буде готове миттєво</p>
+    // Sync selectedType from formState
+    if (!selectedType) selectedType = formState.type || EVENT_TYPES[0].v;
 
-    <!-- Mode switcher -->
-    <div class="tabs" style="margin-bottom:28px">
-      <button class="tab ${mode === 'personal' ? 'active' : ''}"
-        onclick="ZAP.pages.create.setMode('personal')">${icon('user', 18)} Персональне</button>
-      <button class="tab ${mode === 'group' ? 'active' : ''}"
-        onclick="ZAP.pages.create.setMode('group')">${icon('users', 18)} Групове</button>
+    return `
+    <div class="create-header">
+      <h1 class="create-title">Нове запрошення</h1>
+      <p class="create-subtitle">Заповніть деталі — посилання буде готове миттєво</p>
     </div>
 
-    <div id="cform" style="display:flex;flex-direction:column;gap:24px">
-
-      ${mode === 'group' ? `
-        <div>
-          <label class="lbl">Назва зустрічі</label>
-          <input id="f-title" placeholder="Наприклад: Вечірка на день народження" value="${ZAP.utils.esc(formState.title || '')}" maxlength="20" oninput="ZAP.pages.create.chk()"/>
-        </div>
-      ` : `
-        <div>
-          <label class="lbl">Кому</label>
-          <input id="f-to" placeholder="Ім'я отримувача" value="${ZAP.utils.esc(formState.to || '')}" maxlength="25" oninput="ZAP.pages.create.chk()"/>
-        </div>
-      `}
-
-      <div>
-        <label class="lbl">Ваше повідомлення</label>
-        <textarea id="f-msg" placeholder="Напишіть своїми словами — що хочете, куди запрошуєте…"
-          maxlength="100" oninput="ZAP.pages.create.onMsgInput()">${ZAP.utils.esc(formState.msg || '')}</textarea>
-        <div style="text-align:right;font-size:.75rem;color:var(--muted);margin-top:4px"><span id="msg-counter">${(formState.msg || '').length}</span>/100</div>
-      </div>
-
-      <div>
-        <label class="lbl">Тип події</label>
-        <select id="f-type" onchange="ZAP.pages.create.chk()" aria-label="Тип події">
-          ${TYPES.map(o => `<option value="${o.v}" ${formState.type === o.v ? 'selected' : ''}>${o.e} ${o.l}</option>`).join('')}
-        </select>
-      </div>
-
-      <div class="grid2">
-        <div><label class="lbl" for="f-date">Дата</label><input type="date" id="f-date" min="${today}" value="${formState.date || ''}" oninput="ZAP.pages.create.chk()"/></div>
-        <div><label class="lbl" for="f-time">Час</label><input type="time" id="f-time" value="${formState.time || ''}" oninput="ZAP.pages.create.chk()"/></div>
-      </div>
-
-      <div>
-        <label class="lbl">Місце</label>
-        <input id="f-place" placeholder="Адреса, назва кафе, парк…" value="${ZAP.utils.esc(formState.place || '')}" maxlength="30" oninput="ZAP.pages.create.chk()"/>
-      </div>
-
-      ${mode === 'group' ? renderGroupOptions() : renderPersonalOptions()}
-
-      <!-- Auth required toggle -->
-      <div class="warm-panel">
-        <div class="toggle-wrap">
-          <button class="toggle ${requireAuth ? 'on' : ''}"
-            onclick="ZAP.pages.create.toggleRequireAuth(this)"
-            role="switch" aria-checked="${requireAuth}" aria-label="Обмежити доступ лише для зареєстрованих"></button>
-          <span class="toggle-label">
-            ${requireAuth
-              ? `${icon('lock', 14)} Тільки для зареєстрованих — отримувач повинен увійти в акаунт`
-              : `${icon('globe-hemisphere-west', 14)} Для всіх — будь-хто може переглянути запрошення`}
-          </span>
-        </div>
-      </div>
-
-      <!-- Show sender toggle -->
-      <div class="warm-panel">
-        <div class="toggle-wrap">
-          <button class="toggle ${formState.showSender !== false ? 'on' : ''}"
-            onclick="ZAP.pages.create.toggleShowSender(this)"
-            role="switch" aria-checked="${formState.showSender !== false}" aria-label="Показувати відправника"></button>
-          <span class="toggle-label">
-            ${formState.showSender !== false
-              ? `${icon('eye', 14)} Показувати від кого — отримувач бачитиме ваше ім'я`
-              : `${icon('eye-slash', 14)} Анонімне запрошення — відправник прихований`}
-          </span>
-        </div>
-      </div>
-
-      <button id="sbtn" class="btn btn-dark btn-full" disabled onclick="ZAP.pages.create.submit()">
-        Створити запрошення →
+    <!-- Mode switcher -->
+    <div class="mode-tabs">
+      <button class="mode-tab ${mode === 'personal' ? 'active' : ''}"
+        onclick="ZAP.pages.create.setMode('personal')">
+        ${icon('user', 17)} Персональне
       </button>
+      <button class="mode-tab ${mode === 'group' ? 'active' : ''}"
+        onclick="ZAP.pages.create.setMode('group')">
+        ${icon('users', 17)} Групове
+      </button>
+    </div>
+
+    <div id="cform">
+
+      <!-- Section 1: Recipient / Title -->
+      <div class="form-section">
+        <div class="form-section-header">
+          <div class="form-section-icon">${icon(mode === 'personal' ? 'user' : 'users', 14)}</div>
+          <div class="form-section-label">${mode === 'personal' ? 'Отримувач' : 'Назва зустрічі'}</div>
+        </div>
+        <div class="form-section-body">
+          ${mode === 'group' ? `
+            <div>
+              <label class="lbl">Назва зустрічі</label>
+              <input id="f-title" placeholder="Наприклад: Вечірка на день народження"
+                value="${esc(formState.title || '')}" maxlength="40"
+                oninput="ZAP.pages.create.chk()"/>
+            </div>
+          ` : `
+            <div>
+              <label class="lbl">Кому</label>
+              <input id="f-to" placeholder="Ім'я отримувача"
+                value="${esc(formState.to || '')}" maxlength="25"
+                oninput="ZAP.pages.create.chk()"/>
+            </div>
+            ${renderPersonalFriends()}
+          `}
+        </div>
+      </div>
+
+      <!-- Section 2: Message -->
+      <div class="form-section">
+        <div class="form-section-header">
+          <div class="form-section-icon">${icon('chat-circle-dots', 14)}</div>
+          <div class="form-section-label">Повідомлення</div>
+        </div>
+        <div class="form-section-body">
+          <div>
+            <label class="lbl">Ваше повідомлення</label>
+            <textarea id="f-msg"
+              placeholder="Напишіть своїми словами — що хочете, куди запрошуєте…"
+              maxlength="100"
+              oninput="ZAP.pages.create.onMsgInput()">${esc(formState.msg || '')}</textarea>
+            <div style="text-align:right;font-size:.72rem;color:var(--muted);margin-top:4px">
+              <span id="msg-counter">${(formState.msg || '').length}</span>/100
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Event type picker -->
+      <div class="form-section">
+        <div class="form-section-header">
+          <div class="form-section-icon">${icon('sparkle', 14)}</div>
+          <div class="form-section-label">Тип події</div>
+        </div>
+        <div class="form-section-body">
+          <div class="type-picker">
+            ${EVENT_TYPES.map(t => `
+              <button class="type-option ${selectedType === t.v ? 'selected' : ''}"
+                onclick="ZAP.pages.create.selectType('${t.v}')">
+                <span class="type-option-emoji">${t.e}</span>
+                <span>${t.l}</span>
+              </button>
+            `).join('')}
+          </div>
+          <input type="hidden" id="f-type" value="${selectedType}"/>
+        </div>
+      </div>
+
+      <!-- Section 4: Date & Time & Place -->
+      <div class="form-section">
+        <div class="form-section-header">
+          <div class="form-section-icon">${icon('calendar-blank', 14)}</div>
+          <div class="form-section-label">Коли та де</div>
+        </div>
+        <div class="form-section-body">
+          <div class="datetime-row">
+            <div>
+              <label class="lbl" for="f-date">Дата</label>
+              <input type="date" id="f-date" min="${today}"
+                value="${formState.date || ''}" oninput="ZAP.pages.create.chk()"/>
+            </div>
+            <div>
+              <label class="lbl" for="f-time">Час</label>
+              <input type="time" id="f-time"
+                value="${formState.time || ''}" oninput="ZAP.pages.create.chk()"/>
+            </div>
+          </div>
+          <div>
+            <label class="lbl">Місце</label>
+            <input id="f-place"
+              placeholder="Адреса, назва кафе, парк…"
+              value="${esc(formState.place || '')}" maxlength="60"
+              oninput="ZAP.pages.create.chk()"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 5: Privacy & Group options -->
+      <div class="form-section">
+        <div class="form-section-header">
+          <div class="form-section-icon">${icon('shield', 14)}</div>
+          <div class="form-section-label">Налаштування доступу</div>
+        </div>
+        <div class="form-section-body" style="padding-top:4px;padding-bottom:4px">
+          ${mode === 'group' ? renderGroupPrivacy() : ''}
+
+          <!-- Auth required toggle -->
+          <div class="toggle-row">
+            <button class="toggle ${requireAuth ? 'on' : ''}"
+              onclick="ZAP.pages.create.toggleRequireAuth(this)"
+              role="switch" aria-checked="${requireAuth}"
+              aria-label="Обмежити доступ лише для зареєстрованих"></button>
+            <div class="toggle-row-text">
+              <div class="toggle-row-label">
+                ${requireAuth
+                  ? `${icon('lock', 13)} Тільки для зареєстрованих`
+                  : `${icon('globe-hemisphere-west', 13)} Для всіх`}
+              </div>
+              <div class="toggle-row-desc">
+                ${requireAuth
+                  ? 'Отримувач повинен увійти в акаунт'
+                  : 'Будь-хто може переглянути запрошення'}
+              </div>
+            </div>
+          </div>
+
+          <!-- Show sender toggle -->
+          <div class="toggle-row">
+            <button class="toggle ${formState.showSender !== false ? 'on' : ''}"
+              onclick="ZAP.pages.create.toggleShowSender(this)"
+              role="switch" aria-checked="${formState.showSender !== false}"
+              aria-label="Показувати відправника"></button>
+            <div class="toggle-row-text">
+              <div class="toggle-row-label">
+                ${formState.showSender !== false
+                  ? `${icon('eye', 13)} Показувати від кого`
+                  : `${icon('eye-slash', 13)} Анонімне запрошення`}
+              </div>
+              <div class="toggle-row-desc">
+                ${formState.showSender !== false
+                  ? 'Отримувач бачитиме ваше ім\'я'
+                  : 'Відправник прихований'}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      ${mode === 'group' ? renderGroupFriends() : ''}
+
+      <!-- Submit button -->
+      <div class="create-submit-wrap">
+        <button id="sbtn" class="btn btn-dark btn-full" disabled
+          onclick="ZAP.pages.create.submit()"
+          style="margin-top:4px;font-size:1rem;padding:15px 24px">
+          ${icon('paper-plane-tilt', 18)} Створити запрошення
+        </button>
+      </div>
+
     </div>`;
   }
 
-  function renderPersonalOptions() {
+  function renderPersonalFriends() {
     if (friends.length === 0) return '';
+    const { esc, avatarHTML, icon } = ZAP.utils;
     const filtered = friendFilter
       ? friends.filter(f =>
           (f.name || '').toLowerCase().includes(friendFilter) ||
           (f.uniqueId || '').toLowerCase().includes(friendFilter))
       : friends;
+
     return `
-    <div class="warm-panel">
-      <p class="lbl">
-        Або надішліть напряму другу
-      </p>
-      ${friends.length > 3 ? `
+    <div style="margin-top:4px">
+      <label class="lbl" style="margin-bottom:8px">Або обрати з друзів</label>
+      ${friends.length > 4 ? `
         <input type="text" placeholder="Пошук друга..."
-          value="${ZAP.utils.esc(friendFilter)}"
+          value="${esc(friendFilter)}"
           oninput="ZAP.pages.create.filterFriends(this.value)"
           aria-label="Пошук друга за іменем або ID"
-          style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:.85rem;margin-bottom:10px;background:var(--card)"/>
+          style="margin-bottom:10px"/>
       ` : ''}
-      <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <div class="friends-grid">
         ${filtered.length === 0 ? `
-          <p style="font-size:.85rem;color:var(--muted);font-style:italic;width:100%">Нікого не знайдено</p>
+          <p style="font-size:.85rem;color:var(--muted);font-style:italic">Нікого не знайдено</p>
         ` : filtered.map(f => `
-          <button class="pill ${selectedFriends.includes(f.uid) ? 'on' : ''}"
+          <button class="friend-chip ${selectedFriends.includes(f.uid) ? 'on' : ''}"
             onclick="ZAP.pages.create.toggleFriend('${f.uid}','personal',this)">
-            <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-              ${ZAP.utils.avatarHTML(f, 'sm')}
-              <span style="font-weight:600;color:var(--ink)">${ZAP.utils.esc(f.name)}</span>
-              ${f.uniqueId ? `<span style="font-size:.65rem;color:var(--muted);font-family:monospace">${ZAP.utils.esc(f.uniqueId)}</span>` : ''}
-            </div>
+            ${avatarHTML(f, 'sm')}
+            <span class="friend-chip-name">${esc(f.name)}</span>
+            ${f.uniqueId ? `<span class="friend-chip-id">${esc(f.uniqueId)}</span>` : ''}
           </button>
         `).join('')}
       </div>
     </div>`;
   }
 
-  function renderGroupOptions() {
+  function renderGroupPrivacy() {
     const { icon } = ZAP.utils;
+    return `
+    <div class="toggle-row">
+      <button class="toggle ${isPublic ? 'on' : ''}"
+        onclick="ZAP.pages.create.togglePublic(this)"
+        role="switch" aria-checked="${isPublic}"
+        aria-label="Публічне або приватне запрошення"></button>
+      <div class="toggle-row-text">
+        <div class="toggle-row-label">
+          ${isPublic
+            ? `${icon('globe-hemisphere-west', 13)} Публічне`
+            : `${icon('lock', 13)} Приватне`}
+        </div>
+        <div class="toggle-row-desc">
+          ${isPublic
+            ? 'Будь-хто може приєднатися за посиланням'
+            : 'Тільки для обраних друзів'}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function renderGroupFriends() {
+    const { esc, avatarHTML, icon } = ZAP.utils;
+    if (friends.length === 0 && !isPublic) {
+      return `
+      <div class="form-section">
+        <div class="form-section-header">
+          <div class="form-section-icon">${icon('users', 14)}</div>
+          <div class="form-section-label">Учасники</div>
+        </div>
+        <div class="form-section-body">
+          <p style="font-size:.88rem;color:var(--muted);font-style:italic">
+            У вас ще немає друзів.
+            <button class="btn-ghost" onclick="ZAP.router.go('friends')">Додати →</button>
+          </p>
+        </div>
+      </div>`;
+    }
+    if (isPublic && selectedFriends.length === 0) return '';
+
     const filtered = friendFilter
       ? friends.filter(f =>
           (f.name || '').toLowerCase().includes(friendFilter) ||
           (f.uniqueId || '').toLowerCase().includes(friendFilter))
       : friends;
-    return `
-    <!-- Public / Private toggle -->
-    <div class="warm-panel">
-      <div class="toggle-wrap" style="margin-bottom:14px">
-        <button class="toggle ${isPublic ? 'on' : ''}"
-          onclick="ZAP.pages.create.togglePublic(this)"
-          role="switch" aria-checked="${isPublic}" aria-label="Публічне або приватне запрошення"></button>
-        <span class="toggle-label">
-          ${isPublic ? `${icon('globe-hemisphere-west', 14)} Публічне — будь-хто може приєднатися за посиланням` : `${icon('lock', 14)} Приватне — тільки для обраних друзів`}
-        </span>
-      </div>
 
-      <div id="group-friends-section"${isPublic && selectedFriends.length === 0 ? ' style="display:none"' : ''}>
-        <p style="font-size:.78rem;color:var(--muted);margin-bottom:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em">
-          Виберіть друзів для запрошення
-        </p>
-        ${friends.length > 3 ? `
+    return `
+    <div class="form-section" id="group-friends-section">
+      <div class="form-section-header">
+        <div class="form-section-icon">${icon('users', 14)}</div>
+        <div class="form-section-label">Запросити друзів ${selectedFriends.length > 0 ? `<span class="tab-count">${selectedFriends.length}</span>` : ''}</div>
+      </div>
+      <div class="form-section-body">
+        ${friends.length > 4 ? `
           <input type="text" placeholder="Пошук друга..."
-            value="${ZAP.utils.esc(friendFilter)}"
+            value="${esc(friendFilter)}"
             oninput="ZAP.pages.create.filterFriends(this.value)"
-            aria-label="Пошук друга за іменем або ID"
-            style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:.85rem;margin-bottom:10px;background:var(--card)"/>
+            aria-label="Пошук друга за іменем або ID"/>
         ` : ''}
-        ${friends.length === 0 ? `
-          <p style="font-size:.88rem;color:var(--muted);font-style:italic">
-            У вас ще немає друзів. <button class="btn-ghost" onclick="ZAP.router.go('friends')">Додати →</button>
-          </p>
-        ` : `
-          <div id="group-friends-area" style="display:flex;flex-wrap:wrap;gap:8px">
-            ${filtered.length === 0 ? `
-              <p style="font-size:.85rem;color:var(--muted);font-style:italic;width:100%">Нікого не знайдено</p>
-            ` : filtered.map(f => `
-              <button class="pill ${selectedFriends.includes(f.uid) ? 'on' : ''}"
-                onclick="ZAP.pages.create.toggleFriend('${f.uid}','group',this)">
-                <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-                  ${ZAP.utils.avatarHTML(f, 'sm')}
-                  <span style="font-weight:600;color:var(--ink)">${ZAP.utils.esc(f.name)}</span>
-                  ${f.uniqueId ? `<span style="font-size:.65rem;color:var(--muted);font-family:monospace">${ZAP.utils.esc(f.uniqueId)}</span>` : ''}
-                </div>
-              </button>
-            `).join('')}
-          </div>
-        `}
+        <div class="friends-grid" id="group-friends-area">
+          ${filtered.length === 0 ? `
+            <p style="font-size:.85rem;color:var(--muted);font-style:italic">Нікого не знайдено</p>
+          ` : filtered.map(f => `
+            <button class="friend-chip ${selectedFriends.includes(f.uid) ? 'on' : ''}"
+              onclick="ZAP.pages.create.toggleFriend('${f.uid}','group',this)">
+              ${avatarHTML(f, 'sm')}
+              <span class="friend-chip-name">${esc(f.name)}</span>
+              ${f.uniqueId ? `<span class="friend-chip-id">${esc(f.uniqueId)}</span>` : ''}
+            </button>
+          `).join('')}
+        </div>
       </div>
     </div>`;
   }
@@ -262,33 +388,40 @@
       : ZAP.utils.inviteLink(createdInv.id);
 
     return `
-    <div style="animation:fadeUp .5s ease">
-      <div style="text-align:center;padding:10px 0 24px">
-        <div style="font-size:2.8rem;margin-bottom:12px">${icon('confetti', 48)}</div>
-        <h2 style="font-family:var(--font-heading);font-weight:400;font-style:italic;font-size:1.9rem;margin-bottom:8px">Готово!</h2>
-        <p style="color:var(--muted);margin-bottom:22px">
-          ${createdInv.sentToFriends
-            ? 'Запрошення надіслано друзям! Вони отримають сповіщення.'
-            : 'Скопіюйте та надішліть це посилання:'}
-        </p>
-      </div>
+    <div class="create-done">
+      <div class="create-done-icon">${icon('confetti', 36)}</div>
+      <h2 class="create-done-title">Готово!</h2>
+      <p class="create-done-desc">
+        ${createdInv.sentToFriends
+          ? 'Запрошення надіслано друзям! Вони отримають сповіщення.'
+          : 'Скопіюйте та поділіться цим посиланням:'}
+      </p>
+
       ${!createdInv.sentToFriends ? `
-        <div class="link-box" style="margin-bottom:14px">
-          <div class="link-text" id="done-link-text">${ZAP.utils.esc(link)}</div>
+        <div class="create-link-box">
+          <div class="create-link-url" id="done-link-text">${ZAP.utils.esc(link)}</div>
           <button id="done-copy-btn"
             onclick="ZAP.utils.copyText('${link.replace(/'/g,"\\'")}', this)"
-            style="background:var(--ink);color:var(--paper);border:none;border-radius:10px;padding:11px;font-size:.9rem;width:100%">
-            ${icon('link', 14)} Скопіювати посилання
+            class="btn btn-dark btn-full" style="font-size:.95rem">
+            ${icon('link', 15)} Скопіювати посилання
           </button>
         </div>
       ` : ''}
-      <p style="font-size:.82rem;color:var(--muted);text-align:center;margin-bottom:20px;font-style:italic">
-        Коли людина відповість — статус оновиться автоматично ${icon('arrows-clockwise', 14)}
+
+      <p class="create-done-note">
+        ${icon('arrows-clockwise', 14)}
+        Коли людина відповість — статус оновиться автоматично
       </p>
-      <div style="display:flex;gap:10px;justify-content:center">
-        <button onclick="ZAP.pages.create.reset()" class="btn-ghost">Ще одне</button>
-        <span style="color:var(--border)">·</span>
-        <button onclick="ZAP.router.go('home')" class="btn-ghost">← До списку</button>
+
+      <div class="create-done-actions" style="margin-top:20px">
+        <button onclick="ZAP.pages.create.reset()"
+          class="btn btn-outline" style="padding:10px 24px">
+          ${icon('plus', 14)} Ще одне
+        </button>
+        <button onclick="ZAP.router.go('home')"
+          class="btn btn-dark" style="padding:10px 24px">
+          ${icon('house', 14)} До списку
+        </button>
       </div>
     </div>`;
   }
@@ -297,10 +430,24 @@
     formState.title = document.getElementById('f-title')?.value || '';
     formState.to = document.getElementById('f-to')?.value || '';
     formState.msg = document.getElementById('f-msg')?.value || '';
-    formState.type = document.getElementById('f-type')?.value || '';
+    formState.type = document.getElementById('f-type')?.value || selectedType;
     formState.date = document.getElementById('f-date')?.value || '';
     formState.time = document.getElementById('f-time')?.value || '';
     formState.place = document.getElementById('f-place')?.value || '';
+  }
+
+  function selectType(v) {
+    saveFormState();
+    selectedType = v;
+    formState.type = v;
+    // Update hidden input
+    const inp = document.getElementById('f-type');
+    if (inp) inp.value = v;
+    // Update UI
+    document.querySelectorAll('.type-option').forEach(btn => {
+      btn.classList.toggle('selected', btn.getAttribute('onclick')?.includes(`'${v}'`));
+    });
+    chk();
   }
 
   function setMode(m) {
@@ -317,15 +464,25 @@
 
     btn.classList.toggle('on');
     btn.setAttribute('aria-checked', isPublic);
-    const label = btn.parentElement.querySelector('.toggle-label');
-    if (label) {
-      label.innerHTML = isPublic
-        ? `${ZAP.utils.icon('globe-hemisphere-west', 14)} Публічне — будь-хто може приєднатися за посиланням`
-        : `${ZAP.utils.icon('lock', 14)} Приватне — тільки для обраних друзів`;
+    const row = btn.closest('.toggle-row');
+    if (row) {
+      const label = row.querySelector('.toggle-row-label');
+      const desc = row.querySelector('.toggle-row-desc');
+      if (label) label.innerHTML = isPublic
+        ? `${ZAP.utils.icon('globe-hemisphere-west', 13)} Публічне`
+        : `${ZAP.utils.icon('lock', 13)} Приватне`;
+      if (desc) desc.textContent = isPublic
+        ? 'Будь-хто може приєднатися за посиланням'
+        : 'Тільки для обраних друзів';
     }
 
+    // Show/hide group friends section
     const section = document.getElementById('group-friends-section');
-    if (section) section.style.display = isPublic ? 'none' : '';
+    if (section) {
+      section.style.display = (isPublic && selectedFriends.length === 0) ? 'none' : '';
+    } else if (!isPublic) {
+      ZAP.render();
+    }
 
     chk();
   }
@@ -335,7 +492,7 @@
     if (ctx === 'personal') {
       const wasSelected = selectedFriends.includes(uid);
       selectedFriends = wasSelected ? [] : [uid];
-      document.querySelectorAll('#cform .pill.on').forEach(b => b.classList.remove('on'));
+      document.querySelectorAll('#cform .friend-chip.on').forEach(b => b.classList.remove('on'));
       const toInput = document.getElementById('f-to');
       if (!wasSelected) {
         el.classList.add('on');
@@ -364,6 +521,13 @@
         el.classList.add('on');
       }
       updateToggleState();
+
+      // Update section label count
+      const sectionLabel = document.querySelector('#group-friends-section .form-section-label');
+      if (sectionLabel) {
+        sectionLabel.innerHTML = `Запросити друзів ${selectedFriends.length > 0 ? `<span class="tab-count">${selectedFriends.length}</span>` : ''}`;
+      }
+
       const gf = document.getElementById('group-friends-section');
       if (gf) gf.style.display = '';
     }
@@ -371,19 +535,22 @@
   }
 
   function updateToggleState() {
-    const tw = document.querySelector('.warm-panel > .toggle-wrap');
-    if (!tw) return;
-    const btn = tw.querySelector('.toggle');
-    const label = tw.querySelector('.toggle-label');
+    // Find the public toggle row in group mode
+    const toggleRows = document.querySelectorAll('.toggle-row');
+    if (!toggleRows.length) return;
+    const btn = toggleRows[0]?.querySelector('.toggle');
+    const label = toggleRows[0]?.querySelector('.toggle-row-label');
+    const desc = toggleRows[0]?.querySelector('.toggle-row-desc');
     if (btn) {
       btn.classList.toggle('on', isPublic);
       btn.setAttribute('aria-checked', isPublic);
     }
-    if (label) {
-      label.innerHTML = isPublic
-        ? `${ZAP.utils.icon('globe-hemisphere-west', 14)} Публічне — будь-хто може приєднатися за посиланням`
-        : `${ZAP.utils.icon('lock', 14)} Приватне — тільки для обраних друзів`;
-    }
+    if (label) label.innerHTML = isPublic
+      ? `${ZAP.utils.icon('globe-hemisphere-west', 13)} Публічне`
+      : `${ZAP.utils.icon('lock', 13)} Приватне`;
+    if (desc) desc.textContent = isPublic
+      ? 'Будь-хто може приєднатися за посиланням'
+      : 'Тільки для обраних друзів';
   }
 
   function chk() {
@@ -408,7 +575,7 @@
     const user = ZAP.auth.getUser();
     if (!profile || !user) return;
 
-    const type = document.getElementById('f-type').value;
+    const type = document.getElementById('f-type')?.value || selectedType;
     const date = document.getElementById('f-date').value;
     const time = document.getElementById('f-time').value;
     const place = document.getElementById('f-place')?.value.trim() || '';
@@ -428,7 +595,6 @@
         created: Date.now(),
       };
 
-      // If sending to friends directly
       if (selectedFriends.length > 0) {
         for (const fUid of selectedFriends) {
           const friendInv = { ...inv, id: ZAP.utils.genId(), to: to || 'Друг', recipientUid: fUid };
@@ -444,7 +610,6 @@
 
       createdInv = inv;
     } else {
-      // Group invite
       const title = document.getElementById('f-title')?.value.trim() || '';
       const inv = {
         id: ZAP.utils.genId(),
@@ -464,7 +629,6 @@
 
       await ZAP.db.createGroupInvite(inv);
 
-      // Send to selected friends if private
       if (!isPublic && selectedFriends.length > 0) {
         await ZAP.db.sendGroupInviteToFriends(inv.id, selectedFriends, inv);
         inv.sentToFriends = true;
@@ -482,6 +646,7 @@
     createdInv = null;
     selectedFriends = [];
     requireAuth = false;
+    selectedType = EVENT_TYPES[0].v;
     formState = {};
     ZAP.render();
   }
@@ -492,11 +657,16 @@
 
     btn.classList.toggle('on');
     btn.setAttribute('aria-checked', requireAuth);
-    const label = btn.parentElement.querySelector('.toggle-label');
-    if (label) {
-      label.innerHTML = requireAuth
-        ? `${ZAP.utils.icon('lock', 14)} Тільки для зареєстрованих — отримувач повинен увійти в акаунт`
-        : `${ZAP.utils.icon('globe-hemisphere-west', 14)} Для всіх — будь-хто може переглянути запрошення`;
+    const row = btn.closest('.toggle-row');
+    if (row) {
+      const label = row.querySelector('.toggle-row-label');
+      const desc = row.querySelector('.toggle-row-desc');
+      if (label) label.innerHTML = requireAuth
+        ? `${ZAP.utils.icon('lock', 13)} Тільки для зареєстрованих`
+        : `${ZAP.utils.icon('globe-hemisphere-west', 13)} Для всіх`;
+      if (desc) desc.textContent = requireAuth
+        ? 'Отримувач повинен увійти в акаунт'
+        : 'Будь-хто може переглянути запрошення';
     }
 
     chk();
@@ -508,11 +678,16 @@
 
     btn.classList.toggle('on');
     btn.setAttribute('aria-checked', formState.showSender !== false);
-    const label = btn.parentElement.querySelector('.toggle-label');
-    if (label) {
-      label.innerHTML = formState.showSender !== false
-        ? `${ZAP.utils.icon('eye', 14)} Показувати від кого — отримувач бачитиме ваше ім'я`
-        : `${ZAP.utils.icon('eye-slash', 14)} Анонімне запрошення — відправник прихований`;
+    const row = btn.closest('.toggle-row');
+    if (row) {
+      const label = row.querySelector('.toggle-row-label');
+      const desc = row.querySelector('.toggle-row-desc');
+      if (label) label.innerHTML = formState.showSender !== false
+        ? `${ZAP.utils.icon('eye', 13)} Показувати від кого`
+        : `${ZAP.utils.icon('eye-slash', 13)} Анонімне запрошення`;
+      if (desc) desc.textContent = formState.showSender !== false
+        ? 'Отримувач бачитиме ваше ім\'я'
+        : 'Відправник прихований';
     }
 
     chk();
@@ -535,5 +710,6 @@
     _loaded: false,
     render, load, setMode, togglePublic, toggleFriend, chk, submit, reset,
     toggleRequireAuth, toggleShowSender, saveFormState, filterFriends, onMsgInput,
+    selectType,
   };
 })();

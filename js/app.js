@@ -482,18 +482,39 @@
   // ── Notifications skeleton ──
   function renderNotificationsSkeleton() {
     return `
-    <h1 class="page-title" style="margin-bottom:6px"><span class="skeleton-line" style="width:160px;height:28px;display:inline-block;vertical-align:middle"></span></h1>
-    <p class="page-subtitle" style="margin-bottom:26px"><span class="skeleton-line" style="width:220px;height:14px;display:inline-block;vertical-align:middle"></span></p>
-    ${[1,2,3,4].map(() => `
-      <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;animation:none">
-        <div class="skeleton-circle" style="width:40px;height:40px;flex-shrink:0"></div>
-        <div style="flex:1;min-width:0">
-          <div class="skeleton-line w-3-4" style="margin-bottom:6px;height:14px"></div>
-          <div class="skeleton-line w-1-2" style="height:12px"></div>
-        </div>
-        <div class="skeleton" style="width:24px;height:24px;border-radius:50%;flex-shrink:0"></div>
+    <div class="notif-page-header">
+      <div class="notif-page-header-left">
+        <div class="skeleton-line" style="width:180px;height:26px;margin-bottom:8px"></div>
+        <div class="skeleton-line" style="width:240px;height:13px"></div>
       </div>
-    `).join('')}`;
+    </div>
+    <div style="margin-bottom:10px">
+      <div class="skeleton-line" style="width:80px;height:10px;margin-bottom:12px"></div>
+      ${[1,2].map(() => `
+        <div class="notif-item" style="animation:none;margin-bottom:8px">
+          <div class="skeleton" style="width:42px;height:42px;border-radius:12px;flex-shrink:0"></div>
+          <div style="flex:1;min-width:0">
+            <div class="skeleton-line w-3-4" style="margin-bottom:6px;height:13px"></div>
+            <div class="skeleton-line w-1-2" style="margin-bottom:8px;height:11px"></div>
+            <div class="skeleton-line w-1-4" style="height:10px"></div>
+          </div>
+          <div class="skeleton" style="width:28px;height:28px;border-radius:50%;flex-shrink:0"></div>
+        </div>
+      `).join('')}
+    </div>
+    <div>
+      <div class="skeleton-line" style="width:80px;height:10px;margin-bottom:12px"></div>
+      ${[1,2,3].map(() => `
+        <div class="notif-item" style="animation:none;margin-bottom:8px">
+          <div class="skeleton" style="width:42px;height:42px;border-radius:12px;flex-shrink:0"></div>
+          <div style="flex:1;min-width:0">
+            <div class="skeleton-line w-3-4" style="margin-bottom:6px;height:13px"></div>
+            <div class="skeleton-line w-1-2" style="height:11px"></div>
+          </div>
+          <div class="skeleton" style="width:28px;height:28px;border-radius:50%;flex-shrink:0"></div>
+        </div>
+      `).join('')}
+    </div>`;
   }
 
   // ── Notifications page ──
@@ -507,25 +528,33 @@
     await ZAP.notifications.markAllNotifsRead(user.uid);
     unreadCount = 0;
 
+    const { icon: phIcon } = ZAP.utils;
+
+    // Icon & type config
+    const typeConfig = {
+      'friend-request':    { icon: phIcon('user-plus',20),        cls: 'type-friend-request',    label: 'Запит у друзі' },
+      'friend-accepted':   { icon: phIcon('check-circle',20),     cls: 'type-friend-accepted',   label: 'Друзі' },
+      'friend-removed':    { icon: phIcon('user-minus',20),       cls: 'type-friend-removed',    label: 'Друзі' },
+      'invite':            { icon: phIcon('paper-plane-tilt',20), cls: 'type-invite',            label: 'Запрошення' },
+      'group-invite':      { icon: phIcon('users',20),            cls: 'type-group-invite',      label: 'Групове' },
+      'invite-response':   { icon: phIcon('chat-circle-dots',20), cls: 'type-invite-response',   label: 'Відповідь' },
+      'invite-reschedule': { icon: phIcon('calendar-blank',20),   cls: 'type-invite-reschedule', label: 'Перенос' },
+    };
+
     if (notifs.length === 0) {
       return `
-      <h1 class="page-title">Сповіщення</h1>
-      <div class="empty">
-        <div class="empty-icon"><i class="ph ph-bell-ringing" style="font-size:3rem"></i></div>
-        <p style="font-style:italic;font-size:1.05rem">Немає сповіщень</p>
+      <div class="notif-page-header">
+        <div class="notif-page-header-left">
+          <div class="notif-page-title">Сповіщення</div>
+          <div class="notif-page-subtitle">Усі ваші сповіщення</div>
+        </div>
+      </div>
+      <div class="notif-empty">
+        <div class="notif-empty-icon">${phIcon('bell-ringing', 36)}</div>
+        <div class="notif-empty-title">Все спокійно</div>
+        <p class="notif-empty-sub">Поки що немає нових сповіщень</p>
       </div>`;
     }
-
-    const { icon: phIcon } = ZAP.utils;
-    const iconMap = {
-      'friend-request': phIcon('user-plus',20),
-      'friend-accepted': phIcon('check-circle',20),
-      'friend-removed': phIcon('user-minus',20),
-      'invite': phIcon('paper-plane-tilt',20),
-      'group-invite': phIcon('users',20),
-      'invite-response': phIcon('chat-circle-dots',20),
-      'invite-reschedule': phIcon('calendar-blank',20),
-    };
 
     // Track processed friend requests to prevent duplicate actions
     const processedReqs = new Set();
@@ -533,46 +562,78 @@
     const friends = await ZAP.db.getFriends(user.uid);
     const friendUids = new Set(friends.map(f => f.uid));
 
-    return `
-    <h1 class="page-title">Сповіщення</h1>
-    <p class="page-subtitle">Ваші останні сповіщення</p>
-    ${notifs.map((n, i) => {
-      const notifIcon = iconMap[n.type] || phIcon('info',20);
+    // Group notifications: today vs earlier
+    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    const todayTs = todayStart.getTime();
+    const yesterdayStart = todayTs - 86400000;
+
+    const groups = { today: [], yesterday: [], earlier: [] };
+    notifs.forEach(n => {
+      if (n.createdAt >= todayTs) groups.today.push(n);
+      else if (n.createdAt >= yesterdayStart) groups.yesterday.push(n);
+      else groups.earlier.push(n);
+    });
+
+    const unreadCount_local = notifs.filter(n => !n.read).length;
+
+    function renderNotifItem(n, i) {
+      const cfg = typeConfig[n.type] || { icon: phIcon('info',20), cls: 'type-default', label: '' };
       let actionBtn = '';
       const isProcessed = (n.type === 'friend-request' && n.fromUid && friendUids.has(n.fromUid)) || processedReqs.has(n.fromUid);
 
       if (n.type === 'friend-request' && n.fromUid) {
         if (isProcessed) {
-          actionBtn = `<span class="status-text">Запит прийнято</span>`;
+          actionBtn = `<span class="status-text">${phIcon('check-circle',14)} Запит прийнято</span>`;
         } else {
           actionBtn = `
-            <button class="btn btn-gold btn-sm" 
+            <button class="btn btn-gold btn-sm"
               onclick="ZAP.pages.friends.acceptReq('${n.fromUid}');processedReqs.add('${n.fromUid}');this.closest('.notif-item').remove()">Прийняти</button>
-            <button class="btn btn-outline btn-sm" 
+            <button class="btn btn-outline btn-sm"
               onclick="ZAP.pages.friends.declineReq('${n.fromUid}');processedReqs.add('${n.fromUid}');this.closest('.notif-item').remove()">Відхилити</button>
           `;
         }
       } else if ((n.type === 'invite' || n.type === 'group-invite') && n.inviteId) {
         const routePage = n.type === 'group-invite' ? 'group-invite' : 'invite';
         actionBtn = n.read
-          ? `<span class="status-text" style="color:var(--muted)">Переглянуто</span>`
+          ? `<span class="status-text" style="color:var(--muted)">${phIcon('check',14)} Переглянуто</span>`
           : `<button class="btn btn-gold btn-sm" onclick="ZAP.router.go('${routePage}',{id:'${n.inviteId}'})">Переглянути</button>`;
       } else if (n.type === 'friend-accepted' && n.fromUid) {
         actionBtn = `<button class="btn btn-outline btn-sm" onclick="ZAP.router.go('user-profile',{uid:'${n.fromUid}'})">Профіль</button>`;
       }
 
       return `
-      <div class="notif-item ${n.read ? '' : 'unread'} ${isProcessed ? 'processed' : ''}" style="animation-delay:${i * 40}ms">
-        <div class="notif-icon">${notifIcon}</div>
+      <div class="notif-item ${n.read ? '' : 'unread'} notif-${n.type || 'default'} ${isProcessed ? 'processed' : ''}" style="animation-delay:${i * 35}ms">
+        <div class="notif-icon-wrap ${cfg.cls}">${cfg.icon}</div>
         <div class="notif-body">
-          <div class="notif-text"><strong>${ZAP.utils.esc(n.title || '')}</strong></div>
+          <div class="notif-title">${ZAP.utils.esc(n.title || '')}</div>
           <div class="notif-text">${ZAP.utils.esc(n.body || '')}</div>
-          <div class="notif-time">${ZAP.utils.timeAgo(n.createdAt)}</div>
+          <div class="notif-time">
+            ${!n.read ? '<span class="notif-dot"></span>' : ''}
+            ${ZAP.utils.timeAgo(n.createdAt)}
+          </div>
           ${actionBtn ? `<div class="notif-actions">${actionBtn}</div>` : ''}
         </div>
-        <button class="notif-delete-btn" title="Видалити" onclick="ZAP.app.deleteNotification('${n.id}', this)">×</button>
+        <button class="notif-delete-btn" title="Видалити" onclick="ZAP.app.deleteNotification('${n.id}', this)">
+          ${phIcon('x', 14)}
+        </button>
       </div>`;
-    }).join('')}`;
+    }
+
+    let idx = 0;
+    const groupHtml = [
+      groups.today.length > 0    ? `<div class="notif-group"><div class="notif-group-label">Сьогодні</div>${groups.today.map(n => renderNotifItem(n, idx++)).join('')}</div>` : '',
+      groups.yesterday.length > 0 ? `<div class="notif-group"><div class="notif-group-label">Вчора</div>${groups.yesterday.map(n => renderNotifItem(n, idx++)).join('')}</div>` : '',
+      groups.earlier.length > 0  ? `<div class="notif-group"><div class="notif-group-label">Раніше</div>${groups.earlier.map(n => renderNotifItem(n, idx++)).join('')}</div>` : '',
+    ].join('');
+
+    return `
+    <div class="notif-page-header">
+      <div class="notif-page-header-left">
+        <div class="notif-page-title">Сповіщення</div>
+        <div class="notif-page-subtitle">${notifs.length} ${notifs.length === 1 ? 'сповіщення' : notifs.length < 5 ? 'сповіщення' : 'сповіщень'}${unreadCount_local > 0 ? ` · <strong style="color:var(--gold)">${unreadCount_local} нових</strong>` : ''}</div>
+      </div>
+    </div>
+    ${groupHtml}`;
   }
 
   // ── Update unread count periodically ──
