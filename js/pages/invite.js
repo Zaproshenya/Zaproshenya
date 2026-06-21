@@ -30,6 +30,18 @@
       try { invData = JSON.parse(decodeURIComponent(escape(atob(b64)))); } catch {}
     }
 
+    // Check if invite is addressed to someone else
+    if (invData && invData.recipientUid) {
+      const currentUser = ZAP.auth.getUser();
+      if (!currentUser) {
+        // Enforce login for recipient-specific invites
+        invData.requireAuth = true;
+      } else if (currentUser.uid !== invData.recipientUid && currentUser.uid !== invData.creatorUid) {
+        // Different user logged in -> obfuscate as not found for privacy
+        invData = null;
+      }
+    }
+
     // Check if already answered
     if (invData) {
       try {

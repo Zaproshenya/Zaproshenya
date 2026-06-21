@@ -10,6 +10,9 @@
 
   async function load() {
     loading = true;
+    stats = null;
+    editing = null;
+    saving = false;
     const user = ZAP.auth.getUser();
     if (!user) { loading = false; return; }
 
@@ -81,7 +84,7 @@
 
     const { esc, avatarHTML, roleBadge, icon } = ZAP.utils;
 
-    const memberSince = profile.createdAt
+    const memberSince = profile.createdAt && !isNaN(new Date(profile.createdAt).getTime())
       ? new Date(profile.createdAt).toLocaleDateString('uk-UA', { year: 'numeric', month: 'long' })
       : '—';
 
@@ -203,7 +206,11 @@
         <div class="profile-field">
           <div>
             <div class="profile-field-label">Дата реєстрації</div>
-            <div class="profile-field-value">${ZAP.utils.formatDate(new Date(profile.createdAt).toISOString().split('T')[0])}</div>
+            <div class="profile-field-value">${
+              profile.createdAt && !isNaN(new Date(profile.createdAt).getTime())
+                ? ZAP.utils.formatDate(new Date(profile.createdAt).toISOString().split('T')[0])
+                : '—'
+            }</div>
           </div>
         </div>
         <div class="profile-field">

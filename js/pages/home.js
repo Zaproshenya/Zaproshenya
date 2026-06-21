@@ -13,8 +13,11 @@
 
   async function load() {
     loading = true;
+    invites = [];
+    incomingInvites = [];
+    modalInv = null;
     const user = ZAP.auth.getUser();
-    if (!user) { loading = false; return; }
+    if (!user) { loading = false; loaded = false; return; }
     invites = await ZAP.db.getUserInvites(user.uid);
 
     // Sync statuses from Firebase

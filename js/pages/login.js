@@ -200,12 +200,30 @@
 
   function togglePass() {
     showPass = !showPass;
-    ZAP.render();
+    const input = document.getElementById('login-pass');
+    const btn = document.querySelector('#login-form .auth-pass-toggle');
+    if (input) {
+      input.type = showPass ? 'text' : 'password';
+    }
+    if (btn) {
+      const { icon } = ZAP.utils;
+      btn.innerHTML = icon(showPass ? 'eye-slash' : 'eye', 16);
+      btn.title = showPass ? 'Приховати' : 'Показати' + ' пароль';
+    }
   }
 
   function toggleNewPass() {
     showNewPass = !showNewPass;
-    ZAP.render();
+    const input = document.getElementById('reg-pass');
+    const btn = document.querySelector('#register-form .auth-pass-toggle');
+    if (input) {
+      input.type = showNewPass ? 'text' : 'password';
+    }
+    if (btn) {
+      const { icon } = ZAP.utils;
+      btn.innerHTML = icon(showNewPass ? 'eye-slash' : 'eye', 16);
+      btn.title = showNewPass ? 'Приховати' : 'Показати' + ' пароль';
+    }
   }
 
   function showError(id, msg) {

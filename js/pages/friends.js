@@ -14,6 +14,12 @@
 
   async function load() {
     loaded = false;
+    friends = [];
+    requests = [];
+    friendInvites = [];
+    searchResult = null;
+    searchLoading = false;
+    processedRequests.clear();
     const user = ZAP.auth.getUser();
     if (!user) { loaded = true; return; }
     friends = await ZAP.db.getFriends(user.uid);

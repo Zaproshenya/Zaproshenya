@@ -677,6 +677,21 @@
     if (unreadCount === 0 && badge) badge.remove();
   }
 
+  function resetPageCaches() {
+    if (ZAP.pages.home) {
+      ZAP.pages.home._loaded = false;
+      ZAP.pages.home._listening = false;
+    }
+    if (ZAP.pages.friends) ZAP.pages.friends._loaded = false;
+    if (ZAP.pages.create) ZAP.pages.create._loaded = false;
+    if (ZAP.pages.profile) ZAP.pages.profile._loaded = false;
+    if (ZAP.pages.notifications) {
+      ZAP.pages.notifications._loaded = false;
+      ZAP.pages.notifications._cached = '';
+    }
+    if (ZAP.pages.dashboard) ZAP.pages.dashboard._loaded = false;
+  }
+
   // ── Init ──
   ZAP.render = render;
   ZAP.app = { deleteNotification, updateUnreadCount };
@@ -689,6 +704,7 @@
 
   ZAP.auth.onAuthReady(async (user) => {
     authReady = true;
+    resetPageCaches();
 
     // Warm up Firebase connection for faster dashboard loads
     if (ZAP.dbRef) {
