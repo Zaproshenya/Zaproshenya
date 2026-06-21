@@ -84,7 +84,7 @@
       <div class="friends-search-input-wrap">
       <span class="friends-search-icon">${icon('magnifying-glass', 18)}</span>
       <input id="friend-search-input"
-        placeholder="Введіть ID (ZAP-XXXXXX) або логін (@name)"
+        placeholder="Введіть ID (ZAP-XXXX) або @логін"
         aria-label="Пошук друга за ID або логіном" maxlength="12"
         onkeydown="if(event.key==='Enter')ZAP.pages.friends.search()"/>
     </div>

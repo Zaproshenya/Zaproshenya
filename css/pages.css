@@ -356,16 +356,21 @@
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   margin-bottom: 24px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,.06);
-  position: relative;
-  z-index: 10;
+  padding-top: 8px;
 }
 .profile-stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 16px 14px;
   text-align: center;
+  transition: box-shadow .2s, transform .15s;
+  animation: fadeUp .4s var(--ease) both;
+  box-shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+.profile-stat-card:hover {
+  box-shadow: 0 6px 24px rgba(0,0,0,.14);
+  transform: translateY(-3px);
 }
 .profile-stat-num {
   font-size: 1.7rem; font-weight: 700;
@@ -1350,7 +1355,7 @@
 }
 .home-inv-body { flex: 1; min-width: 0; }
 .home-inv-title {
-  font-weight: 600; font-size: .95rem;
+  font-weight: 500; font-size: .95rem;
   margin-bottom: 4px; display: flex; align-items: center; gap: 6px;
   flex-wrap: wrap;
 }
@@ -1570,6 +1575,8 @@
   .home-inv-emoji { width: 38px; height: 38px; font-size: 1.3rem; }
   .home-title { font-size: 1.65rem; }
 
+  .friends-search-input-wrap input { font-size: .85rem; padding-left: 36px; }
+  .friends-search-input-wrap input::placeholder { font-size: .78rem; }
   .friend-request-card { gap: 10px; padding: 12px 14px; }
   .friend-request-actions { gap: 6px; }
   .modal-hdr { flex-direction: column; gap: 12px; }
