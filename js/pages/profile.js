@@ -42,7 +42,7 @@
 
   function renderSkeleton() {
     return `
-    <div class="profile-hero" style="margin-bottom:-28px">
+    <div class="profile-hero">
       <div class="profile-hero-inner">
         <div class="skeleton-circle" style="width:100px;height:100px;flex-shrink:0"></div>
         <div style="flex:1">
@@ -51,7 +51,7 @@
         </div>
       </div>
     </div>
-    <div class="profile-stats" style="padding-top:36px">
+    <div class="profile-stats">
       ${[1,2,3,4].map(() => `
         <div class="skeleton" style="height:80px;border-radius:var(--radius-card)"></div>
       `).join('')}

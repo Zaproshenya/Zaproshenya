@@ -268,9 +268,9 @@
   position: relative;
   background: linear-gradient(145deg, #100b05 0%, #1e1408 35%, #2d2010 65%, #3d2c14 100%);
   border-radius: var(--radius-xl);
-  padding: 40px 32px 52px;
+  padding: 36px 32px 36px;
   overflow: hidden;
-  margin-bottom: -16px;
+  margin-bottom: 16px;
   box-shadow: 0 8px 40px rgba(0,0,0,.18);
 }
 /* Animated gradient orb top-right */
@@ -295,14 +295,7 @@
   user-select: none;
   animation: pulse 6s ease-in-out infinite;
 }
-/* Smooth bottom wave */
-.profile-hero::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0; height: 28px;
-  background: var(--paper);
-  clip-path: ellipse(60% 100% at 50% 100%);
-}
+/* No ::after wave — clean straight bottom edge */
 
 .profile-hero-inner {
   display: flex;
