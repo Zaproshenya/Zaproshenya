@@ -22,7 +22,9 @@
 
     if (inviteId) {
       // Short ID — load from Firebase
-      invData = await ZAP.db.getInvite(inviteId);
+      try { invData = await ZAP.db.getInvite(inviteId); } catch (e) {
+        console.warn('Invite load:', e.message);
+      }
     } else if (b64) {
       // Legacy Base64
       try { invData = JSON.parse(decodeURIComponent(escape(atob(b64)))); } catch {}
@@ -67,7 +69,9 @@
     answered = false;
     answerStatus = null;
 
-    groupData = await ZAP.db.getGroupInvite(inviteId);
+    try { groupData = await ZAP.db.getGroupInvite(inviteId); } catch (e) {
+      console.warn('Group invite load:', e.message);
+    }
 
     // Check if current user already joined
     const user = ZAP.auth.getUser();
