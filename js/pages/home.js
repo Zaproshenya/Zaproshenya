@@ -284,10 +284,11 @@
             <span class="modal-detail-value" style="font-style:italic">${esc(inv.msg)}</span>
           </div>` : ''}
           ${inv.status === 'reschedule' ? `
-          <div id="modal-resc-${inv.id}"
-            style="margin-top:4px;padding:12px 14px;background:rgba(201,146,42,.06);border-radius:10px;border-left:3px solid var(--gold)">
-            <p style="font-size:.7rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.1em;font-weight:600">Пропозиція отримувача</p>
-            <p style="font-size:.95rem;color:var(--ink)" id="reschedule-info-${inv.id}">${icon('clock', 14)} Завантаження...</p>
+          <div id="modal-resc-${inv.id}" class="modal-detail-row" style="background:var(--gold-dim); flex-direction:column; align-items:flex-start; gap:6px; border-top:1px solid var(--border);">
+            <div style="font-size:.7rem;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;font-weight:700;display:flex;align-items:center;gap:6px">
+              ${icon('calendar-plus', 14)} Пропозиція отримувача
+            </div>
+            <div style="font-size:.92rem;font-weight:500;color:var(--ink)" id="reschedule-info-${inv.id}">${icon('circle-notch', 14)} Завантаження...</div>
           </div>` : ''}
         </div>
 
