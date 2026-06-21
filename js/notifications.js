@@ -18,7 +18,8 @@
 
       if (token) {
         _fcmToken = token;
-        await ZAP.dbRef.ref('users/' + uid + '/fcmToken').set(token);
+        const safeTokenKey = btoa(token).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+        await ZAP.dbRef.ref('users/' + uid + '/fcmTokens/' + safeTokenKey).set(token);
         console.log('✦ FCM token registered');
       }
 
@@ -37,7 +38,8 @@
     if (!ZAP.messaging || !uid) return;
     try {
       if (_fcmToken) {
-        await ZAP.dbRef.ref('users/' + uid + '/fcmToken').remove();
+        const safeTokenKey = btoa(_fcmToken).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+        await ZAP.dbRef.ref('users/' + uid + '/fcmTokens/' + safeTokenKey).remove();
         _fcmToken = null;
       }
       await ZAP.messaging.deleteToken();

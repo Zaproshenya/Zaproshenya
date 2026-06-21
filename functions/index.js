@@ -13,16 +13,18 @@ exports.sendPushNotification = functions.region('europe-west1').database.ref('/n
 
     if (!notif) return null;
 
-    // Fetch the recipient's FCM token from the database
+    // Fetch the recipient's FCM tokens from the database
     const userSnap = await admin.database().ref(`users/${uid}`).once('value');
     if (!userSnap.exists()) return null;
     const user = userSnap.val();
-    const fcmToken = user.fcmToken;
+    const fcmTokensObj = user.fcmTokens;
 
-    if (!fcmToken) {
-      console.log(`No FCM token registered for user ${uid}. Skipping push notification.`);
+    if (!fcmTokensObj || Object.keys(fcmTokensObj).length === 0) {
+      console.log(`No FCM tokens registered for user ${uid}. Skipping push notification.`);
       return null;
     }
+
+    const tokens = Object.values(fcmTokensObj);
 
     // Determine target URL for notification click
     let clickUrl = '/';
@@ -37,7 +39,7 @@ exports.sendPushNotification = functions.region('europe-west1').database.ref('/n
     }
 
     const payload = {
-      token: fcmToken,
+      tokens: tokens,
       notification: {
         title: notif.title || 'Запрошення ✦',
         body: notif.body || '',
@@ -54,17 +56,35 @@ exports.sendPushNotification = functions.region('europe-west1').database.ref('/n
     };
 
     try {
-      const response = await admin.messaging().send(payload);
-      console.log(`Push notification sent successfully to user ${uid}:`, response);
+      const response = await admin.messaging().sendEachForMulticast(payload);
+      console.log(`Multicast push notifications sent to user ${uid}. Success: ${response.successCount}, Failure: ${response.failureCount}`);
+      
+      // Clean up invalid tokens
+      if (response.failureCount > 0) {
+        const tokensToRemove = [];
+        response.responses.forEach((resp, idx) => {
+          if (!resp.success) {
+            const error = resp.error;
+            if (error.code === 'messaging/invalid-registration-token' || 
+                error.code === 'messaging/registration-token-not-registered') {
+              tokensToRemove.push(tokens[idx]);
+            }
+          }
+        });
+
+        if (tokensToRemove.length > 0) {
+          const updates = {};
+          tokensToRemove.forEach(tok => {
+            const safeTokenKey = Buffer.from(tok).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+            updates[safeTokenKey] = null;
+          });
+          await admin.database().ref(`users/${uid}/fcmTokens`).update(updates);
+          console.log(`Cleaned up ${tokensToRemove.length} invalid tokens for user ${uid}`);
+        }
+      }
       return response;
     } catch (error) {
-      console.error(`Error sending push notification to user ${uid}:`, error);
-      // If the token is invalid or inactive, clean it up from the database
-      if (error.code === 'messaging/invalid-registration-token' || 
-          error.code === 'messaging/registration-token-not-registered') {
-        console.log(`Cleaning up invalid FCM token for user ${uid}`);
-        await admin.database().ref(`users/${uid}/fcmToken`).remove();
-      }
+      console.error(`Error sending multicast push notifications to user ${uid}:`, error);
       return null;
     }
   });
