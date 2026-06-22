@@ -100,7 +100,7 @@
       </button>
       <button class="home-tab ${activeTab === 'incoming' ? 'active' : ''}"
         onclick="ZAP.pages.home.setTab('incoming')">
-        ${icon('inbox', 16)} Від друзів
+        ${icon('users', 16)} Від друзів
         ${incomingCount > 0 ? `<span class="home-tab-badge">${incomingCount}</span>` : ''}
       </button>
     </div>
