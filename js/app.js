@@ -365,7 +365,7 @@
       <button class="logo" onclick="ZAP.router.go('home')">Запрошення ✦</button>
       <div class="topbar-right">
         <button class="nb ${page === 'home' ? 'on' : ''}" onclick="ZAP.router.go('home')">${icon('house',18)} Мої</button>
-        <button class="nb ${page === 'create' ? 'on' : ''}" onclick="ZAP.router.go('create')">+ Нове</button>
+        <button class="nb ${page === 'create' ? 'on' : ''}" onclick="ZAP.router.go('create')">${icon('plus', 18)} Нове</button>
         <div class="pill-wrap">
           <button class="nb ${page === 'friends' ? 'on' : ''}" onclick="ZAP.router.go('friends')" aria-label="Друзі">${icon('users',18)}</button>
         </div>
@@ -399,7 +399,7 @@
         <span>Друзі</span>
       </button>
       <button class="bn-item ${page === 'create' ? 'on' : ''}" onclick="ZAP.router.go('create')">
-        <div class="bn-fab">+</div>
+        <div class="bn-fab">${icon('plus', 22)}</div>
       </button>
       <button class="bn-item ${page === 'notifications' ? 'on' : ''}" onclick="ZAP.router.go('notifications')" style="position:relative">
         <div style="font-size:1.25rem">${icon('bell',22)}</div>

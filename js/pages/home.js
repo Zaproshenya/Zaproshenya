@@ -206,7 +206,7 @@
     if (incomingInvites.length === 0) {
       return `
       <div class="home-empty">
-        <div class="home-empty-icon">${icon('inbox', 40)}</div>
+        <div class="home-empty-icon">${icon('tray', 40)}</div>
         <div class="home-empty-title">Немає вхідних запрошень</div>
         <p class="home-empty-sub">Коли друзі надішлють вам запрошення, вони з'являться тут</p>
       </div>`;
