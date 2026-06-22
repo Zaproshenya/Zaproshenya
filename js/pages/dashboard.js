@@ -911,8 +911,10 @@
 
     const counts = days.map(day => {
       return users.filter(u => {
-        const ud = new Date(u.createdAt).toISOString().split('T')[0];
-        return ud === day;
+        if (!u.createdAt) return false;
+        const d = new Date(u.createdAt);
+        if (isNaN(d.getTime())) return false;
+        return d.toISOString().split('T')[0] === day;
       }).length;
     });
 
