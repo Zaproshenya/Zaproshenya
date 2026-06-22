@@ -235,7 +235,10 @@
     ZAP.authInstance.onAuthStateChanged(async user => {
       currentUser = user;
       if (user) {
-        currentProfile = await loadProfile(user.uid);
+        const p = await loadProfile(user.uid);
+        if (p) {
+          currentProfile = p;
+        }
         // Update lastSeen
         if (currentProfile) {
           ZAP.dbRef.ref('users/' + user.uid + '/lastSeen').set(Date.now()).catch(() => { });

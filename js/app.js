@@ -135,6 +135,18 @@
       app.innerHTML = ZAP.pages.login.render();
       return;
     }
+    if (user && !profile && ZAP.router.isAuthRequired(route.page)) {
+      app.innerHTML = `
+        <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px">
+          <div style="text-align:center;max-width:400px">
+            <div style="font-size:3rem;margin-bottom:16px"><i class="ph ph-warning-circle" style="font-size:3rem;color:var(--danger)"></i></div>
+            <h2 style="font-family:var(--font-heading);margin-bottom:8px">Помилка профілю</h2>
+            <p style="color:var(--muted);margin-bottom:20px;line-height:1.6">Ваш профіль не знайдено або він був пошкоджений. Будь ласка, вийдіть і зареєструйтесь знову.</p>
+            <button class="btn btn-outline" onclick="ZAP.auth.logout(); location.reload()">Вийти</button>
+          </div>
+        </div>`;
+      return;
+    }
 
     // ── Login/Register page ──
     if (route.page === 'login' || route.page === 'register') {

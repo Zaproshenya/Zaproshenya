@@ -7,16 +7,16 @@
         ".read": "auth != null",
         ".write": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'",
         "role": {
-          ".validate": "newData.val() === data.val() || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin'"
+          ".validate": "newData.val() === data.val() || (!data.exists() && newData.val() === 'user') || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin'"
         },
         "banned": {
-          ".validate": "newData.val() === data.val() || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'"
+          ".validate": "newData.val() === data.val() || !data.exists() || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'"
         },
         "bannedUntil": {
-          ".validate": "newData.val() === data.val() || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'"
+          ".validate": "newData.val() === data.val() || !data.exists() || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'"
         },
         "bannedAt": {
-          ".validate": "newData.val() === data.val() || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'"
+          ".validate": "newData.val() === data.val() || !data.exists() || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'"
         }
       }
     },
@@ -37,7 +37,7 @@
     "invites": {
       ".read": true,
       "$invId": {
-        ".write": "auth != null && (root.child('invites').child($invId).child('creatorUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')"
+        ".write": "auth != null && (!data.exists() && newData.child('creatorUid').val() === auth.uid || data.child('creatorUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')"
       }
     },
     "statuses": {
