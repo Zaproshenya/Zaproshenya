@@ -127,12 +127,18 @@
     </div>
     ${[1,2,3,4].map((_, i) => `
       <div class="home-inv-card" style="animation:none;margin-bottom:10px">
-        <div class="skeleton" style="width:44px;height:44px;border-radius:12px;flex-shrink:0"></div>
-        <div style="flex:1;min-width:0">
-          <div class="skeleton-line w-3-4" style="margin-bottom:6px;height:14px"></div>
+        <div class="inv-card-header">
+          <div class="skeleton" style="width:44px;height:44px;border-radius:12px;flex-shrink:0"></div>
+          <div class="skeleton-line w-1-3" style="height:10px"></div>
+          <div class="skeleton" style="width:60px;height:22px;border-radius:20px;flex-shrink:0"></div>
+        </div>
+        <div class="inv-card-body">
+          <div class="skeleton-line w-3-4" style="margin-bottom:8px;height:14px"></div>
           <div class="skeleton-line w-1-2" style="height:12px"></div>
         </div>
-        <div class="skeleton" style="width:90px;height:32px;border-radius:8px;flex-shrink:0"></div>
+        <div class="inv-card-footer">
+          <div class="skeleton" style="width:34px;height:34px;border-radius:10px"></div>
+        </div>
       </div>
     `).join('')}`;
   }
@@ -175,20 +181,23 @@
       return `
       <div class="home-inv-card status-${inv.status}" style="animation-delay:${i * 35}ms"
         onclick="ZAP.pages.home.openModal('${inv.id}')">
-        <div class="home-inv-emoji">${t.e}</div>
-        <div class="home-inv-body">
-          <div class="home-inv-title">
+        <div class="inv-card-header">
+          <div class="inv-card-emoji">${t.e}</div>
+          <div class="inv-card-type">${t.l}</div>
+          ${badge(inv.status)}
+        </div>
+        <div class="inv-card-body">
+          <div class="inv-card-title">
             ${esc(inv.to || inv.title || 'Групове запрошення')}
-            ${inv.isGroup ? `<span class="home-inv-group-badge">${icon('users', 12)} Група</span>` : ''}
+            ${inv.isGroup ? `<span class="inv-card-group-badge">${icon('users', 12)} Група</span>` : ''}
           </div>
-          <div class="home-inv-meta">
-            ${t.l}
-            ${inv.date ? ` · ${esc(inv.date)}` : ''}
-            ${inv.time ? ` · ${esc(inv.time)}` : ''}
+          <div class="inv-card-details">
+            ${inv.date ? `<div class="inv-card-detail">${icon('calendar-blank', 14)} ${esc(inv.date)}</div>` : ''}
+            ${inv.time ? `<div class="inv-card-detail">${icon('clock', 14)} ${esc(inv.time)}</div>` : ''}
+            ${inv.place ? `<div class="inv-card-detail">${icon('map-pin', 14)} ${esc(inv.place)}</div>` : ''}
           </div>
         </div>
-        <div class="home-inv-right">
-          ${badge(inv.status)}
+        <div class="inv-card-footer">
           <button class="home-copy-btn" id="copy-${inv.id}"
             onclick="event.stopPropagation();ZAP.utils.copyText('${link.replace(/'/g,"\\'")}', this)"
             title="Копіювати посилання">
@@ -213,22 +222,26 @@
 
     return incomingInvites.map((n, i) => {
       const isGroup = n.type === 'group-invite';
+      const route = isGroup ? 'group-invite' : 'invite';
       return `
-      <div class="home-inv-card" style="animation-delay:${i * 35}ms;cursor:pointer"
-        onclick="ZAP.router.go('${isGroup ? 'group-invite' : 'invite'}', {id:'${n.inviteId}'})">
-        <div class="home-inv-emoji" style="background:var(--gold-dim);border-radius:12px;width:44px;height:44px;display:flex;align-items:center;justify-content:center">
-          ${isGroup ? icon('users', 22) : icon('paper-plane-tilt', 22)}
+      <div class="home-inv-card status-pending" style="animation-delay:${i * 35}ms"
+        onclick="ZAP.router.go('${route}', {id:'${n.inviteId}'})">
+        <div class="inv-card-header">
+          <div class="inv-card-emoji" style="background:var(--gold-dim)">
+            ${isGroup ? icon('users', 22) : icon('paper-plane-tilt', 22)}
+          </div>
+          <div class="inv-card-type">${isGroup ? 'Групове' : 'Особисте'}</div>
+          <span class="inv-card-badge">${icon('bell', 10)} Нове</span>
         </div>
-        <div class="home-inv-body">
-          <div class="home-inv-title">${esc(n.body || 'Нове запрошення')}</div>
-          <div class="home-inv-meta">
-            ${isGroup ? 'Групове' : 'Особисте'} · ${ZAP.utils.timeAgo(n.createdAt)}
+        <div class="inv-card-body">
+          <div class="inv-card-title">${esc(n.body || 'Нове запрошення')}</div>
+          <div class="inv-card-details">
+            <div class="inv-card-detail">${icon('clock', 14)} ${ZAP.utils.timeAgo(n.createdAt)}</div>
           </div>
         </div>
-        <div class="home-inv-right">
-          <span class="badge badge-pending">Нове</span>
+        <div class="inv-card-footer">
           <button class="btn btn-gold btn-sm"
-            onclick="event.stopPropagation();ZAP.router.go('${isGroup ? 'group-invite' : 'invite'}', {id:'${n.inviteId}'})">
+            onclick="event.stopPropagation();ZAP.router.go('${route}', {id:'${n.inviteId}'})">
             Відкрити
           </button>
         </div>

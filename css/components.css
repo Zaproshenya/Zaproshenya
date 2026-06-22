@@ -170,7 +170,7 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 .badge-pending    { background: var(--gold-dim); color: var(--gold); }
 .badge-accepted   { background: var(--green-bg); color: var(--green); }
 .badge-declined   { background: var(--red-bg); color: var(--red); }
-.badge-reschedule { background: var(--gold-dim); color: var(--gold); }
+.badge-reschedule { background: var(--purple-bg); color: var(--purple); }
 .badge-role {
   font-size: .65rem; padding: 2px 8px; border-radius: 10px;
   font-weight: 600; letter-spacing: .04em;

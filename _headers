@@ -14,8 +14,13 @@
   Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate
 
 /sitemap.xml
-  Content-Type: text/xml; charset=utf-8
-  Cache-Control: public, max-age=3600
+  Content-Type: application/xml; charset=utf-8
+  Cache-Control: public, max-age=0
+  X-Robots-Tag: noindex
+
+/sitemap_zaproshenya.xml
+  Content-Type: application/xml; charset=utf-8
+  Cache-Control: public, max-age=0
 
 /i/*
   X-Robots-Tag: noindex
@@ -28,12 +33,17 @@
 
 /robots.txt
   Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=0
 
 /manifest.json
   Content-Type: application/json; charset=utf-8
 
 /favicon.svg
   Content-Type: image/svg+xml
+  Cache-Control: public, max-age=604800
+
+/favicon.png
+  Content-Type: image/png
   Cache-Control: public, max-age=604800
 
 /firebase-messaging-sw.js
