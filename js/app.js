@@ -112,7 +112,7 @@
       }
       // Render landing page from ClaudeLanding.html
       try {
-        const resp = await fetch('/main.html');
+        const resp = await fetch('/main.html?v=2.0.0');
         const html = await resp.text();
         app.innerHTML = html;
         // Execute inline scripts from the landing page
@@ -211,7 +211,7 @@
           window._dashLoading = true;
           app.innerHTML = ZAP.utils.spinner();
           const s = document.createElement('script');
-          s.src = '/js/pages/dashboard.js';
+          s.src = '/js/pages/dashboard.js?v=2.0.0';
           s.onload = function () { console.log('[DASH] dashboard.js loaded, calling ZAP.render()'); window._dashLoading = false; ZAP.render(); };
           document.body.appendChild(s);
         }
@@ -347,7 +347,7 @@
         window.ZAP_ADMIN.addControls(route.page);
       } else {
         const s = document.createElement('script');
-        s.src = '/js/admin.js';
+        s.src = '/js/admin.js?v=2.0.0';
         s.onload = function () { window.ZAP_ADMIN.addControls(route.page); };
         document.body.appendChild(s);
       }
