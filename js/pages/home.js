@@ -66,7 +66,6 @@
     <div class="home-header">
       <div class="home-header-left">
         <h1 class="home-title">Мої запрошення</h1>
-        <p class="home-subtitle">Статуси оновлюються автоматично ✦</p>
       </div>
       <button class="btn-create-fab" onclick="ZAP.router.go('create')" title="Нове запрошення">
         ${icon('plus', 20)}
