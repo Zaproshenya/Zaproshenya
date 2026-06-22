@@ -215,7 +215,7 @@
           ${mode === 'group' ? renderGroupPrivacy() : ''}
 
           <!-- Auth required toggle -->
-          <div class="toggle-row">
+          <div class="toggle-row" id="require-auth-row" ${selectedFriends.length > 0 ? 'style="display:none"' : ''}>
             <button class="toggle ${requireAuth ? 'on' : ''}"
               onclick="ZAP.pages.create.toggleRequireAuth(this)"
               role="switch" aria-checked="${requireAuth}"
@@ -511,6 +511,7 @@
           formState.to = '';
         }
       }
+      updateRequireAuthVisibility();
     } else {
       if (selectedFriends.includes(uid)) {
         selectedFriends = selectedFriends.filter(f => f !== uid);
@@ -521,6 +522,7 @@
         el.classList.add('on');
       }
       updateToggleState();
+      updateRequireAuthVisibility();
 
       // Update section label count
       const sectionLabel = document.querySelector('#group-friends-section .form-section-label');
@@ -551,6 +553,25 @@
     if (desc) desc.textContent = isPublic
       ? 'Будь-хто може приєднатися за посиланням'
       : 'Тільки для обраних друзів';
+  }
+
+  function updateRequireAuthVisibility() {
+    const row = document.getElementById('require-auth-row');
+    if (!row) return;
+    const hasFriends = selectedFriends.length > 0;
+    row.style.display = hasFriends ? 'none' : '';
+    if (hasFriends && requireAuth) {
+      requireAuth = false;
+      const btn = row.querySelector('.toggle');
+      if (btn) {
+        btn.classList.remove('on');
+        btn.setAttribute('aria-checked', 'false');
+      }
+      const label = row.querySelector('.toggle-row-label');
+      const desc = row.querySelector('.toggle-row-desc');
+      if (label) label.innerHTML = `${ZAP.utils.icon('globe-hemisphere-west', 13)} Для всіх`;
+      if (desc) desc.textContent = 'Будь-хто може переглянути запрошення';
+    }
   }
 
   function chk() {
