@@ -220,16 +220,14 @@
 
           ${answered ? renderResult(answerStatus) : renderButtons(invData.id)}
 
-          <div style="display:flex;justify-content:center;gap:16px;margin-top:14px;padding:12px 0 4px;border-top:1px solid var(--border)">
+          <div class="envelope-footer">
             ${ZAP.auth.getUser() ? `
-              <button onclick="ZAP.router.go('home')"
-                style="background:none;border:none;color:var(--muted);font-size:.76rem;cursor:pointer;text-decoration:underline">
+              <button onclick="ZAP.router.go('home')">
                 ← Меню
               </button>
             ` : ''}
             ${!answered ? `
-              <button onclick="ZAP.pages.invite.showReport('${invData.id}')"
-                style="background:none;border:none;color:var(--muted);font-size:.76rem;cursor:pointer;text-decoration:underline">
+              <button onclick="ZAP.pages.invite.showReport('${invData.id}')">
                 ${icon('warning', 12)} Поскаржитися
               </button>
             ` : ''}
@@ -391,9 +389,8 @@
           ${answered ? renderResult(answerStatus) : renderGroupJoin()}
 
           ${ZAP.auth.getUser() ? `
-            <div style="text-align:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-              <button onclick="ZAP.router.go('home')"
-                style="background:none;border:none;color:var(--muted);font-size:.76rem;cursor:pointer;text-decoration:underline">
+            <div class="envelope-footer">
+              <button onclick="ZAP.router.go('home')">
                 ← Меню
               </button>
             </div>

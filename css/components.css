@@ -65,6 +65,10 @@ button:focus-visible, .btn:focus-visible {
 }
 .btn-reschedule:active { transform: translateY(1px); box-shadow: 0 1px 0 #8a5e0f; }
 
+.btn-yes i.ph, .btn-no i.ph, .btn-reschedule i.ph {
+  font-size: 1.15rem !important; /* Scale up action button icons on mobile */
+}
+
 @media (max-width: 380px) {
   .btn-yes, .btn-no, .btn-reschedule {
     font-size: .72rem;
@@ -98,9 +102,11 @@ button:focus-visible, .btn:focus-visible {
   .btn-reschedule:hover {
     box-shadow: 0 6px 0 #8a5e0f, 0 7px 24px rgba(201,146,42,.3);
   }
+  .btn-yes i.ph, .btn-no i.ph, .btn-reschedule i.ph {
+    font-size: 1.45rem !important; /* Scale up action button icons on desktop */
+  }
   .answer-wrap {
     gap: 12px;
-    padding-top: 24px;
   }
 }
 
@@ -392,7 +398,7 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   flex-shrink: 0;
   opacity: .75; color: var(--gold);
 }
-.detail-chip-icon i.ph { font-size: 1.35rem !important; }
+.detail-chip-icon i.ph { font-size: 1.55rem !important; } /* Scaled up details icons on mobile */
 .detail-chip-label {
   font-size: .6rem; text-transform: uppercase; letter-spacing: .1em;
   color: var(--muted); line-height: 1; margin-bottom: 2px;
@@ -412,7 +418,7 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
     border-radius: 12px;
   }
   .detail-chip-icon i.ph {
-    font-size: 1.55rem !important;
+    font-size: 1.85rem !important; /* Scaled up details icons on desktop */
   }
   .detail-chip-label {
     font-size: .75rem;

@@ -86,7 +86,7 @@
 }
 .envelope-top {
   background: linear-gradient(150deg, #1a120a 0%, #2e200e 58%, #1e160a 100%);
-  padding: 24px 24px 54px; /* keeps text above the arc */
+  padding: 24px 24px 38px; /* keeps text above the arc */
   text-align: center; position: relative;
 }
 /* Gold shimmer inside the dark hero */
@@ -95,12 +95,12 @@
   background: radial-gradient(ellipse 70% 60% at 50% -10%, rgba(201,146,42,.26) 0%, transparent 68%);
   pointer-events: none; z-index: 0;
 }
-/* White arc — keep same premium curve on mobile and desktop */
+/* White arc — smooth dome using border-radius to avoid sub-pixel line artifacts on mobile */
 .envelope-top::after {
   content: ''; position: absolute;
-  bottom: 0; left: 0; right: 0; height: 46px;
+  bottom: -1px; left: -30%; right: -30%; height: 28px;
   background: var(--card);
-  clip-path: ellipse(60% 100% at 50% 100%);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
   z-index: 0;
 }
 /* Content floats above both pseudo-elements */
@@ -128,14 +128,16 @@
 }
 .envelope-from strong { color: rgba(255,255,255,.65); font-weight: 500; }
 .envelope-body {
-  padding: 16px 20px 12px;
+  padding: 8px 20px 0; /* reduced top padding, 0 bottom padding to let footer handle it */
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 /* ── 3-column action row ── */
 .answer-wrap {
-  display: flex; flex-direction: row; gap: 7px; margin-top: auto; padding-top: 14px;
+  display: flex; flex-direction: row; gap: 7px;
+  margin: auto 0; /* center buttons vertically */
+  padding: 14px 0;
 }
 /* Reschedule form sits below the row */
 .reschedule-form-block {
@@ -144,17 +146,21 @@
 
 /* --- Proportional Desktop Scaling --- */
 @media (min-width: 600px) {
-  .envelope-top { padding: 24px 36px 58px; }
+  .envelope-top { padding: 24px 36px 42px; }
   .envelope-emoji { font-size: 3.4rem; margin-bottom: 12px; }
   .envelope-type { font-size: .85rem; margin-bottom: 16px; letter-spacing: .25em; }
   .envelope-to { font-size: 2.8rem; margin-bottom: 10px; }
   .envelope-from { font-size: .95rem; padding-bottom: 24px; }
-  .envelope-body { padding: 24px 24px 28px; }
+  .envelope-body { padding: 12px 24px 0; }
+  .answer-wrap {
+    gap: 12px;
+    padding: 24px 0;
+  }
   
   /* Scale message block on desktop */
   .msg-block { padding: 18px 22px; margin-bottom: 18px; }
   .msg-block::before { font-size: 4.8rem; top: -12px; left: 16px; }
-  .msg-text { font-size: 1.25rem; padding-left: 14px; line-height: 1.6; }
+  .msg-text { font-size: 1.45rem; padding-left: 14px; line-height: 1.6; }
 }
 
 /* ── Message block ── */
@@ -171,15 +177,42 @@
 }
 .msg-text {
   font-family: var(--font-heading); font-style: italic;
-  font-size: .92rem; line-height: 1.7; color: var(--ink); padding-left: 8px;
+  font-size: 1.05rem; line-height: 1.7; color: var(--ink); padding-left: 8px;
   overflow-wrap: break-word; word-break: break-word; min-width: 0;
 }
 .msg-block .toggle-more-btn {
   margin-top: 6px;
 }
 
+/* ── Envelope footer ── */
+.envelope-footer {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: auto; /* push to bottom */
+  padding: 14px 0;  /* symmetrical vertical padding */
+  border-top: 1px solid var(--border);
+}
+.envelope-footer button {
+  background: none; border: none;
+  color: var(--muted); font-size: .82rem;
+  cursor: pointer; text-decoration: underline;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.envelope-footer button:hover {
+  color: var(--ink);
+}
+@media (min-width: 600px) {
+  .envelope-footer {
+    padding: 20px 0;
+  }
+  .envelope-footer button {
+    font-size: .9rem;
+  }
+}
+
 /* ── Result screen ── */
-.result-screen { text-align: center; padding: 12px 0 4px; }
+.result-screen { text-align: center; padding: 12px 0; margin: auto 0; }
 .result-icon {
   font-size: 3.5rem; margin-bottom: 10px; display: block;
   animation: pop .5s cubic-bezier(.34,1.56,.64,1) both;
