@@ -244,7 +244,7 @@
 
     if (isCreator) {
       return `
-      <div>
+      <div class="action-section-wrap">
         <div class="answer-wrap" style="opacity:0.45;pointer-events:none">
           <button class="btn-yes" disabled>${icon('check', 14)} Так, я приду!</button>
           <button class="btn-reschedule" disabled>${icon('calendar-blank', 14)} Перенести</button>
@@ -257,7 +257,7 @@
     }
 
     return `
-    <div>
+    <div class="action-section-wrap">
       <div class="answer-wrap" id="answer-btns-${invId}">
         <button class="btn-yes" onclick="ZAP.pages.invite.answer('${invId}','accepted')">
           ${icon('check', 14)} Так, я приду!
@@ -407,7 +407,7 @@
 
     if (isCreator) {
       return `
-      <div>
+      <div class="action-section-wrap">
         <div class="answer-wrap" style="opacity:0.45;pointer-events:none">
           <button class="btn-yes" disabled>${icon('check', 14)} Так, я приду!</button>
           <button class="btn-no" disabled>${icon('x', 14)} Не зможу</button>
@@ -422,7 +422,7 @@
       // Check if auth required
       if (groupData.requireAuth) {
         return `
-        <div style="text-align:center;padding:14px 0">
+        <div class="action-section-wrap" style="text-align:center;padding:14px 0">
           <div style="font-size:1.4rem;margin-bottom:10px">${icon('lock', 24)}</div>
           <p style="color:var(--muted);margin-bottom:12px">Для відповіді потрібно увійти в акаунт</p>
           <button class="btn btn-dark" style="width:auto;padding:10px 28px"
@@ -431,7 +431,7 @@
       }
       // Public group, no auth — enter name
       return `
-      <div>
+      <div class="action-section-wrap">
         <div style="margin-bottom:10px">
           <label class="lbl">Ваше ім'я</label>
           <input id="guest-name" placeholder="Як вас звати?" value="${ZAP.utils.esc(guestName)}" maxlength="15"
@@ -450,19 +450,21 @@
 
     if (user) {
       return `
-      <div class="answer-wrap">
-        <button class="btn-yes" onclick="ZAP.pages.invite.joinGroup()" style="flex:2">
-          ${icon('check', 14)} Так, я приду!
-        </button>
-        <button class="btn-no" onclick="ZAP.pages.invite.declineGroup()">
-          ${icon('x', 14)} Не зможу
-        </button>
+      <div class="action-section-wrap">
+        <div class="answer-wrap">
+          <button class="btn-yes" onclick="ZAP.pages.invite.joinGroup()" style="flex:2">
+            ${icon('check', 14)} Так, я приду!
+          </button>
+          <button class="btn-no" onclick="ZAP.pages.invite.declineGroup()">
+            ${icon('x', 14)} Не зможу
+          </button>
+        </div>
       </div>`;
     }
 
     // Private group, no auth
     return `
-    <div style="text-align:center;padding:14px 0">
+    <div class="action-section-wrap" style="text-align:center;padding:14px 0">
       <p style="color:var(--muted);margin-bottom:12px">Увійдіть, щоб відповісти на запрошення</p>
       <button class="btn btn-dark" style="width:auto;padding:10px 28px"
         onclick="ZAP.router.go('login')">Увійти</button>

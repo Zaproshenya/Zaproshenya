@@ -133,10 +133,14 @@
   display: flex;
   flex-direction: column;
 }
+.action-section-wrap {
+  margin: auto 0; /* center action elements vertically */
+  display: flex;
+  flex-direction: column;
+}
 /* ── 3-column action row ── */
 .answer-wrap {
   display: flex; flex-direction: row; gap: 7px;
-  margin: auto 0; /* center buttons vertically */
   padding: 14px 0;
 }
 /* Reschedule form sits below the row */
