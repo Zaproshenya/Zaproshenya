@@ -68,7 +68,7 @@
 }
 .invite-envelope {
   margin: 0;
-  max-width: 460px; width: 100%;
+  max-width: 414px; width: 100%;
   background: var(--card);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
@@ -76,17 +76,17 @@
   animation: pop .5s cubic-bezier(.34,1.56,.64,1) both;
   display: flex;
   flex-direction: column;
-  min-height: 460px; /* Base height for mobile to avoid being too small */
+  min-height: 414px; /* Base height for mobile to avoid being too small */
 }
 @media (min-width: 600px) {
   .invite-envelope {
-    min-height: 600px; /* Taller on PC */
-    max-width: 520px; /* Wider on PC */
+    min-height: 540px; /* Taller on PC */
+    max-width: 468px; /* Wider on PC */
   }
 }
 .envelope-top {
   background: linear-gradient(150deg, #1a120a 0%, #2e200e 58%, #1e160a 100%);
-  padding: 24px 24px 38px; /* keeps text above the arc */
+  padding: 22px 22px 34px; /* keeps text above the arc */
   text-align: center; position: relative;
 }
 /* Gold shimmer inside the dark hero */
@@ -98,7 +98,7 @@
 /* White arc — smooth dome using border-radius to avoid sub-pixel line artifacts on mobile */
 .envelope-top::after {
   content: ''; position: absolute;
-  bottom: -1px; left: -30%; right: -30%; height: 28px;
+  bottom: -1px; left: -30%; right: -30%; height: 25px;
   background: var(--card);
   border-radius: 50% 50% 0 0 / 100% 100% 0 0;
   z-index: 0;
@@ -109,26 +109,26 @@
 .envelope-to,
 .envelope-from { position: relative; z-index: 1; }
 .envelope-emoji {
-  font-size: 2.2rem; display: block; margin-bottom: 6px;
+  font-size: 1.98rem; display: block; margin-bottom: 5px;
   animation: heartbeat 2s ease-in-out infinite;
 }
 .envelope-top .envelope-emoji { color: #fff; }
 .envelope-type {
-  font-size: .62rem; letter-spacing: .2em;
+  font-size: .56rem; letter-spacing: .2em;
   color: rgba(255,255,255,.5); text-transform: uppercase;
-  font-weight: 500; margin-bottom: 10px;
+  font-weight: 500; margin-bottom: 9px;
 }
 .envelope-to {
   font-family: var(--font-heading); font-style: italic;
-  font-size: 1.65rem; color: #fff; font-weight: 400;
-  margin-bottom: 6px;
+  font-size: 1.48rem; color: #fff; font-weight: 400;
+  margin-bottom: 5px;
 }
 .envelope-from {
-  font-size: .74rem; color: rgba(255,255,255,.38); padding-bottom: 16px;
+  font-size: .67rem; color: rgba(255,255,255,.38); padding-bottom: 14px;
 }
 .envelope-from strong { color: rgba(255,255,255,.65); font-weight: 500; }
 .envelope-body {
-  padding: 8px 20px 0; /* reduced top padding, 0 bottom padding to let footer handle it */
+  padding: 7px 18px 0; /* reduced top padding, 0 bottom padding to let footer handle it */
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -138,7 +138,7 @@
   display: flex;
   flex-direction: column;
   padding-top: 2px;
-  padding-bottom: 14px; /* balances 12px margin-bottom from detail-chips, resulting in 14px gap on both sides */
+  padding-bottom: 13px; /* balances 11px margin-bottom from detail-chips, resulting in 13px gap on both sides */
 }
 /* ── 3-column action row ── */
 .answer-wrap {
@@ -146,50 +146,50 @@
 }
 /* Reschedule form sits below the row */
 .reschedule-form-block {
-  margin-top: 8px;
+  margin-top: 7px;
 }
 
 /* --- Proportional Desktop Scaling --- */
 @media (min-width: 600px) {
-  .envelope-top { padding: 24px 36px 42px; }
-  .envelope-emoji { font-size: 3.4rem; margin-bottom: 12px; }
-  .envelope-type { font-size: .85rem; margin-bottom: 16px; letter-spacing: .25em; }
-  .envelope-to { font-size: 2.8rem; margin-bottom: 10px; }
-  .envelope-from { font-size: .95rem; padding-bottom: 24px; }
-  .envelope-body { padding: 12px 24px 0; }
+  .envelope-top { padding: 22px 32px 38px; }
+  .envelope-emoji { font-size: 3.06rem; margin-bottom: 11px; }
+  .envelope-type { font-size: .76rem; margin-bottom: 14px; letter-spacing: .25em; }
+  .envelope-to { font-size: 2.52rem; margin-bottom: 9px; }
+  .envelope-from { font-size: .85rem; padding-bottom: 22px; }
+  .envelope-body { padding: 11px 22px 0; }
   .action-section-wrap {
     padding-top: 4px;
-    padding-bottom: 24px; /* balances 20px margin-bottom from detail-chips, resulting in 24px gap on both sides */
+    padding-bottom: 22px; /* balances 18px margin-bottom from detail-chips, resulting in 22px gap on both sides */
   }
   .answer-wrap {
     gap: 12px;
   }
   
   /* Scale message block on desktop */
-  .msg-block { padding: 18px 22px; margin-bottom: 18px; }
-  .msg-block::before { font-size: 4.8rem; top: -12px; left: 16px; }
-  .msg-text { font-size: 1.45rem; padding-left: 14px; line-height: 1.6; }
+  .msg-block { padding: 16px 20px; margin-bottom: 16px; }
+  .msg-block::before { font-size: 4.32rem; top: -11px; left: 14px; }
+  .msg-text { font-size: 1.3rem; padding-left: 13px; line-height: 1.6; }
 }
 
 /* ── Message block ── */
 .msg-block {
-  background: var(--warm); border-radius: 12px;
-  padding: 10px 12px; margin-bottom: 10px;
+  background: var(--warm); border-radius: 11px;
+  padding: 9px 11px; margin-bottom: 9px;
   border-left: 4px solid var(--gold); position: relative;
   overflow-wrap: break-word; word-break: break-word;
 }
 .msg-block::before {
   content: '\201C'; font-family: var(--font-heading);
-  font-size: 3.5rem; color: var(--gold); opacity: .25;
+  font-size: 3.15rem; color: var(--gold); opacity: .25;
   position: absolute; top: -8px; left: 12px; line-height: 1;
 }
 .msg-text {
   font-family: var(--font-heading); font-style: italic;
-  font-size: 1.05rem; line-height: 1.7; color: var(--ink); padding-left: 8px;
+  font-size: .95rem; line-height: 1.6; color: var(--ink); padding-left: 8px;
   overflow-wrap: break-word; word-break: break-word; min-width: 0;
 }
 .msg-block .toggle-more-btn {
-  margin-top: 6px;
+  margin-top: 5px;
 }
 
 /* ── Envelope footer ── */
@@ -198,12 +198,12 @@
   justify-content: center;
   gap: 16px;
   margin-top: 0; /* remove auto margin so it doesn't steal space from action-section-wrap */
-  padding: 14px 0;  /* symmetrical vertical padding */
+  padding: 13px 0;  /* symmetrical vertical padding */
   border-top: 1px solid var(--border);
 }
 .envelope-footer button {
   background: none; border: none;
-  color: var(--muted); font-size: .82rem;
+  color: var(--muted); font-size: .74rem;
   cursor: pointer; text-decoration: underline;
   display: inline-flex; align-items: center; gap: 4px;
 }
@@ -212,10 +212,10 @@
 }
 @media (min-width: 600px) {
   .envelope-footer {
-    padding: 20px 0;
+    padding: 18px 0;
   }
   .envelope-footer button {
-    font-size: .9rem;
+    font-size: .81rem;
   }
 }
 
@@ -224,20 +224,20 @@
   text-align: center;
   margin: auto 0;
   padding-top: 2px;
-  padding-bottom: 14px; /* balances 12px margin-bottom from detail-chips */
+  padding-bottom: 13px; /* balances 11px margin-bottom from detail-chips */
 }
 @media (min-width: 600px) {
   .result-screen {
     padding-top: 4px;
-    padding-bottom: 24px; /* balances 20px margin-bottom from detail-chips */
+    padding-bottom: 22px; /* balances 18px margin-bottom from detail-chips */
   }
 }
 .result-icon {
-  font-size: 3.5rem; margin-bottom: 10px; display: block;
+  font-size: 3.15rem; margin-bottom: 9px; display: block;
   animation: pop .5s cubic-bezier(.34,1.56,.64,1) both;
 }
 .result-title {
-  font-family: var(--font-heading); font-size: 1.7rem; margin-bottom: 8px;
+  font-family: var(--font-heading); font-size: 1.53rem; margin-bottom: 7px;
 }
 .result-sub { color: var(--muted); font-size: .95rem; line-height: 1.5; }
 
@@ -422,11 +422,11 @@
   .bottom-nav { display: flex; }
 
   /* Invite envelope mobile */
-  .invite-bg { padding: 12px 10px; align-items: flex-start; padding-top: 20px; }
+  .invite-bg { padding: 11px 9px; align-items: flex-start; padding-top: 18px; }
   .invite-envelope { border-radius: var(--radius-lg); max-width: 100% !important; }
-  .envelope-top { padding: 24px 20px 50px; }
-  .envelope-to { font-size: 1.5rem; }
-  .envelope-body { padding: 10px 12px; }
+  .envelope-top { padding: 22px 18px 45px; }
+  .envelope-to { font-size: 1.35rem; }
+  .envelope-body { padding: 9px 11px; }
 
   /* Modal mobile */
   .overlay { padding: 12px; align-items: flex-end; }

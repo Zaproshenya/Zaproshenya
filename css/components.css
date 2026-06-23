@@ -24,7 +24,7 @@ button:focus-visible, .btn:focus-visible {
 .btn-yes {
   background: var(--green); color: #fff;
   border: none;
-  border-radius: var(--radius-md); padding: 11px 4px; font-size: .78rem;
+  border-radius: var(--radius-md); padding: 10px 4px; font-size: .7rem;
   font-weight: 600; flex: 1; min-width: 0;
   display: flex; align-items: center; justify-content: center; gap: 4px;
   box-shadow: 0 2px 0 #1a4a2f, 0 3px 12px rgba(45,122,79,.22);
@@ -39,7 +39,7 @@ button:focus-visible, .btn:focus-visible {
 .btn-no {
   background: var(--red); color: #fff;
   border: none;
-  border-radius: var(--radius-md); padding: 11px 4px; font-size: .78rem;
+  border-radius: var(--radius-md); padding: 10px 4px; font-size: .7rem;
   font-weight: 600; flex: 1; min-width: 0;
   display: flex; align-items: center; justify-content: center; gap: 4px;
   box-shadow: 0 2px 0 #8b2018, 0 3px 12px rgba(192,57,43,.22);
@@ -54,7 +54,7 @@ button:focus-visible, .btn:focus-visible {
 .btn-reschedule {
   background: var(--gold); color: #fff;
   border: none; border-radius: var(--radius-md);
-  padding: 11px 4px; font-size: .78rem; font-weight: 600; flex: 1; min-width: 0;
+  padding: 10px 4px; font-size: .7rem; font-weight: 600; flex: 1; min-width: 0;
   display: flex; align-items: center; justify-content: center; gap: 4px;
   box-shadow: 0 2px 0 #8a5e0f, 0 3px 12px rgba(201,146,42,.22);
   transition: all .18s var(--ease); white-space: nowrap; letter-spacing: .01em;
@@ -66,23 +66,23 @@ button:focus-visible, .btn:focus-visible {
 .btn-reschedule:active { transform: translateY(1px); box-shadow: 0 1px 0 #8a5e0f; }
 
 .btn-yes i.ph, .btn-no i.ph, .btn-reschedule i.ph {
-  font-size: 1.15rem !important; /* Scale up action button icons on mobile */
+  font-size: 1.03rem !important; /* Scale up action button icons on mobile */
 }
 
 @media (max-width: 380px) {
   .btn-yes, .btn-no, .btn-reschedule {
-    font-size: .72rem;
-    padding: 11px 2px;
+    font-size: .65rem;
+    padding: 10px 2px;
     gap: 3px;
   }
 }
 
 @media (min-width: 600px) {
   .btn-yes, .btn-no, .btn-reschedule {
-    font-size: .95rem;
-    padding: 16px 14px;
-    gap: 8px;
-    border-radius: 12px;
+    font-size: .85rem;
+    padding: 14px 13px;
+    gap: 7px;
+    border-radius: 11px;
   }
   .btn-yes {
     box-shadow: 0 4px 0 #1a4a2f, 0 5px 16px rgba(45,122,79,.24);
@@ -103,10 +103,10 @@ button:focus-visible, .btn:focus-visible {
     box-shadow: 0 6px 0 #8a5e0f, 0 7px 24px rgba(201,146,42,.3);
   }
   .btn-yes i.ph, .btn-no i.ph, .btn-reschedule i.ph {
-    font-size: 1.45rem !important; /* Scale up action button icons on desktop */
+    font-size: 1.3rem !important; /* Scale up action button icons on desktop */
   }
   .answer-wrap {
-    gap: 12px;
+    gap: 11px;
   }
 }
 
@@ -379,17 +379,17 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 .detail-chips {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 7px;
-  margin-bottom: 12px;
+  gap: 6px;
+  margin-bottom: 11px;
 }
 .detail-chip {
   background: var(--paper);
   border: 1px solid rgba(180,140,60,.14);
-  border-radius: 11px;
-  padding: 9px 12px;
+  border-radius: 10px;
+  padding: 8px 11px;
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   transition: background .15s;
 }
 .detail-chip:hover { background: var(--warm); }
@@ -398,34 +398,34 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   flex-shrink: 0;
   opacity: .75; color: var(--gold);
 }
-.detail-chip-icon i.ph { font-size: 1.55rem !important; } /* Scaled up details icons on mobile */
+.detail-chip-icon i.ph { font-size: 1.4rem !important; } /* Scaled up details icons on mobile */
 .detail-chip-label {
-  font-size: .6rem; text-transform: uppercase; letter-spacing: .1em;
+  font-size: .54rem; text-transform: uppercase; letter-spacing: .1em;
   color: var(--muted); line-height: 1; margin-bottom: 2px;
 }
 .detail-chip-value {
-  font-size: .9rem; font-weight: 600; color: var(--ink); line-height: 1.2;
+  font-size: .81rem; font-weight: 600; color: var(--ink); line-height: 1.2;
 }
 
 @media (min-width: 600px) {
   .detail-chips {
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 11px;
+    margin-bottom: 18px;
   }
   .detail-chip {
-    padding: 16px 20px;
-    gap: 14px;
-    border-radius: 12px;
+    padding: 14px 18px;
+    gap: 13px;
+    border-radius: 11px;
   }
   .detail-chip-icon i.ph {
-    font-size: 1.85rem !important; /* Scaled up details icons on desktop */
+    font-size: 1.66rem !important; /* Scaled up details icons on desktop */
   }
   .detail-chip-label {
-    font-size: .75rem;
+    font-size: .67rem;
     margin-bottom: 4px;
   }
   .detail-chip-value {
-    font-size: 1.15rem;
+    font-size: 1.03rem;
   }
 }
 
