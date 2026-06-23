@@ -76,13 +76,13 @@
   animation: pop .5s cubic-bezier(.34,1.56,.64,1) both;
   display: flex;
   flex-direction: column;
+  min-height: 520px;
 }
 .envelope-top {
   background: linear-gradient(150deg, #1a120a 0%, #2e200e 58%, #1e160a 100%);
-  padding: 20px 20px 0;
+  padding: 24px 24px 0;
   text-align: center; position: relative;
-  /* overflow: visible so ::after arc can be part of THIS element */
-  padding-bottom: 44px; /* space for the white arc that lives inside this element */
+  padding-bottom: 32px; /* space for arc — reduced to not crowd text */
 }
 /* Gold shimmer inside the dark hero */
 .envelope-top::before {
@@ -93,9 +93,9 @@
 /* White arc — part of the SAME element, zero seam */
 .envelope-top::after {
   content: ''; position: absolute;
-  bottom: 0; left: 0; right: 0; height: 52px;
+  bottom: 0; left: 0; right: 0; height: 28px;
   background: var(--card);
-  clip-path: ellipse(54% 100% at 50% 100%);
+  clip-path: ellipse(58% 100% at 50% 100%);
   z-index: 0;
 }
 /* Content floats above both pseudo-elements */
@@ -123,7 +123,8 @@
 }
 .envelope-from strong { color: rgba(255,255,255,.65); font-weight: 500; }
 .envelope-body {
-  padding: 10px 16px 4px;
+  padding: 16px 20px 12px;
+  flex: 1;
 }
 /* ── 3-column action row ── */
 .answer-wrap {

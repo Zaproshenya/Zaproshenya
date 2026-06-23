@@ -9,4 +9,5 @@ Disallow: /profile
 Disallow: /login
 Disallow: /register
 
+Sitemap: https://zaproshenya.pages.dev/sitemap.xml
 Sitemap: https://zaproshenya.pages.dev/sitemap_zaproshenya.xml

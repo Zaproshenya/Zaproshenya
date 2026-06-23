@@ -94,11 +94,34 @@
 <div id="toast-container"></div>
 
 <noscript>
-  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:sans-serif;text-align:center">
-    <div>
-      <h1 style="font-size:1.5rem;margin-bottom:12px">Запрошення ✦</h1>
-      <p style="color:#666;margin-bottom:16px">Для роботи цього сайту потрібен JavaScript.</p>
-      <p style="color:#999;font-size:0.9rem">Увімкніть JavaScript у налаштуваннях вашого браузера.</p>
+  <style>
+    .ns-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;font-family:'DM Sans',sans-serif;background:#fdf8f0;text-align:center}
+    .ns-logo{font-size:2.4rem;margin-bottom:8px}
+    .ns-title{font-size:1.8rem;font-weight:700;color:#1a120a;margin-bottom:8px}
+    .ns-sub{color:#5a4a3a;margin-bottom:20px;font-size:1rem;max-width:480px;line-height:1.6}
+    .ns-features{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:24px}
+    .ns-feat{background:#fff;border:1px solid #e8d5b0;border-radius:10px;padding:10px 16px;font-size:.88rem;color:#3a2a1a}
+    .ns-notice{background:#fff3cd;border:1px solid #f0c040;border-radius:8px;padding:12px 20px;font-size:.85rem;color:#7a5f10;max-width:400px}
+    .ns-links{margin-top:16px;display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+    .ns-links a{color:#c9922a;font-size:.85rem}
+  </style>
+  <div class="ns-wrap">
+    <div class="ns-logo">📬</div>
+    <h1 class="ns-title">Запрошення ✦ — Безкоштовний сервіс персональних запрошень</h1>
+    <p class="ns-sub">Створюйте персональні та групові запрошення на свята, зустрічі та події. Надсилайте одним посиланням — гості відповідають одним кліком.</p>
+    <div class="ns-features">
+      <span class="ns-feat">🎂 Запрошення на дні народження</span>
+      <span class="ns-feat">🤝 Групові зустрічі</span>
+      <span class="ns-feat">📝 Система RSVP</span>
+      <span class="ns-feat">🔔 Сповіщення в реальному часі</span>
+      <span class="ns-feat">👥 Список друзів</span>
+      <span class="ns-feat">☀️ Перенесення зустрічей</span>
+    </div>
+    <div class="ns-notice">Для повноцінної роботи увімкніть JavaScript у браузері.</div>
+    <div class="ns-links">
+      <a href="/about">Про сервіс</a>
+      <a href="/privacy">Конфіденційність</a>
+      <a href="/terms">Умови використання</a>
     </div>
   </div>
 </noscript>
