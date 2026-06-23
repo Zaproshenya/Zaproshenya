@@ -29,7 +29,7 @@
     if (!name || name.length < 2) throw new Error('Ім\'я має бути не менше 2 символів');
     if (!login || login.length < 3) throw new Error('Логін має бути не менше 3 символів');
     if (!/^[a-z0-9_]+$/.test(login)) throw new Error('Логін: тільки латиниця, цифри, _');
-    if (!password || password.length < 6) throw new Error('Пароль має бути не менше 6 символів');
+    if (!password || password.length < 10) throw new Error('Пароль має бути не менше 10 символів');
 
     // Check login uniqueness
     const existing = await ZAP.dbRef.ref('logins/' + login).get();
@@ -148,7 +148,7 @@
   // ── Change password ──
   async function changePassword(oldPassword, newPassword) {
     if (!currentUser || !currentProfile) throw new Error('Не авторизовано');
-    if (newPassword.length < 6) throw new Error('Пароль має бути не менше 6 символів');
+    if (newPassword.length < 10) throw new Error('Пароль має бути не менше 10 символів');
 
     // Reauthenticate
     const email = currentProfile.login + '@zap.app';
