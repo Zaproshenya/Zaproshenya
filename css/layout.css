@@ -86,9 +86,8 @@
 }
 .envelope-top {
   background: linear-gradient(150deg, #1a120a 0%, #2e200e 58%, #1e160a 100%);
-  padding: 24px 24px 0;
+  padding: 24px 24px 50px; /* keeps text above the arc */
   text-align: center; position: relative;
-  padding-bottom: 48px; /* keeps text above the arc */
 }
 /* Gold shimmer inside the dark hero */
 .envelope-top::before {
@@ -96,12 +95,12 @@
   background: radial-gradient(ellipse 70% 60% at 50% -10%, rgba(201,146,42,.26) 0%, transparent 68%);
   pointer-events: none; z-index: 0;
 }
-/* White arc — lower and flatter for mobile */
+/* White arc — keep same premium curve on mobile and desktop */
 .envelope-top::after {
   content: ''; position: absolute;
-  bottom: 0; left: 0; right: 0; height: 18px;
+  bottom: 0; left: 0; right: 0; height: 32px;
   background: var(--card);
-  clip-path: ellipse(65% 100% at 50% 100%);
+  clip-path: ellipse(55% 100% at 50% 100%);
   z-index: 0;
 }
 /* Content floats above both pseudo-elements */
@@ -145,13 +144,17 @@
 
 /* --- Proportional Desktop Scaling --- */
 @media (min-width: 600px) {
-  .envelope-top { padding: 32px 32px 0; padding-bottom: 60px; }
-  .envelope-top::after { height: 32px; clip-path: ellipse(55% 100% at 50% 100%); }
-  .envelope-emoji { font-size: 3rem; margin-bottom: 12px; }
-  .envelope-type { font-size: .8rem; margin-bottom: 14px; }
-  .envelope-to { font-size: 2.4rem; margin-bottom: 10px; }
-  .envelope-from { font-size: .9rem; padding-bottom: 24px; }
-  .envelope-body { padding: 24px 32px 20px; }
+  .envelope-top { padding: 30px 30px 56px; }
+  .envelope-emoji { font-size: 2.6rem; margin-bottom: 10px; }
+  .envelope-type { font-size: .74rem; margin-bottom: 12px; }
+  .envelope-to { font-size: 2.0rem; margin-bottom: 8px; }
+  .envelope-from { font-size: .82rem; padding-bottom: 18px; }
+  .envelope-body { padding: 26px 36px 24px; }
+  
+  /* Scale message block on desktop */
+  .msg-block { padding: 14px 18px; margin-bottom: 14px; }
+  .msg-block::before { font-size: 4.2rem; top: -10px; left: 14px; }
+  .msg-text { font-size: 1.02rem; padding-left: 10px; }
 }
 
 /* ── Message block ── */
@@ -369,7 +372,7 @@
   /* Invite envelope mobile */
   .invite-bg { padding: 12px 10px; align-items: flex-start; padding-top: 20px; }
   .invite-envelope { border-radius: var(--radius-lg); max-width: 100% !important; }
-  .envelope-top { padding: 14px 16px 0; }
+  .envelope-top { padding: 24px 20px 50px; }
   .envelope-to { font-size: 1.5rem; }
   .envelope-body { padding: 10px 12px; }
 
