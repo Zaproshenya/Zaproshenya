@@ -137,11 +137,12 @@
   margin: auto 0; /* center action elements vertically */
   display: flex;
   flex-direction: column;
+  padding-top: 14px;
+  padding-bottom: 26px; /* 14px + 12px margin from detail-chips */
 }
 /* ── 3-column action row ── */
 .answer-wrap {
   display: flex; flex-direction: row; gap: 7px;
-  padding: 14px 0;
 }
 /* Reschedule form sits below the row */
 .reschedule-form-block {
@@ -156,9 +157,12 @@
   .envelope-to { font-size: 2.8rem; margin-bottom: 10px; }
   .envelope-from { font-size: .95rem; padding-bottom: 24px; }
   .envelope-body { padding: 12px 24px 0; }
+  .action-section-wrap {
+    padding-top: 24px;
+    padding-bottom: 44px; /* 24px + 20px margin from detail-chips */
+  }
   .answer-wrap {
     gap: 12px;
-    padding: 24px 0;
   }
   
   /* Scale message block on desktop */
@@ -193,7 +197,7 @@
   display: flex;
   justify-content: center;
   gap: 16px;
-  margin-top: auto; /* push to bottom */
+  margin-top: 0; /* remove auto margin so it doesn't steal space from action-section-wrap */
   padding: 14px 0;  /* symmetrical vertical padding */
   border-top: 1px solid var(--border);
 }
@@ -216,7 +220,18 @@
 }
 
 /* ── Result screen ── */
-.result-screen { text-align: center; padding: 12px 0; margin: auto 0; }
+.result-screen {
+  text-align: center;
+  margin: auto 0;
+  padding-top: 12px;
+  padding-bottom: 24px;
+}
+@media (min-width: 600px) {
+  .result-screen {
+    padding-top: 24px;
+    padding-bottom: 44px;
+  }
+}
 .result-icon {
   font-size: 3.5rem; margin-bottom: 10px; display: block;
   animation: pop .5s cubic-bezier(.34,1.56,.64,1) both;
