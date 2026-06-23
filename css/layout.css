@@ -78,34 +78,61 @@
   flex-direction: column;
 }
 .envelope-top {
-  background: linear-gradient(135deg, #1a120a 0%, #2d2010 100%);
-  padding: 12px 18px 20px;
-  text-align: center; position: relative;
+  background: linear-gradient(150deg, #1a120a 0%, #2e200e 58%, #1e160a 100%);
+  padding: 16px 20px 0;
+  text-align: center; position: relative; overflow: hidden;
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
-.envelope-top::after {
-  content: ''; position: absolute; bottom: -1px; left: 0; right: 0;
-  height: 20px; background: var(--card);
-  clip-path: ellipse(55% 100% at 50% 100%);
+.envelope-top::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% -10%, rgba(201,146,42,.26) 0%, transparent 68%);
+  pointer-events: none;
+}
+/* Arc separator — dark bg with white ellipse cut from bottom */
+.envelope-arc {
+  height: 30px;
+  position: relative;
+  background: linear-gradient(150deg, #1a120a 0%, #2e200e 58%, #1e160a 100%);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.envelope-arc::after {
+  content: ''; position: absolute;
+  bottom: 0; left: -4%; right: -4%;
+  width: 108%; height: 100%;
+  background: var(--card);
+  clip-path: ellipse(52% 100% at 50% 100%);
 }
 .envelope-emoji {
-  font-size: 2.2rem; display: block; margin-bottom: 4px;
+  font-size: 2.2rem; display: block; margin-bottom: 6px;
   animation: heartbeat 2s ease-in-out infinite;
 }
 .envelope-top .envelope-emoji { color: #fff; }
 .envelope-type {
-  font-size: .68rem; letter-spacing: .18em;
+  font-size: .62rem; letter-spacing: .2em;
   color: rgba(255,255,255,.5); text-transform: uppercase;
-  font-weight: 500; margin-bottom: 14px;
+  font-weight: 500; margin-bottom: 10px;
 }
 .envelope-to {
   font-family: var(--font-heading); font-style: italic;
-  font-size: 1.6rem; color: #fff; font-weight: 400;
+  font-size: 1.65rem; color: #fff; font-weight: 400;
+  margin-bottom: 6px;
 }
+.envelope-from {
+  font-size: .74rem; color: rgba(255,255,255,.38); padding-bottom: 16px;
+}
+.envelope-from strong { color: rgba(255,255,255,.65); font-weight: 500; }
 .envelope-body {
-  padding: 12px 16px 4px;
+  padding: 10px 16px 4px;
 }
-.answer-wrap { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+/* ── 3-column action row ── */
+.answer-wrap {
+  display: flex; flex-direction: row; gap: 7px; margin-top: 14px;
+}
+/* Reschedule form sits below the row */
+.reschedule-form-block {
+  margin-top: 8px;
+}
 
 /* ── Message block ── */
 .msg-block {
@@ -320,11 +347,11 @@
   .bottom-nav { display: flex; }
 
   /* Invite envelope mobile */
-  .invite-bg { padding: 16px 10px; align-items: flex-start; padding-top: 24px; }
+  .invite-bg { padding: 12px 10px; align-items: flex-start; padding-top: 20px; }
   .invite-envelope { border-radius: var(--radius-lg); max-width: 100% !important; }
-  .envelope-top { padding: 14px 18px 18px; }
-  .envelope-to { font-size: 1.6rem; }
-  .envelope-body { padding: 14px 14px; }
+  .envelope-top { padding: 14px 16px 0; }
+  .envelope-to { font-size: 1.5rem; }
+  .envelope-body { padding: 10px 12px; }
 
   /* Modal mobile */
   .overlay { padding: 12px; align-items: flex-end; }

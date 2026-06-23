@@ -22,26 +22,40 @@ button:focus-visible, .btn:focus-visible {
 .btn-dark:disabled { background: var(--warm); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
 
 .btn-yes {
-  background: var(--green); color: #fff; border-radius: var(--radius-card);
-  padding: 11px 16px; font-size: .92rem; width: 100%; border: none;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
+  background: var(--green); color: #fff; border-radius: var(--radius-md);
+  padding: 11px 8px; font-size: .82rem; font-weight: 600;
+  flex: 1; border: none; min-width: 0;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  box-shadow: 0 2px 0 #1a4a2f, 0 3px 12px rgba(45,122,79,.22);
+  transition: all .18s var(--ease); white-space: nowrap; letter-spacing: .01em;
 }
-.btn-yes:hover { background: #236040; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(45,122,79,.3); }
+.btn-yes:hover {
+  background: #236040; transform: translateY(-1px);
+  box-shadow: 0 4px 0 #1a4a2f, 0 5px 18px rgba(45,122,79,.3);
+}
+.btn-yes:active { transform: translateY(1px); box-shadow: 0 1px 0 #1a4a2f; }
 
 .btn-no {
-  background: none; color: var(--red); border: 1.5px solid rgba(192,57,43,.3);
-  border-radius: var(--radius-card); padding: 10px 16px; font-size: .88rem; width: 100%;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
+  background: var(--red-bg); color: var(--red);
+  border: 1.5px solid rgba(192,57,43,.22);
+  border-radius: var(--radius-md); padding: 11px 8px; font-size: .82rem;
+  font-weight: 500; flex: 1; min-width: 0;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  transition: all .18s var(--ease); white-space: nowrap;
 }
-.btn-no:hover { background: var(--red-bg); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(192,57,43,.15); }
+.btn-no:hover { background: #fbd5d2; border-color: rgba(192,57,43,.4); }
 
 .btn-reschedule {
-  background: rgba(var(--gold-rgb),.1); color: var(--gold);
-  border: 1.5px solid rgba(var(--gold-rgb),.35); border-radius: var(--radius-card);
-  padding: 10px 16px; font-size: .88rem; width: 100%;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
+  background: var(--warm); color: #7a5f1e;
+  border: 1.5px solid rgba(var(--gold-rgb),.28); border-radius: var(--radius-md);
+  padding: 11px 8px; font-size: .82rem; font-weight: 500; flex: 1; min-width: 0;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  transition: all .18s var(--ease); white-space: nowrap;
 }
-.btn-reschedule:hover { background: rgba(var(--gold-rgb),.18); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(var(--gold-rgb),.2); }
+.btn-reschedule:hover { background: var(--gold-light); border-color: rgba(var(--gold-rgb),.45); }
+
+/* disabled state shared */
+.btn-disabled { opacity: .45; cursor: not-allowed !important; pointer-events: none; }
 
 .btn-outline {
   background: none; border: 1.5px solid var(--border); border-radius: var(--radius-pill);
@@ -292,7 +306,7 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 .toast.toast-info    { border-left: 4px solid var(--blue); }
 .toast.removing { animation: slideOutRight .3s var(--ease) forwards; }
 
-/* ── Detail row ── */
+/* ── Detail row (legacy / modal use) ── */
 .detail-row {
   display: flex; align-items: center; gap: 10px;
   padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,.05);
@@ -304,6 +318,37 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   letter-spacing: .08em; font-weight: 500; min-width: 48px;
 }
 .detail-value { font-size: .88rem; color: var(--ink); font-weight: 500; }
+
+/* ── Detail chips (invite page: date+time in row, place full width) ── */
+.detail-chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+.detail-chip {
+  background: var(--paper);
+  border: 1px solid rgba(180,140,60,.14);
+  border-radius: 11px;
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  transition: background .15s;
+}
+.detail-chip:hover { background: var(--warm); }
+.detail-chip.full { grid-column: 1 / -1; }
+.detail-chip-icon {
+  font-size: .95rem; flex-shrink: 0;
+  opacity: .75; color: var(--gold);
+}
+.detail-chip-label {
+  font-size: .6rem; text-transform: uppercase; letter-spacing: .1em;
+  color: var(--muted); line-height: 1; margin-bottom: 2px;
+}
+.detail-chip-value {
+  font-size: .9rem; font-weight: 600; color: var(--ink); line-height: 1.2;
+}
 
 /* ── Firebase dot ── */
 .fb-dot {

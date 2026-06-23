@@ -117,26 +117,23 @@
     <div class="invite-bg">
       <div class="invite-envelope">
         <div class="envelope-top" style="text-align:center">
-          <div class="skeleton-circle" style="width:64px;height:64px;margin:0 auto 12px"></div>
-          <div class="skeleton-line w-1-2" style="margin:0 auto 8px;height:16px;background:rgba(255,255,255,.3)"></div>
+          <div class="skeleton-circle" style="width:56px;height:56px;margin:0 auto 10px"></div>
+          <div class="skeleton-line w-1-2" style="margin:0 auto 8px;height:14px;background:rgba(255,255,255,.3)"></div>
           <div class="skeleton-line w-3-4" style="margin:0 auto;height:20px;background:rgba(255,255,255,.4)"></div>
         </div>
+        <div class="envelope-arc"></div>
         <div class="envelope-body">
-          <div class="skeleton-line w-full" style="margin-bottom:8px;height:14px"></div>
-          <div class="skeleton-line w-3-4" style="margin-bottom:20px;height:14px"></div>
-          <div style="background:rgba(0,0,0,.02);border-radius:12px;padding:12px">
-            ${[1,2,3].map(() => `
-              <div style="display:flex;align-items:center;gap:10px;padding:6px 0">
-                <div class="skeleton-circle" style="width:28px;height:28px;flex-shrink:0"></div>
-                <div class="skeleton-line w-1-4" style="height:10px"></div>
-                <div class="skeleton-line w-1-2" style="flex:1;height:14px"></div>
-              </div>
-            `).join('')}
+          <div class="skeleton-line w-full" style="margin-bottom:8px;height:12px"></div>
+          <div class="skeleton-line w-3-4" style="margin-bottom:14px;height:12px"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px">
+            <div class="skeleton-btn" style="height:56px;border-radius:11px"></div>
+            <div class="skeleton-btn" style="height:56px;border-radius:11px"></div>
+            <div class="skeleton-btn" style="height:56px;border-radius:11px;grid-column:1/-1"></div>
           </div>
-          <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px">
-            <div class="skeleton-btn" style="height:48px;border-radius:var(--radius-card)"></div>
-            <div class="skeleton-btn" style="height:48px;border-radius:var(--radius-card)"></div>
-            <div class="skeleton-btn" style="height:48px;border-radius:var(--radius-card)"></div>
+          <div style="display:flex;gap:7px;margin-top:14px">
+            <div class="skeleton-btn" style="height:40px;border-radius:var(--radius-md);flex:1"></div>
+            <div class="skeleton-btn" style="height:40px;border-radius:var(--radius-md);flex:1"></div>
+            <div class="skeleton-btn" style="height:40px;border-radius:var(--radius-md);flex:1"></div>
           </div>
         </div>
       </div>
@@ -173,6 +170,7 @@
             <div class="envelope-type">Запрошення</div>
             <div class="envelope-to">${ZAP.utils.esc(invData.to)}</div>
           </div>
+          <div class="envelope-arc"></div>
           <div class="envelope-body" style="text-align:center">
             <p style="color:var(--muted);margin-bottom:20px;font-size:1rem">
               Щоб переглянути це запрошення, потрібно увійти в акаунт або зареєструватися.
@@ -193,7 +191,9 @@
           <span class="envelope-emoji">${t.e}</span>
           <div class="envelope-type">${t.l}</div>
           <div class="envelope-to">${esc(invData.to)}</div>
+          ${invData.showSender !== false ? `<div class="envelope-from">від <strong>${esc(invData.senderName || 'Невідомий')}</strong></div>` : ''}
         </div>
+        <div class="envelope-arc"></div>
 
         <div class="envelope-body">
           ${invData.msg ? `
@@ -205,43 +205,34 @@
               })()}
             </div>` : ''}
 
-          <div style="background:rgba(0,0,0,.02);border-radius:12px;padding:6px 12px;margin-bottom:0">
-            <div class="detail-row">
-              <span class="detail-icon">${icon('calendar-blank', 18)}</span>
-              <span class="detail-label">Дата</span>
-              <span class="detail-value">${esc(invData.date)}</span>
+          <div class="detail-chips">
+            <div class="detail-chip">
+              <span class="detail-chip-icon">${icon('calendar-blank', 16)}</span>
+              <div><div class="detail-chip-label">Дата</div><div class="detail-chip-value">${esc(invData.date)}</div></div>
             </div>
-            <div class="detail-row">
-              <span class="detail-icon">${icon('clock', 18)}</span>
-              <span class="detail-label">Час</span>
-              <span class="detail-value">${esc(invData.time)}</span>
+            <div class="detail-chip">
+              <span class="detail-chip-icon">${icon('clock', 16)}</span>
+              <div><div class="detail-chip-label">Час</div><div class="detail-chip-value">${esc(invData.time)}</div></div>
             </div>
             ${invData.place ? `
-            <div class="detail-row">
-              <span class="detail-icon">${icon('map-pin', 18)}</span>
-              <span class="detail-label">Місце</span>
-              <span class="detail-value">${esc(invData.place)}</span>
+            <div class="detail-chip full">
+              <span class="detail-chip-icon">${icon('map-pin', 16)}</span>
+              <div><div class="detail-chip-label">Місце</div><div class="detail-chip-value">${esc(invData.place)}</div></div>
             </div>` : ''}
           </div>
 
-          ${invData.showSender !== false ? `
-            <div style="text-align:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-              <span style="font-size:.82rem;color:var(--muted)">Від: <strong style="color:var(--ink)">${esc(invData.senderName || 'Невідомий')}</strong></span>
-            </div>
-          ` : ''}
-
           ${answered ? renderResult(answerStatus) : renderButtons(invData.id)}
 
-          <div style="display:flex;justify-content:center;gap:16px;margin-top:28px;padding:18px 0;border-top:1px solid var(--border)">
+          <div style="display:flex;justify-content:center;gap:16px;margin-top:14px;padding:12px 0 4px;border-top:1px solid var(--border)">
             ${ZAP.auth.getUser() ? `
               <button onclick="ZAP.router.go('home')"
-                style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline">
+                style="background:none;border:none;color:var(--muted);font-size:.76rem;cursor:pointer;text-decoration:underline">
                 ← Меню
               </button>
             ` : ''}
             ${!answered ? `
               <button onclick="ZAP.pages.invite.showReport('${invData.id}')"
-                style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline">
+                style="background:none;border:none;color:var(--muted);font-size:.76rem;cursor:pointer;text-decoration:underline">
                 ${icon('warning', 12)} Поскаржитися
               </button>
             ` : ''}
@@ -258,34 +249,35 @@
 
     if (isCreator) {
       return `
-      <div class="answer-wrap" id="answer-btns-${invId}" style="opacity:0.5;pointer-events:none;filter:grayscale(40%)">
-        <button class="btn-yes btn-disabled" disabled>
-          ${icon('check', 16)} Так, я приду!
-        </button>
-        <button class="btn-reschedule btn-disabled" disabled>
-          ${icon('calendar-blank', 16)} Перенести зустріч
-        </button>
-        <button class="btn-no btn-disabled" disabled>
-          ${icon('x', 16)} Ні, не зможу
-        </button>
-        <p style="text-align:center;font-size:.8rem;color:var(--muted);margin-top:12px;font-style:italic">
-          ${icon('info', 14)} Це ваше запрошення. Ви не можете на нього відповісти.
+      <div>
+        <div class="answer-wrap" style="opacity:0.45;pointer-events:none">
+          <button class="btn-yes" disabled>${icon('check', 14)} Так, я приду!</button>
+          <button class="btn-reschedule" disabled>${icon('calendar-blank', 14)} Перенести</button>
+          <button class="btn-no" disabled>${icon('x', 14)} Не зможу</button>
+        </div>
+        <p style="text-align:center;font-size:.75rem;color:var(--muted);margin-top:10px;font-style:italic">
+          ${icon('info', 13)} Це ваше запрошення. Ви не можете на нього відповісти.
         </p>
       </div>`;
     }
 
     return `
-    <div class="answer-wrap" id="answer-btns-${invId}">
-      <button class="btn-yes" onclick="ZAP.pages.invite.answer('${invId}','accepted')">
-        ${icon('check', 16)} Так, я приду!
-      </button>
-      <button class="btn-reschedule" onclick="ZAP.pages.invite.toggleReschedule('${invId}')">
-        ${icon('calendar-blank', 16)} Перенести зустріч
-      </button>
-      <div id="reschedule-block-${invId}" style="display:${showRescheduleForm ? 'block' : 'none'}">
+    <div>
+      <div class="answer-wrap" id="answer-btns-${invId}">
+        <button class="btn-yes" onclick="ZAP.pages.invite.answer('${invId}','accepted')">
+          ${icon('check', 14)} Так, я приду!
+        </button>
+        <button class="btn-reschedule" onclick="ZAP.pages.invite.toggleReschedule('${invId}')">
+          ${icon('calendar-blank', 14)} Перенести
+        </button>
+        <button class="btn-no" onclick="ZAP.pages.invite.answer('${invId}','declined')">
+          ${icon('x', 14)} Не зможу
+        </button>
+      </div>
+      <div id="reschedule-block-${invId}" class="reschedule-form-block" style="display:${showRescheduleForm ? 'block' : 'none'}">
         <div class="reschedule-form">
-          <p style="font-size:.85rem;font-weight:500;margin-bottom:12px">Запропонуйте інший час:</p>
-          <div class="grid2" style="margin-bottom:12px">
+          <p style="font-size:.84rem;font-weight:500;margin-bottom:10px">Запропонуйте інший час:</p>
+          <div class="grid2" style="margin-bottom:10px">
             <div><label class="lbl">Нова дата</label><input type="date" id="rdate-${invId}" min="${new Date().toISOString().split('T')[0]}"/></div>
             <div><label class="lbl">Новий час</label><input type="time" id="rtime-${invId}"/></div>
           </div>
@@ -294,9 +286,6 @@
           </button>
         </div>
       </div>
-      <button class="btn-no" onclick="ZAP.pages.invite.answer('${invId}','declined')">
-        ${icon('x', 16)} Ні, не зможу
-      </button>
     </div>`;
   }
 
@@ -356,7 +345,9 @@
           <span class="envelope-emoji">${t.e}</span>
           <div class="envelope-type">Групове запрошення</div>
           <div class="envelope-to">${esc(groupData.title || t.l)}</div>
+          <div class="envelope-from">від <strong>${esc(groupData.creatorName || 'Невідомий')}</strong></div>
         </div>
+        <div class="envelope-arc"></div>
 
         <div class="envelope-body">
           ${groupData.msg ? `
@@ -368,34 +359,26 @@
               })()}
             </div>` : ''}
 
-          <div style="background:rgba(0,0,0,.02);border-radius:12px;padding:6px 12px;margin-bottom:16px">
-            <div class="detail-row">
-              <span class="detail-icon">${icon('calendar-blank', 18)}</span>
-              <span class="detail-label">Дата</span>
-              <span class="detail-value">${esc(groupData.date)}</span>
+          <div class="detail-chips">
+            <div class="detail-chip">
+              <span class="detail-chip-icon">${icon('calendar-blank', 16)}</span>
+              <div><div class="detail-chip-label">Дата</div><div class="detail-chip-value">${esc(groupData.date)}</div></div>
             </div>
-            <div class="detail-row">
-              <span class="detail-icon">${icon('clock', 18)}</span>
-              <span class="detail-label">Час</span>
-              <span class="detail-value">${esc(groupData.time)}</span>
+            <div class="detail-chip">
+              <span class="detail-chip-icon">${icon('clock', 16)}</span>
+              <div><div class="detail-chip-label">Час</div><div class="detail-chip-value">${esc(groupData.time)}</div></div>
             </div>
             ${groupData.place ? `
-            <div class="detail-row">
-              <span class="detail-icon">${icon('map-pin', 18)}</span>
-              <span class="detail-label">Місце</span>
-              <span class="detail-value">${esc(groupData.place)}</span>
+            <div class="detail-chip full">
+              <span class="detail-chip-icon">${icon('map-pin', 16)}</span>
+              <div><div class="detail-chip-label">Місце</div><div class="detail-chip-value">${esc(groupData.place)}</div></div>
             </div>` : ''}
-            <div class="detail-row">
-              <span class="detail-icon">${icon('user', 18)}</span>
-              <span class="detail-label">Від</span>
-              <span class="detail-value">${esc(groupData.creatorName || 'Невідомий')}</span>
-            </div>
           </div>
 
           <!-- Participants -->
           ${members.length > 0 ? `
-            <div style="margin-bottom:16px">
-              <p style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:500;margin-bottom:8px">
+            <div style="margin-bottom:12px">
+              <p style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:7px">
                 Учасники (${members.length})
               </p>
               <div class="participant-list">
@@ -410,11 +393,11 @@
           ` : ''}
 
           ${answered ? renderResult(answerStatus) : renderGroupJoin()}
-          
+
           ${ZAP.auth.getUser() ? `
-            <div style="text-align:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+            <div style="text-align:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
               <button onclick="ZAP.router.go('home')"
-                style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline">
+                style="background:none;border:none;color:var(--muted);font-size:.76rem;cursor:pointer;text-decoration:underline">
                 ← Меню
               </button>
             </div>
@@ -431,15 +414,13 @@
 
     if (isCreator) {
       return `
-      <div class="answer-wrap" style="opacity:0.5;pointer-events:none;filter:grayscale(40%)">
-        <button class="btn-yes btn-disabled" disabled>
-          ${icon('check', 16)} Так, я приду!
-        </button>
-        <button class="btn-no btn-disabled" disabled>
-          ${icon('x', 16)} Ні, не зможу
-        </button>
-        <p style="text-align:center;font-size:.8rem;color:var(--muted);margin-top:12px;font-style:italic">
-          ${icon('info', 14)} Це ваше запрошення. Ви не можете на нього відповісти.
+      <div>
+        <div class="answer-wrap" style="opacity:0.45;pointer-events:none">
+          <button class="btn-yes" disabled>${icon('check', 14)} Так, я приду!</button>
+          <button class="btn-no" disabled>${icon('x', 14)} Не зможу</button>
+        </div>
+        <p style="text-align:center;font-size:.75rem;color:var(--muted);margin-top:10px;font-style:italic">
+          ${icon('info', 13)} Це ваше запрошення. Ви не можете на нього відповісти.
         </p>
       </div>`;
     }
@@ -448,8 +429,8 @@
       // Check if auth required
       if (groupData.requireAuth) {
         return `
-        <div style="text-align:center;padding:16px 0">
-          <div style="font-size:1.5rem;margin-bottom:10px">${icon('lock', 24)}</div>
+        <div style="text-align:center;padding:14px 0">
+          <div style="font-size:1.4rem;margin-bottom:10px">${icon('lock', 24)}</div>
           <p style="color:var(--muted);margin-bottom:12px">Для відповіді потрібно увійти в акаунт</p>
           <button class="btn btn-dark" style="width:auto;padding:10px 28px"
             onclick="ZAP.router.go('login')">Увійти</button>
@@ -457,36 +438,38 @@
       }
       // Public group, no auth — enter name
       return `
-      <div class="answer-wrap">
-        <div style="margin-bottom:12px">
+      <div>
+        <div style="margin-bottom:10px">
           <label class="lbl">Ваше ім'я</label>
           <input id="guest-name" placeholder="Як вас звати?" value="${ZAP.utils.esc(guestName)}" maxlength="15"
             oninput="ZAP.pages.invite.setGuestName(this.value)"/>
         </div>
-        <button class="btn-yes" onclick="ZAP.pages.invite.joinGroup()">
-          Так, я приду! ${icon('check', 14)}
-        </button>
-        <button class="btn-no" onclick="ZAP.pages.invite.declineGroup()">
-          Ні, не зможу
-        </button>
+        <div class="answer-wrap" style="margin-top:8px">
+          <button class="btn-yes" onclick="ZAP.pages.invite.joinGroup()" style="flex:2">
+            ${icon('check', 14)} Так, я приду!
+          </button>
+          <button class="btn-no" onclick="ZAP.pages.invite.declineGroup()">
+            ${icon('x', 14)} Не зможу
+          </button>
+        </div>
       </div>`;
     }
 
     if (user) {
       return `
       <div class="answer-wrap">
-        <button class="btn-yes" onclick="ZAP.pages.invite.joinGroup()">
-          Так, я приду! ${icon('check', 14)}
+        <button class="btn-yes" onclick="ZAP.pages.invite.joinGroup()" style="flex:2">
+          ${icon('check', 14)} Так, я приду!
         </button>
         <button class="btn-no" onclick="ZAP.pages.invite.declineGroup()">
-          Ні, не зможу
+          ${icon('x', 14)} Не зможу
         </button>
       </div>`;
     }
 
     // Private group, no auth
     return `
-    <div style="text-align:center;padding:16px 0">
+    <div style="text-align:center;padding:14px 0">
       <p style="color:var(--muted);margin-bottom:12px">Увійдіть, щоб відповісти на запрошення</p>
       <button class="btn btn-dark" style="width:auto;padding:10px 28px"
         onclick="ZAP.router.go('login')">Увійти</button>
