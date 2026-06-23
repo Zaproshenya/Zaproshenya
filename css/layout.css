@@ -76,18 +76,19 @@
   animation: pop .5s cubic-bezier(.34,1.56,.64,1) both;
   display: flex;
   flex-direction: column;
+  min-height: 460px; /* Base height for mobile to avoid being too small */
 }
 @media (min-width: 600px) {
   .invite-envelope {
-    min-height: 580px; /* Taller on PC */
-    max-width: 480px; /* Slightly wider on PC */
+    min-height: 600px; /* Taller on PC */
+    max-width: 520px; /* Wider on PC */
   }
 }
 .envelope-top {
   background: linear-gradient(150deg, #1a120a 0%, #2e200e 58%, #1e160a 100%);
   padding: 24px 24px 0;
   text-align: center; position: relative;
-  padding-bottom: 48px; /* increased to push text well above the arc */
+  padding-bottom: 48px; /* keeps text above the arc */
 }
 /* Gold shimmer inside the dark hero */
 .envelope-top::before {
@@ -95,12 +96,12 @@
   background: radial-gradient(ellipse 70% 60% at 50% -10%, rgba(201,146,42,.26) 0%, transparent 68%);
   pointer-events: none; z-index: 0;
 }
-/* White arc — part of the SAME element, zero seam */
+/* White arc — lower and flatter for mobile */
 .envelope-top::after {
   content: ''; position: absolute;
-  bottom: 0; left: 0; right: 0; height: 28px;
+  bottom: 0; left: 0; right: 0; height: 18px;
   background: var(--card);
-  clip-path: ellipse(58% 100% at 50% 100%);
+  clip-path: ellipse(65% 100% at 50% 100%);
   z-index: 0;
 }
 /* Content floats above both pseudo-elements */
@@ -130,14 +131,27 @@
 .envelope-body {
   padding: 16px 20px 12px;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 /* ── 3-column action row ── */
 .answer-wrap {
-  display: flex; flex-direction: row; gap: 7px; margin-top: 14px;
+  display: flex; flex-direction: row; gap: 7px; margin-top: auto; padding-top: 14px;
 }
 /* Reschedule form sits below the row */
 .reschedule-form-block {
   margin-top: 8px;
+}
+
+/* --- Proportional Desktop Scaling --- */
+@media (min-width: 600px) {
+  .envelope-top { padding: 32px 32px 0; padding-bottom: 60px; }
+  .envelope-top::after { height: 32px; clip-path: ellipse(55% 100% at 50% 100%); }
+  .envelope-emoji { font-size: 3rem; margin-bottom: 12px; }
+  .envelope-type { font-size: .8rem; margin-bottom: 14px; }
+  .envelope-to { font-size: 2.4rem; margin-bottom: 10px; }
+  .envelope-from { font-size: .9rem; padding-bottom: 24px; }
+  .envelope-body { padding: 24px 32px 20px; }
 }
 
 /* ── Message block ── */
