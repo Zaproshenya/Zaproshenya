@@ -144,7 +144,7 @@
 
 /* --- Proportional Desktop Scaling --- */
 @media (min-width: 600px) {
-  .envelope-top { padding: 36px 36px 66px; }
+  .envelope-top { padding: 24px 36px 58px; }
   .envelope-emoji { font-size: 3.4rem; margin-bottom: 12px; }
   .envelope-type { font-size: .85rem; margin-bottom: 16px; letter-spacing: .25em; }
   .envelope-to { font-size: 2.8rem; margin-bottom: 10px; }
@@ -154,7 +154,7 @@
   /* Scale message block on desktop */
   .msg-block { padding: 18px 22px; margin-bottom: 18px; }
   .msg-block::before { font-size: 4.8rem; top: -12px; left: 16px; }
-  .msg-text { font-size: 1.1rem; padding-left: 14px; }
+  .msg-text { font-size: 1.25rem; padding-left: 14px; line-height: 1.6; }
 }
 
 /* ── Message block ── */

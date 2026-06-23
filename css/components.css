@@ -389,9 +389,10 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 .detail-chip:hover { background: var(--warm); }
 .detail-chip.full { grid-column: 1 / -1; }
 .detail-chip-icon {
-  font-size: .95rem; flex-shrink: 0;
+  flex-shrink: 0;
   opacity: .75; color: var(--gold);
 }
+.detail-chip-icon i.ph { font-size: 1.35rem !important; }
 .detail-chip-label {
   font-size: .6rem; text-transform: uppercase; letter-spacing: .1em;
   color: var(--muted); line-height: 1; margin-bottom: 2px;
@@ -410,8 +411,8 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
     gap: 14px;
     border-radius: 12px;
   }
-  .detail-chip-icon {
-    font-size: 1.25rem;
+  .detail-chip-icon i.ph {
+    font-size: 1.55rem !important;
   }
   .detail-chip-label {
     font-size: .75rem;
