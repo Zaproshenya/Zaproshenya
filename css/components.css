@@ -22,10 +22,11 @@ button:focus-visible, .btn:focus-visible {
 .btn-dark:disabled { background: var(--warm); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
 
 .btn-yes {
-  background: var(--green); color: #fff; border-radius: var(--radius-md);
-  padding: 11px 8px; font-size: .82rem; font-weight: 600;
-  flex: 1; border: none; min-width: 0;
-  display: flex; align-items: center; justify-content: center; gap: 5px;
+  background: var(--green); color: #fff;
+  border: none;
+  border-radius: var(--radius-md); padding: 11px 4px; font-size: .78rem;
+  font-weight: 600; flex: 1; min-width: 0;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
   box-shadow: 0 2px 0 #1a4a2f, 0 3px 12px rgba(45,122,79,.22);
   transition: all .18s var(--ease); white-space: nowrap; letter-spacing: .01em;
 }
@@ -38,9 +39,9 @@ button:focus-visible, .btn:focus-visible {
 .btn-no {
   background: var(--red); color: #fff;
   border: none;
-  border-radius: var(--radius-md); padding: 11px 8px; font-size: .82rem;
+  border-radius: var(--radius-md); padding: 11px 4px; font-size: .78rem;
   font-weight: 600; flex: 1; min-width: 0;
-  display: flex; align-items: center; justify-content: center; gap: 5px;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
   box-shadow: 0 2px 0 #8b2018, 0 3px 12px rgba(192,57,43,.22);
   transition: all .18s var(--ease); white-space: nowrap; letter-spacing: .01em;
 }
@@ -53,8 +54,8 @@ button:focus-visible, .btn:focus-visible {
 .btn-reschedule {
   background: var(--gold); color: #fff;
   border: none; border-radius: var(--radius-md);
-  padding: 11px 8px; font-size: .82rem; font-weight: 600; flex: 1; min-width: 0;
-  display: flex; align-items: center; justify-content: center; gap: 5px;
+  padding: 11px 4px; font-size: .78rem; font-weight: 600; flex: 1; min-width: 0;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
   box-shadow: 0 2px 0 #8a5e0f, 0 3px 12px rgba(201,146,42,.22);
   transition: all .18s var(--ease); white-space: nowrap; letter-spacing: .01em;
 }
@@ -63,6 +64,14 @@ button:focus-visible, .btn:focus-visible {
   box-shadow: 0 4px 0 #8a5e0f, 0 5px 18px rgba(201,146,42,.3);
 }
 .btn-reschedule:active { transform: translateY(1px); box-shadow: 0 1px 0 #8a5e0f; }
+
+@media (max-width: 380px) {
+  .btn-yes, .btn-no, .btn-reschedule {
+    font-size: .72rem;
+    padding: 11px 2px;
+    gap: 3px;
+  }
+}
 
 /* disabled state shared */
 .btn-disabled { opacity: .45; cursor: not-allowed !important; pointer-events: none; }

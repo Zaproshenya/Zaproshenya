@@ -76,13 +76,18 @@
   animation: pop .5s cubic-bezier(.34,1.56,.64,1) both;
   display: flex;
   flex-direction: column;
-  min-height: 520px;
+}
+@media (min-width: 600px) {
+  .invite-envelope {
+    min-height: 580px; /* Taller on PC */
+    max-width: 480px; /* Slightly wider on PC */
+  }
 }
 .envelope-top {
   background: linear-gradient(150deg, #1a120a 0%, #2e200e 58%, #1e160a 100%);
   padding: 24px 24px 0;
   text-align: center; position: relative;
-  padding-bottom: 32px; /* space for arc — reduced to not crowd text */
+  padding-bottom: 48px; /* increased to push text well above the arc */
 }
 /* Gold shimmer inside the dark hero */
 .envelope-top::before {
