@@ -3,8 +3,6 @@
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://www.gstatic.com https://unpkg.com 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com https://unpkg.com; img-src 'self' data: https://files.catbox.moe https://*.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://*.firebasestorage.app https://www.google-analytics.com; frame-ancestors 'none'
-  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
 /*.html
   Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate

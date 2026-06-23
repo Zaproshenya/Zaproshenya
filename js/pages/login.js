@@ -150,8 +150,7 @@
         </label>
         <div class="auth-pass-wrap">
           <input id="reg-pass" type="${showNewPass ? 'text' : 'password'}"
-            placeholder="Мінімум 10 символів" autocomplete="new-password"
-            oninput="ZAP.pages.login.checkPassRequirements()"/>
+            placeholder="Мінімум 6 символів" autocomplete="new-password"/>
           <button class="auth-pass-toggle" type="button"
             onclick="ZAP.pages.login.toggleNewPass()"
             title="${showNewPass ? 'Приховати' : 'Показати'} пароль">
@@ -166,32 +165,7 @@
         </label>
         <input id="reg-pass2" type="password"
           placeholder="Повторіть пароль" autocomplete="new-password"
-          oninput="ZAP.pages.login.checkPassRequirements()"
           onkeydown="if(event.key==='Enter')ZAP.pages.login.doRegister()"/>
-      </div>
-
-      <div class="pass-requirements" id="pass-reqs">
-        <div class="pass-req-title">Пароль повинен містити:</div>
-        <div class="pass-req-item unmet" id="req-capital">
-          <span class="pass-req-icon">✕</span>
-          <span>Хоча б 1 велика літера</span>
-        </div>
-        <div class="pass-req-item unmet" id="req-number">
-          <span class="pass-req-icon">✕</span>
-          <span>Хоча б 1 цифра</span>
-        </div>
-        <div class="pass-req-item unmet" id="req-length">
-          <span class="pass-req-icon">✕</span>
-          <span>Хоча б 10 символів</span>
-        </div>
-        <div class="pass-req-item unmet" id="req-special">
-          <span class="pass-req-icon">✕</span>
-          <span>Хоча б 1 спеціальний знак (!@#$%...)</span>
-        </div>
-        <div class="pass-req-item unmet" id="req-match">
-          <span class="pass-req-icon">✕</span>
-          <span>Паролі збігаються</span>
-        </div>
       </div>
 
       <label class="auth-terms-check">
@@ -216,27 +190,6 @@
         </button>
       </div>
     </div>`;
-  }
-
-  function checkPassRequirements() {
-    const pass = document.getElementById('reg-pass')?.value || '';
-    const pass2 = document.getElementById('reg-pass2')?.value || '';
-
-    const rules = [
-      { id: 'req-capital', text: 'Хоча б 1 велика літера', test: /[A-ZА-ЯІЇЄҐ]/.test(pass) },
-      { id: 'req-number', text: 'Хоча б 1 цифра', test: /[0-9]/.test(pass) },
-      { id: 'req-length', text: 'Хоча б 10 символів', test: pass.length >= 10 },
-      { id: 'req-special', text: 'Хоча б 1 спеціальний знак (!@#$%...)', test: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(pass) },
-      { id: 'req-match', text: 'Паролі збігаються', test: pass.length > 0 && pass === pass2 },
-    ];
-
-    rules.forEach(r => {
-      const el = document.getElementById(r.id);
-      if (!el) return;
-      el.className = 'pass-req-item ' + (pass.length > 0 ? (r.test ? 'met' : 'unmet') : 'unmet');
-      const icon = el.querySelector('.pass-req-icon');
-      if (icon) icon.textContent = r.test ? '✓' : '✕';
-    });
   }
 
   function setTab(tab) {
@@ -329,22 +282,6 @@
       showError('reg-error', 'Паролі не співпадають');
       return;
     }
-    if (pass.length < 10) {
-      showError('reg-error', 'Пароль має бути не менше 10 символів');
-      return;
-    }
-    if (!/[A-ZА-ЯІЇЄҐ]/.test(pass)) {
-      showError('reg-error', 'Пароль повинен містити хоча б 1 велику літеру');
-      return;
-    }
-    if (!/[0-9]/.test(pass)) {
-      showError('reg-error', 'Пароль повинен містити хоча б 1 цифру');
-      return;
-    }
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(pass)) {
-      showError('reg-error', 'Пароль повинен містити хоча б 1 спеціальний знак');
-      return;
-    }
 
     loading = true;
     ZAP.render();
@@ -361,7 +298,7 @@
         if (e.code === 'auth/email-already-in-use') {
           msg = 'Цей логін вже зайнятий';
         } else if (e.code === 'auth/weak-password') {
-          msg = 'Пароль занадто простий. Мінімум 10 символів';
+          msg = 'Пароль занадто простий. Мінімум 6 символів';
         } else if (e.code === 'auth/too-many-requests') {
           msg = 'Забагато спроб. Спробуйте пізніше';
         } else if (e.code === 'auth/network-request-failed') {
@@ -375,5 +312,5 @@
   }
 
   ZAP.pages = ZAP.pages || {};
-  ZAP.pages.login = { render, setTab, doLogin, doRegister, togglePass, toggleNewPass, checkPassRequirements };
+  ZAP.pages.login = { render, setTab, doLogin, doRegister, togglePass, toggleNewPass };
 })();
