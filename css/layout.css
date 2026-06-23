@@ -68,7 +68,7 @@
 }
 .invite-envelope {
   margin: 0;
-  max-width: 400px; width: 100%;
+  max-width: 460px; width: 100%;
   background: var(--card);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
@@ -79,30 +79,30 @@
 }
 .envelope-top {
   background: linear-gradient(150deg, #1a120a 0%, #2e200e 58%, #1e160a 100%);
-  padding: 16px 20px 0;
-  text-align: center; position: relative; overflow: hidden;
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: 20px 20px 0;
+  text-align: center; position: relative;
+  /* overflow: visible so ::after arc can be part of THIS element */
+  padding-bottom: 44px; /* space for the white arc that lives inside this element */
 }
+/* Gold shimmer inside the dark hero */
 .envelope-top::before {
   content: ''; position: absolute; inset: 0;
   background: radial-gradient(ellipse 70% 60% at 50% -10%, rgba(201,146,42,.26) 0%, transparent 68%);
-  pointer-events: none;
+  pointer-events: none; z-index: 0;
 }
-/* Arc separator — dark bg with white ellipse cut from bottom */
-.envelope-arc {
-  height: 30px;
-  position: relative;
-  background: linear-gradient(150deg, #1a120a 0%, #2e200e 58%, #1e160a 100%);
-  overflow: hidden;
-  flex-shrink: 0;
-}
-.envelope-arc::after {
+/* White arc — part of the SAME element, zero seam */
+.envelope-top::after {
   content: ''; position: absolute;
-  bottom: 0; left: -4%; right: -4%;
-  width: 108%; height: 100%;
+  bottom: 0; left: 0; right: 0; height: 52px;
   background: var(--card);
-  clip-path: ellipse(52% 100% at 50% 100%);
+  clip-path: ellipse(54% 100% at 50% 100%);
+  z-index: 0;
 }
+/* Content floats above both pseudo-elements */
+.envelope-emoji,
+.envelope-type,
+.envelope-to,
+.envelope-from { position: relative; z-index: 1; }
 .envelope-emoji {
   font-size: 2.2rem; display: block; margin-bottom: 6px;
   animation: heartbeat 2s ease-in-out infinite;

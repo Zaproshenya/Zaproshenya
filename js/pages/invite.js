@@ -121,7 +121,6 @@
           <div class="skeleton-line w-1-2" style="margin:0 auto 8px;height:14px;background:rgba(255,255,255,.3)"></div>
           <div class="skeleton-line w-3-4" style="margin:0 auto;height:20px;background:rgba(255,255,255,.4)"></div>
         </div>
-        <div class="envelope-arc"></div>
         <div class="envelope-body">
           <div class="skeleton-line w-full" style="margin-bottom:8px;height:12px"></div>
           <div class="skeleton-line w-3-4" style="margin-bottom:14px;height:12px"></div>
@@ -170,7 +169,6 @@
             <div class="envelope-type">Запрошення</div>
             <div class="envelope-to">${ZAP.utils.esc(invData.to)}</div>
           </div>
-          <div class="envelope-arc"></div>
           <div class="envelope-body" style="text-align:center">
             <p style="color:var(--muted);margin-bottom:20px;font-size:1rem">
               Щоб переглянути це запрошення, потрібно увійти в акаунт або зареєструватися.
@@ -193,7 +191,6 @@
           <div class="envelope-to">${esc(invData.to)}</div>
           ${invData.showSender !== false ? `<div class="envelope-from">від <strong>${esc(invData.senderName || 'Невідомий')}</strong></div>` : ''}
         </div>
-        <div class="envelope-arc"></div>
 
         <div class="envelope-body">
           ${invData.msg ? `
@@ -347,7 +344,6 @@
           <div class="envelope-to">${esc(groupData.title || t.l)}</div>
           <div class="envelope-from">від <strong>${esc(groupData.creatorName || 'Невідомий')}</strong></div>
         </div>
-        <div class="envelope-arc"></div>
 
         <div class="envelope-body">
           ${groupData.msg ? `
