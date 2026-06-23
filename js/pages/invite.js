@@ -677,18 +677,23 @@
       recipientUid: user?.uid || null
     };
 
-    await ZAP.db.createReport({
-      targetType: isGroup ? 'group-invite' : 'invite',
-      targetId: invId,
-      reason,
-      comment,
-      reporterUid: user?.uid || null,
-      reporterName: ZAP.auth.getProfile()?.name || 'Анонім',
-      targetContent,
-    });
+    try {
+      await ZAP.db.createReport({
+        targetType: isGroup ? 'group-invite' : 'invite',
+        targetId: invId,
+        reason,
+        comment,
+        reporterUid: user?.uid || null,
+        reporterName: ZAP.auth.getProfile()?.name || 'Анонім',
+        targetContent,
+      });
 
-    document.querySelector('.overlay')?.remove();
-    ZAP.utils.toast('Скаргу надіслано. Дякуємо!', 'success');
+      document.querySelector('.overlay')?.remove();
+      ZAP.utils.toast('Скаргу надіслано. Дякуємо!', 'success');
+    } catch (err) {
+      console.error('Failed to send report:', err);
+      ZAP.utils.toast('Не вдалося надіслати скаргу. Спробуйте пізніше.', 'error');
+    }
   }
 
   let _resizeHandler = null;

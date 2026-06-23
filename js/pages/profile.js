@@ -195,47 +195,7 @@
       </div>
     </div>
 
-    <!-- Stats Detail -->
-    ${stats ? `
-    <div class="profile-section">
-      <div class="profile-section-header">
-        <div class="profile-section-icon">${icon('chart-bar', 16)}</div>
-        <div class="profile-section-title">Статистика</div>
-      </div>
-      <div class="profile-section-content">
-        <div class="profile-field">
-          <div>
-            <div class="profile-field-label">Дата реєстрації</div>
-            <div class="profile-field-value">${
-              profile.createdAt && !isNaN(new Date(profile.createdAt).getTime())
-                ? ZAP.utils.formatDate(new Date(profile.createdAt).toISOString().split('T')[0])
-                : '—'
-            }</div>
-          </div>
-        </div>
-        <div class="profile-field">
-          <div>
-            <div class="profile-field-label">Типи запрошень</div>
-            <div class="profile-field-value" style="display:flex;align-items:center;gap:12px">
-              <span style="display:flex;align-items:center;gap:5px">${icon('user', 14)} ${stats.personalCount} <span style="color:var(--muted);font-weight:400">персональних</span></span>
-              <span style="color:var(--border)">·</span>
-              <span style="display:flex;align-items:center;gap:5px">${icon('users', 14)} ${stats.groupCount} <span style="color:var(--muted);font-weight:400">групових</span></span>
-            </div>
-          </div>
-        </div>
-        <div class="profile-field">
-          <div>
-            <div class="profile-field-label">Відповіді на запрошення</div>
-            <div class="profile-field-value" style="display:flex;gap:8px;flex-wrap:wrap">
-              <span class="badge badge-accepted">${icon('check', 12)} ${stats.acceptedCount} прийнято</span>
-              <span class="badge badge-declined">${icon('x', 12)} ${stats.declinedCount} відхилено</span>
-              <span class="badge badge-pending">${icon('clock', 12)} ${stats.pendingCount} очікує</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    ` : ''}
+
 
     <!-- Danger Zone -->
     <div class="profile-danger">

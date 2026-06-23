@@ -272,8 +272,11 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; height: 18px; padding: 0 5px;
   border-radius: 9px; font-size: .65rem; font-weight: 700;
-  background: var(--red); color: #fff;
+  background: rgba(180, 140, 60, 0.15); color: var(--muted);
   margin-left: 6px; line-height: 1; flex-shrink: 0;
+}
+.mode-tab.active .tab-count {
+  background: rgba(180, 140, 60, 0.28); color: var(--ink);
 }
 
 /* ── Notification badge ── */
