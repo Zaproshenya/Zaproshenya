@@ -7,7 +7,6 @@
   let loading = false;
   let showPass = false;
   let showNewPass = false;
-  let showConfirmPass = false;
 
   function render() {
     loading = false;
@@ -165,17 +164,10 @@
         <label class="auth-field-label" for="reg-pass2">
           ${icon('check-circle', 14)} Підтвердити пароль
         </label>
-        <div class="auth-pass-wrap">
-          <input id="reg-pass2" type="${showConfirmPass ? 'text' : 'password'}"
-            placeholder="Повторіть пароль" autocomplete="new-password"
-            oninput="ZAP.pages.login.checkPassRequirements()"
-            onkeydown="if(event.key==='Enter')ZAP.pages.login.doRegister()"/>
-          <button class="auth-pass-toggle" type="button"
-            onclick="ZAP.pages.login.toggleConfirmPass()"
-            title="${showConfirmPass ? 'Приховати' : 'Показати'} пароль">
-            ${icon(showConfirmPass ? 'eye-slash' : 'eye', 16)}
-          </button>
-        </div>
+        <input id="reg-pass2" type="password"
+          placeholder="Повторіть пароль" autocomplete="new-password"
+          oninput="ZAP.pages.login.checkPassRequirements()"
+          onkeydown="if(event.key==='Enter')ZAP.pages.login.doRegister()"/>
       </div>
 
       <div class="pass-requirements" id="pass-reqs">
@@ -224,20 +216,6 @@
         </button>
       </div>
     </div>`;
-  }
-
-  function toggleConfirmPass() {
-    showConfirmPass = !showConfirmPass;
-    const input = document.getElementById('reg-pass2');
-    const btn = document.querySelector('#register-form .auth-pass-wrap:last-child .auth-pass-toggle');
-    if (input) {
-      input.type = showConfirmPass ? 'text' : 'password';
-    }
-    if (btn) {
-      const { icon } = ZAP.utils;
-      btn.innerHTML = icon(showConfirmPass ? 'eye-slash' : 'eye', 16);
-      btn.title = showConfirmPass ? 'Приховати' : 'Показати' + ' пароль';
-    }
   }
 
   function checkPassRequirements() {
@@ -397,5 +375,5 @@
   }
 
   ZAP.pages = ZAP.pages || {};
-  ZAP.pages.login = { render, setTab, doLogin, doRegister, togglePass, toggleNewPass, toggleConfirmPass, checkPassRequirements };
+  ZAP.pages.login = { render, setTab, doLogin, doRegister, togglePass, toggleNewPass, checkPassRequirements };
 })();
