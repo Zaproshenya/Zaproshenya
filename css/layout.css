@@ -137,8 +137,8 @@
   margin: auto 0; /* center action elements vertically */
   display: flex;
   flex-direction: column;
-  padding-top: 14px;
-  padding-bottom: 26px; /* 14px + 12px margin from detail-chips */
+  padding-top: 2px;
+  padding-bottom: 14px; /* balances 12px margin-bottom from detail-chips, resulting in 14px gap on both sides */
 }
 /* ── 3-column action row ── */
 .answer-wrap {
@@ -158,8 +158,8 @@
   .envelope-from { font-size: .95rem; padding-bottom: 24px; }
   .envelope-body { padding: 12px 24px 0; }
   .action-section-wrap {
-    padding-top: 24px;
-    padding-bottom: 44px; /* 24px + 20px margin from detail-chips */
+    padding-top: 4px;
+    padding-bottom: 24px; /* balances 20px margin-bottom from detail-chips, resulting in 24px gap on both sides */
   }
   .answer-wrap {
     gap: 12px;
@@ -223,13 +223,13 @@
 .result-screen {
   text-align: center;
   margin: auto 0;
-  padding-top: 12px;
-  padding-bottom: 24px;
+  padding-top: 2px;
+  padding-bottom: 14px; /* balances 12px margin-bottom from detail-chips */
 }
 @media (min-width: 600px) {
   .result-screen {
-    padding-top: 24px;
-    padding-bottom: 44px;
+    padding-top: 4px;
+    padding-bottom: 24px; /* balances 20px margin-bottom from detail-chips */
   }
 }
 .result-icon {

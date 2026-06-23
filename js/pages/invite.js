@@ -300,7 +300,7 @@
         <div class="result-title" style="color:var(--gold)">Пропозицію надіслано!</div>
         <div class="result-sub">Відправник отримає ваш варіант часу і зв'яжеться з вами.</div>`,
     };
-    return `<div class="result-screen" style="margin-top:24px;animation:pop .5s cubic-bezier(.34,1.56,.64,1) both">
+    return `<div class="result-screen" style="animation:pop .5s cubic-bezier(.34,1.56,.64,1) both">
       ${results[status] || results.declined}
     </div>`;
   }
