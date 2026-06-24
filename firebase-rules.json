@@ -95,8 +95,8 @@
       ".indexOn": ["createdAt", "status"]
     },
     "support_tickets": {
-      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')",
-      ".indexOn": ["createdAt", "status"],
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator' || (query.orderByChild === 'authorUid' && query.equalTo === auth.uid))",
+      ".indexOn": ["createdAt", "status", "authorUid"],
       "$ticketId": {
         ".read": "auth != null && (root.child('support_tickets').child($ticketId).child('authorUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')",
         ".write": "auth != null && (!data.exists() && newData.child('authorUid').val() === auth.uid || root.child('support_tickets').child($ticketId).child('authorUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')",

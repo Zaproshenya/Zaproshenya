@@ -363,14 +363,11 @@
 
   async function getUserTickets(uid) {
     if (!db()) return [];
-    const snap = await db().ref('support_tickets').orderByChild('createdAt').get();
+    const snap = await db().ref('support_tickets').orderByChild('authorUid').equalTo(uid).get();
     if (!snap.exists()) return [];
     const list = [];
-    snap.forEach(c => {
-      const t = c.val();
-      if (t.authorUid === uid) list.push(t);
-    });
-    return list.reverse();
+    snap.forEach(c => { list.push(c.val()); });
+    return list.sort((a, b) => b.createdAt - a.createdAt);
   }
 
   async function getTicket(ticketId) {
