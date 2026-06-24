@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "pages:build": "npx @opennextjs/cloudflare build && cp .open-next/worker.js .open-next/assets/_worker.js"
+    "pages:build": "npx @opennextjs/cloudflare build"
   },
   "dependencies": {
     "firebase": "^12.15.0",
