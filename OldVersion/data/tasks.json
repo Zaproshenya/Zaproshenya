@@ -1,0 +1,109 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-01T16:30:00Z",
+  "columns": {
+    "backlog": {
+      "name": "Backlog",
+      "color": "#6c757d",
+      "description": "Future tasks and ideas"
+    },
+    "todo": {
+      "name": "To Do",
+      "color": "#ffc107",
+      "description": "Tasks ready to be worked on"
+    },
+    "in-progress": {
+      "name": "In Progress",
+      "color": "#0d6efd",
+      "description": "Currently being worked on"
+    },
+    "review": {
+      "name": "Review",
+      "color": "#6f42c1",
+      "description": "Completed, awaiting review"
+    },
+    "done": {
+      "name": "Done",
+      "color": "#198754",
+      "description": "Completed and verified"
+    },
+    "rejected": {
+      "name": "Rejected",
+      "color": "#dc3545",
+      "description": "Won't be implemented"
+    }
+  },
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Fix friend request duplicate processing bug",
+      "description": "Users can click accept multiple times on friend requests, causing duplicate processing and errors. Need to block UI immediately after first click and make backend idempotent.",
+      "status": "done",
+      "column": "done",
+      "priority": "high",
+      "type": "bug",
+      "assignee": "Mistral Vibe",
+      "createdAt": "2026-06-01T16:00:00Z",
+      "updatedAt": "2026-06-01T16:30:00Z",
+      "labels": ["friends", "notifications", "bugfix"],
+      "comments": [
+        {
+          "author": "Artem",
+          "text": "Проблема: Після прийняття запиту в друзі користувач може повторно натиснути кнопку, викликаючи дублювання",
+          "createdAt": "2026-06-01T16:00:00Z"
+        },
+        {
+          "author": "Mistral Vibe",
+          "text": "Implemented: processedRequests Set tracking in friends.js, disabled UI state, idempotent db.js functions",
+          "createdAt": "2026-06-01T16:15:00Z"
+        },
+        {
+          "author": "Mistral Vibe",
+          "text": "Committed: f75f998 - Fix: Prevent duplicate friend request processing",
+          "createdAt": "2026-06-01T16:30:00Z"
+        }
+      ],
+      "relatedFiles": [
+        "js/pages/friends.js",
+        "js/db.js",
+        "js/app.js",
+        "css/pages.css"
+      ],
+      "gitCommit": "f75f998"
+    }
+  ],
+  "users": [
+    {
+      "id": "artem",
+      "name": "Artem",
+      "role": "developer",
+      "avatar": "👤"
+    },
+    {
+      "id": "mistral-vibe",
+      "name": "Mistral Vibe",
+      "role": "ai-assistant",
+      "avatar": "🤖"
+    }
+  ],
+  "stats": {
+    "total": 1,
+    "byStatus": {
+      "done": 1,
+      "todo": 0,
+      "in-progress": 0,
+      "review": 0,
+      "backlog": 0,
+      "rejected": 0
+    },
+    "byPriority": {
+      "high": 1,
+      "medium": 0,
+      "low": 0,
+      "critical": 0
+    },
+    "byAssignee": {
+      "Mistral Vibe": 1
+    }
+  }
+}

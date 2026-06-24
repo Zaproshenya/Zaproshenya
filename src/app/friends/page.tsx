@@ -77,16 +77,43 @@ export default function FriendsPage() {
     }
   };
 
-  if (loading || !user) {
+  if (loading || user === undefined) {
     return (
-      <div style={{padding: '2rem'}}>Завантаження...</div>
+      <div className="wrap">
+        <div className="friends-header">
+          <div className="skeleton-line" style={{width:'150px', height:'28px', marginBottom:'8px'}}></div>
+          <div className="skeleton-line" style={{width:'280px', height:'14px'}}></div>
+        </div>
+
+        <div className="friends-search-bar">
+          <div className="skeleton-line" style={{flex: 1, height: '44px', borderRadius: '10px'}}></div>
+          <div className="skeleton-btn" style={{width: '90px', height: '44px', borderRadius: '10px'}}></div>
+        </div>
+
+        <div className="mode-tabs" style={{marginBottom:'24px'}}>
+          {[1,2,3].map(i => (
+            <div key={i} className="skeleton" style={{height:'38px', borderRadius:'8px', flex:1, margin:'0 4px'}}></div>
+          ))}
+        </div>
+
+        {[1,2,3].map(i => (
+          <div key={i} className="skeleton-card" style={{height: '68px', borderRadius: '12px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 16px', animationDelay:`${i*80}ms`}}>
+            <div className="skeleton-circle" style={{width: '40px', height: '40px'}}></div>
+            <div style={{flex: 1}}>
+              <div className="skeleton-line w-1-2" style={{height: '14px', marginBottom: '8px'}}></div>
+              <div className="skeleton-line w-1-4" style={{height: '10px'}}></div>
+            </div>
+            <div className="skeleton-line" style={{width: '24px', height: '24px', borderRadius: '50%'}}></div>
+          </div>
+        ))}
+      </div>
     );
   }
 
   const isOnline = (f: any) => f.lastSeen && (Date.now() - f.lastSeen < 2 * 60 * 1000);
 
   return (
-    <>
+    <div className="wrap">
       <div className="friends-header">
         <div>
           <h1 className="friends-title">Друзі</h1>
@@ -111,7 +138,7 @@ export default function FriendsPage() {
       </div>
 
       {searchResult && (
-        <div className="search-result-card">
+        <div className={`search-result-card ${searchResult.found ? 'search-found' : 'search-not-found'}`}>
           {searchResult.found ? (
             <>
               <div className="avatar">{searchResult.avatar ? <img src={searchResult.avatar} alt=""/> : (searchResult.name || '?').charAt(0).toUpperCase()}</div>
@@ -126,7 +153,10 @@ export default function FriendsPage() {
               </button>
             </>
           ) : (
-            <div style={{color:'var(--muted)', fontSize:'.9rem', fontStyle:'italic'}}>Користувача не знайдено</div>
+            <>
+              <Icon name="warning-circle" size={18} />
+              <span>Користувача не знайдено</span>
+            </>
           )}
         </div>
       )}
@@ -196,6 +226,6 @@ export default function FriendsPage() {
           <div className="friends-empty-title">Немає запрошень</div>
         </div>
       )}
-    </>
+    </div>
   );
 }

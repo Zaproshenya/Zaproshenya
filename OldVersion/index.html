@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Запрошення ✦ — Створюйте та надсилайте запрошення на зустрічі</title>
+<meta name="description" content="Створюйте та надсилайте запрошення на зустрічі. Система з реєстрацією, друзями та груповими запрошеннями."/>
+<meta name="robots" content="index, follow"/>
+<link rel="canonical" href="https://zaproshenya.pages.dev/"/>
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="Запрошення ✦ — Безкоштовний додаток для запрошень"/>
+<meta property="og:description" content="Створюйте та надсилайте запрошення на зустрічі"/>
+<meta property="og:url" content="https://zaproshenya.pages.dev/"/>
+<meta property="og:image" content="https://files.catbox.moe/0m8wur.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:site_name" content="Запрошення"/>
+<meta property="og:locale" content="uk_UA"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Запрошення ✦ — Безкоштовний додаток для запрошень"/>
+<meta name="twitter:description" content="Створюйте та надсилайте запрошення на зустрічі"/>
+<meta name="twitter:image" content="https://files.catbox.moe/0m8wur.png"/>
+<link rel="icon" type="image/png" href="/favicon.png" sizes="192x192"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="shortcut icon" href="/favicon.png"/>
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#1a120a"/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "name": "Запрошення",
+      "url": "https://zaproshenya.pages.dev/",
+      "description": "Створюйте та надсилайте запрошення на зустрічі. Система з реєстрацією, друзями та груповими запрошеннями.",
+      "applicationCategory": "SocialNetworkingApplication",
+      "operatingSystem": "Web",
+      "inLanguage": "uk",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "UAH"
+      },
+      "featureList": [
+        "Створення персональних запрошень",
+        "Групові запрошення",
+        "Система друзів",
+        "Перенесення зустрічей",
+        "Сповіщення в реальному часі",
+        "Безкоштовне використання"
+      ],
+      "screenshot": "https://files.catbox.moe/0m8wur.png"
+    },
+    {
+      "@type": "Organization",
+      "name": "Запрошення",
+      "url": "https://zaproshenya.pages.dev/",
+      "logo": "https://files.catbox.moe/0m8wur.png",
+      "description": "Безкоштовний веб-додаток для створення та надсилання запрошень на зустрічі",
+      "sameAs": [],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "availableLanguage": "Ukrainian"
+      }
+    }
+  ]
+}
+</script>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+<!-- CSS -->
+<link rel="stylesheet" href="/css/variables.css?v=2.0.0"/>
+<link rel="stylesheet" href="/css/components.css?v=2.0.0"/>
+<link rel="stylesheet" href="/css/layout.css?v=2.0.0"/>
+<link rel="stylesheet" href="/css/pages.css?v=2.0.0"/>
+<link rel="stylesheet" href="/css/dashboard.css?v=2.0.0"/>
+
+<!-- Firebase SDKs (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
+</head>
+<body>
+
+<main id="app"></main>
+<div id="toast-container"></div>
+
+<noscript>
+  <style>
+    .ns-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;font-family:'DM Sans',sans-serif;background:#fdf8f0;text-align:center}
+    .ns-logo{font-size:2.4rem;margin-bottom:8px}
+    .ns-title{font-size:1.8rem;font-weight:700;color:#1a120a;margin-bottom:8px}
+    .ns-sub{color:#5a4a3a;margin-bottom:20px;font-size:1rem;max-width:480px;line-height:1.6}
+    .ns-features{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:24px}
+    .ns-feat{background:#fff;border:1px solid #e8d5b0;border-radius:10px;padding:10px 16px;font-size:.88rem;color:#3a2a1a}
+    .ns-notice{background:#fff3cd;border:1px solid #f0c040;border-radius:8px;padding:12px 20px;font-size:.85rem;color:#7a5f10;max-width:400px}
+    .ns-links{margin-top:16px;display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+    .ns-links a{color:#c9922a;font-size:.85rem}
+  </style>
+  <div class="ns-wrap">
+    <div class="ns-logo">📬</div>
+    <h1 class="ns-title">Запрошення ✦ — Безкоштовний сервіс персональних запрошень</h1>
+    <p class="ns-sub">Створюйте персональні та групові запрошення на свята, зустрічі та події. Надсилайте одним посиланням — гості відповідають одним кліком.</p>
+    <div class="ns-features">
+      <span class="ns-feat">🎂 Запрошення на дні народження</span>
+      <span class="ns-feat">🤝 Групові зустрічі</span>
+      <span class="ns-feat">📝 Система RSVP</span>
+      <span class="ns-feat">🔔 Сповіщення в реальному часі</span>
+      <span class="ns-feat">👥 Список друзів</span>
+      <span class="ns-feat">☀️ Перенесення зустрічей</span>
+    </div>
+    <div class="ns-notice">Для повноцінної роботи увімкніть JavaScript у браузері.</div>
+    <div class="ns-links">
+      <a href="/about">Про сервіс</a>
+      <a href="/privacy">Конфіденційність</a>
+      <a href="/terms">Умови використання</a>
+    </div>
+  </div>
+</noscript>
+
+<!-- Phosphor Icons -->
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+
+<!-- JS — order matters -->
+<script src="/js/firebase-config.js?v=2.0.0"></script>
+<script src="/js/crypto.js?v=2.0.0"></script>
+<script src="/js/utils.js?v=2.0.0"></script>
+<script src="/js/router.js?v=2.0.0"></script>
+<script src="/js/notifications.js?v=2.0.0"></script>
+<script src="/js/auth.js?v=2.0.0"></script>
+<script src="/js/db.js?v=2.0.0"></script>
+<script src="/js/pages/login.js?v=2.0.0"></script>
+<script src="/js/pages/home.js?v=2.0.0"></script>
+<script src="/js/pages/create.js?v=2.0.0"></script>
+<script src="/js/pages/invite.js?v=2.0.0"></script>
+<script src="/js/pages/profile.js?v=2.0.0"></script>
+<script src="/js/pages/user-profile.js?v=2.0.0"></script>
+<script src="/js/pages/friends.js?v=2.0.0"></script>
+<script src="/js/app.js?v=2.0.0"></script>
+</body>
+</html>

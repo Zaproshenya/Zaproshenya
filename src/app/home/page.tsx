@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getUserInvites } from '@/lib/firebase/db';
 import { TYPE_MAP } from '@/lib/utils';
 import { Icon } from '@/components/Icon';
+import { toast } from '@/components/Toast';
 import Link from 'next/link';
 
 export default function HomePage() {
@@ -25,7 +26,6 @@ export default function HomePage() {
     const loadData = async () => {
       try {
         const data = await getUserInvites(user.uid);
-        // sort by newest first (assuming createdAt exists)
         data.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         setInvites(data);
       } catch (err) {
@@ -39,31 +39,52 @@ export default function HomePage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'accepted': return <span className="status-badge status-accepted"><Icon name="check" size={12}/> Прийнято</span>;
-      case 'declined': return <span className="status-badge status-declined"><Icon name="x" size={12}/> Відхилено</span>;
-      case 'reschedule': return <span className="status-badge status-reschedule"><Icon name="clock-counter-clockwise" size={12}/> Перенос</span>;
-      default: return <span className="status-badge status-pending"><Icon name="hourglass-high" size={12}/> Очікує</span>;
+      case 'accepted':   return <span className="badge badge-accepted"><Icon name="check" size={12}/> Прийнято</span>;
+      case 'declined':   return <span className="badge badge-declined"><Icon name="x" size={12}/> Відхилено</span>;
+      case 'reschedule': return <span className="badge badge-reschedule"><Icon name="clock-counter-clockwise" size={12}/> Перенос</span>;
+      default:           return <span className="badge badge-pending"><Icon name="hourglass-high" size={12}/> Очікує</span>;
     }
   };
 
-  const incomingInvites = [] as any[]; // TODO: from notifications
+  const incomingInvites = [] as any[];
   const incomingCount = incomingInvites.length;
 
   const counts = {
-    all: invites.length,
-    pending: invites.filter(i => i.status === 'pending' || !i.status).length,
-    accepted: invites.filter(i => i.status === 'accepted').length,
-    declined: invites.filter(i => i.status === 'declined').length,
+    all:        invites.length,
+    pending:    invites.filter(i => i.status === 'pending' || !i.status).length,
+    accepted:   invites.filter(i => i.status === 'accepted').length,
+    declined:   invites.filter(i => i.status === 'declined').length,
     reschedule: invites.filter(i => i.status === 'reschedule').length,
   };
 
-  if (loading || !user) {
+  // ── Skeleton loading ──
+  if (loading || user === undefined) {
     return (
-      <div className="home-header">
-        <div className="home-header-left">
-          <div className="skeleton-line" style={{width: '220px', height: '26px', marginBottom: '8px'}}></div>
-          <div className="skeleton-line" style={{width: '280px', height: '13px'}}></div>
+      <div className="wrap">
+        <div className="home-header">
+          <div className="home-header-left">
+            <div className="skeleton-line" style={{width: '220px', height: '28px', marginBottom: '8px'}}></div>
+            <div className="skeleton-line" style={{width: '160px', height: '13px'}}></div>
+          </div>
+          <div className="skeleton-btn" style={{width:'90px', height:'38px', borderRadius:'20px'}}></div>
         </div>
+        <div className="home-stats-row">
+          {[1,2,3,4,5].map(i => (
+            <div key={i} className="skeleton" style={{height:'60px', borderRadius:'12px', flex:1, minWidth:'52px'}}></div>
+          ))}
+        </div>
+        {[1,2,3].map(i => (
+          <div key={i} className="skeleton-card" style={{animationDelay:`${i*80}ms`}}>
+            <div style={{display:'flex', alignItems:'center', gap:'14px'}}>
+              <div className="skeleton-circle" style={{width:'40px', height:'40px'}}></div>
+              <div style={{flex:1}}>
+                <div className="skeleton-line w-3-4" style={{marginBottom:'8px', height:'15px'}}></div>
+                <div className="skeleton-line w-1-2" style={{height:'12px'}}></div>
+              </div>
+              <div className="skeleton-line" style={{width:'70px', height:'22px', borderRadius:'20px'}}></div>
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -71,7 +92,7 @@ export default function HomePage() {
   const shown = filter === 'all' ? invites : invites.filter(i => i.status === filter);
 
   return (
-    <>
+    <div className="wrap">
       <div className="home-header">
         <div className="home-header-left">
           <h1 className="home-title">Мої запрошення</h1>
@@ -85,14 +106,17 @@ export default function HomePage() {
       {invites.length > 0 && (
         <div className="home-stats-row">
           {[
-            { key: 'all', label: 'Всі', cls: '' },
-            { key: 'pending', label: 'Очікують', cls: 'stat-pending' },
-            { key: 'accepted', label: 'Прийняті', cls: 'stat-accepted' },
-            { key: 'declined', label: 'Відхилені', cls: 'stat-declined' },
-            { key: 'reschedule', label: 'Перенос', cls: 'stat-reschedule' },
+            { key: 'all',        label: 'Всі',       cls: '' },
+            { key: 'pending',    label: 'Очікують',  cls: 'stat-pending' },
+            { key: 'accepted',   label: 'Прийняті',  cls: 'stat-accepted' },
+            { key: 'declined',   label: 'Відхилені', cls: 'stat-declined' },
+            { key: 'reschedule', label: 'Перенос',   cls: 'stat-reschedule' },
           ].map(({ key, label, cls }) => (
-            <button key={key} className={`home-stat-chip ${filter === key && activeTab === 'outgoing' ? 'active' : ''} ${cls}`}
-              onClick={() => { setActiveTab('outgoing'); setFilter(key); }}>
+            <button
+              key={key}
+              className={`home-stat-chip ${filter === key && activeTab === 'outgoing' ? 'active' : ''} ${cls}`}
+              onClick={() => { setActiveTab('outgoing'); setFilter(key); }}
+            >
               <span className="home-stat-num">{counts[key as keyof typeof counts]}</span>
               <span className="home-stat-label">{label}</span>
             </button>
@@ -101,12 +125,16 @@ export default function HomePage() {
       )}
 
       <div className="home-tabs">
-        <button className={`home-tab ${activeTab === 'outgoing' ? 'active' : ''}`}
-          onClick={() => setActiveTab('outgoing')}>
+        <button
+          className={`home-tab ${activeTab === 'outgoing' ? 'active' : ''}`}
+          onClick={() => setActiveTab('outgoing')}
+        >
           <Icon name="paper-plane-tilt" size={16} /> Відправлені
         </button>
-        <button className={`home-tab ${activeTab === 'incoming' ? 'active' : ''}`}
-          onClick={() => setActiveTab('incoming')}>
+        <button
+          className={`home-tab ${activeTab === 'incoming' ? 'active' : ''}`}
+          onClick={() => setActiveTab('incoming')}
+        >
           <Icon name="users" size={16} /> Від друзів
           {incomingCount > 0 && <span className="home-tab-badge">{incomingCount}</span>}
         </button>
@@ -122,7 +150,9 @@ export default function HomePage() {
               {filter === 'all' ? 'Ще немає запрошень' : 'Немає запрошень з таким статусом'}
             </div>
             <p className="home-empty-sub">
-              {filter === 'all' ? 'Створіть перше запрошення і поділіться ним з другом' : 'Спробуйте обрати інший фільтр'}
+              {filter === 'all'
+                ? 'Створіть перше запрошення і поділіться ним з другом'
+                : 'Спробуйте обрати інший фільтр'}
             </p>
             {filter === 'all' ? (
               <Link href="/create" className="btn btn-dark" style={{ width: 'auto', padding: '12px 32px', marginTop: '4px' }}>
@@ -137,14 +167,25 @@ export default function HomePage() {
         ) : (
           shown.map((inv, i) => {
             const t = TYPE_MAP[inv.type] || TYPE_MAP.other;
-            const link = typeof window !== 'undefined' ? `${window.location.origin}/${inv.isGroup ? 'g' : 'i'}/${inv.id}` : '';
+            const link = typeof window !== 'undefined'
+              ? `${window.location.origin}/${inv.isGroup ? 'g' : 'i'}/${inv.id}`
+              : '';
             return (
-              <Link href={`/${inv.isGroup ? 'g' : 'i'}/${inv.id}`} key={inv.id} className={`home-inv-card status-${inv.status || 'pending'}`} style={{ animationDelay: `${i * 35}ms` }}>
+              <Link
+                href={`/${inv.isGroup ? 'g' : 'i'}/${inv.id}`}
+                key={inv.id}
+                className={`home-inv-card status-${inv.status || 'pending'}`}
+                style={{ animationDelay: `${i * 35}ms` }}
+              >
                 <div className="home-inv-emoji">{t.e}</div>
                 <div className="home-inv-body">
                   <div className="home-inv-title">
                     {inv.to || inv.title || 'Групове запрошення'}
-                    {inv.isGroup && <span className="home-inv-group-badge"><Icon name="users" size={12} /> Група</span>}
+                    {inv.isGroup && (
+                      <span className="home-inv-group-badge">
+                        <Icon name="users" size={12} /> Група
+                      </span>
+                    )}
                   </div>
                   <div className="home-inv-meta">
                     {t.l}
@@ -154,12 +195,15 @@ export default function HomePage() {
                 </div>
                 <div className="home-inv-right">
                   {getStatusBadge(inv.status || 'pending')}
-                  <button className="home-copy-btn" title="Копіювати посилання"
+                  <button
+                    className="home-copy-btn"
+                    title="Копіювати посилання"
                     onClick={(e) => {
                       e.preventDefault();
                       navigator.clipboard.writeText(link);
-                      // Toast here
-                    }}>
+                      toast('Посилання скопійовано ✓', 'success', 2500);
+                    }}
+                  >
                     <Icon name="link" size={14} />
                   </button>
                 </div>
@@ -171,8 +215,9 @@ export default function HomePage() {
         <div className="home-empty">
           <div className="home-empty-icon"><Icon name="users" size={40} /></div>
           <div className="home-empty-title">Немає нових запрошень</div>
+          <p className="home-empty-sub">Тут будуть запрошення від друзів</p>
         </div>
       )}
-    </>
+    </div>
   );
 }

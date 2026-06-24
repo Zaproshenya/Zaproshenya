@@ -1,0 +1,11 @@
+{
+  "database": {
+    "rules": "firebase-rules.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "functions": {
+    "source": "functions"
+  }
+}

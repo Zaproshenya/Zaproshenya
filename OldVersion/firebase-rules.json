@@ -1,0 +1,111 @@
+{
+  "rules": {
+    "users": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')",
+      ".indexOn": ["createdAt"],
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'",
+        "role": {
+          ".validate": "newData.val() === data.val() || (!data.exists() && newData.val() === 'user') || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin'"
+        },
+        "banned": {
+          ".validate": "newData.val() === data.val() || !data.exists() || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'"
+        },
+        "bannedUntil": {
+          ".validate": "newData.val() === data.val() || !data.exists() || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'"
+        },
+        "bannedAt": {
+          ".validate": "newData.val() === data.val() || !data.exists() || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'"
+        }
+      }
+    },
+    "logins": {
+      ".read": true,
+      "$login": {
+        ".write": "auth != null && (!root.child('logins').child($login).exists() || root.child('logins').child($login).val() === auth.uid)",
+        ".validate": "newData.val() === auth.uid"
+      }
+    },
+    "ids": {
+      ".read": true,
+      "$id": {
+        ".write": "auth != null && (!root.child('ids').child($id).exists() || root.child('ids').child($id).val() === auth.uid)",
+        ".validate": "newData.val() === auth.uid"
+      }
+    },
+    "invites": {
+      ".read": true,
+      "$invId": {
+        ".write": "auth != null && (!data.exists() && newData.child('creatorUid').val() === auth.uid || data.child('creatorUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')"
+      }
+    },
+    "statuses": {
+      ".read": true,
+      "$invId": {
+        ".write": "(auth != null && (root.child('invites').child($invId).child('creatorUid').val() === auth.uid || root.child('invites').child($invId).child('recipientUid').val() === auth.uid || root.child('group-invites').child($invId).child('creatorUid').val() === auth.uid)) || (root.child('invites').child($invId).exists() && root.child('invites').child($invId).child('requireAuth').val() !== true)"
+      }
+    },
+    "reschedule": {
+      "$invId": {
+        ".read": "auth != null || (root.child('invites').child($invId).exists() && root.child('invites').child($invId).child('requireAuth').val() !== true)",
+        ".write": "(auth != null && (root.child('invites').child($invId).child('creatorUid').val() === auth.uid || root.child('invites').child($invId).child('recipientUid').val() === auth.uid || root.child('group-invites').child($invId).child('creatorUid').val() === auth.uid)) || (root.child('invites').child($invId).exists() && root.child('invites').child($invId).child('requireAuth').val() !== true)"
+      }
+    },
+    "user-invites": {
+      "$uid": {
+        ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin'",
+        ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin')"
+      }
+    },
+    "friends": {
+      "$uid": {
+        ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin'",
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "friend-requests": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "notifications": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "auth != null",
+        ".indexOn": ["createdAt", "read"]
+      }
+    },
+    "group-invites": {
+      ".read": true,
+      "$invId": {
+        ".write": "auth != null && (!data.exists() || data.child('creatorUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')",
+        ".validate": "newData.child('creatorUid').val() === auth.uid || newData.child('creatorUid').val() === data.child('creatorUid').val() || !newData.child('creatorUid').exists()",
+        "members": {
+          "$memberId": {
+            ".write": "newData.exists() && (!data.exists() || (auth != null && data.child('uid').val() === auth.uid))"
+          }
+        }
+      }
+    },
+    "reports": {
+      ".read": "root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'",
+      ".write": "true",
+      ".indexOn": ["createdAt", "status"]
+    },
+    "support_tickets": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator' || (query.orderByChild === 'authorUid' && query.equalTo === auth.uid))",
+      ".indexOn": ["createdAt", "status", "authorUid"],
+      "$ticketId": {
+        ".read": "auth != null && (root.child('support_tickets').child($ticketId).child('authorUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')",
+        ".write": "auth != null && (!data.exists() && newData.child('authorUid').val() === auth.uid || root.child('support_tickets').child($ticketId).child('authorUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')",
+        "messages": {
+          "$msgId": {
+            ".write": "auth != null && (root.child('support_tickets').child($ticketId).child('authorUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')"
+          }
+        }
+      }
+    }
+  }
+}

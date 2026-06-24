@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Invite Redesign — Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── Reset & Tokens ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink:         #18120a;
+      --paper:       #faf6f0;
+      --warm:        #f0e8d8;
+      --warm2:       #e8dcc8;
+      --card:        #ffffff;
+      --gold:        #c9922a;
+      --gold-light:  #f5e8c8;
+      --gold-dim:    rgba(201,146,42,.12);
+      --gold-rgb:    201,146,42;
+      --green:       #2d7a4f;
+      --green-bg:    #e8f5ee;
+      --green-rgb:   45,122,79;
+      --red:         #c0392b;
+      --red-bg:      #fdecea;
+      --muted:       #6b6058;
+      --border:      rgba(180,140,60,.18);
+      --font-body:   'DM Sans', sans-serif;
+      --font-head:   'Playfair Display', Georgia, serif;
+      --ease:        cubic-bezier(.4,0,.2,1);
+    }
+    html, body {
+      height: 100%; font-family: var(--font-body);
+      color: var(--ink); background: #f4ede2;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+    button { cursor: pointer; font-family: var(--font-body); }
+
+    /* ── Switcher bar ── */
+    .switcher {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+      background: rgba(24,18,10,.94); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(201,146,42,.2);
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; padding: 8px 16px; flex-wrap: wrap;
+    }
+    .sw-lbl { font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.35); }
+    .sw-btn {
+      background: rgba(255,255,255,.06); border: 1px solid rgba(201,146,42,.2);
+      color: rgba(255,255,255,.5); font-family: var(--font-body);
+      font-size: .78rem; padding: 5px 14px; border-radius: 30px; cursor: pointer;
+      transition: all .18s var(--ease);
+    }
+    .sw-btn:hover { background: rgba(201,146,42,.14); color: #fff; border-color: var(--gold); }
+    .sw-btn.active { background: var(--gold); color: #fff; border-color: var(--gold); font-weight: 600; box-shadow: 0 0 14px rgba(201,146,42,.35); }
+    .demo-sep { width: 1px; height: 18px; background: rgba(255,255,255,.1); }
+    .demo-btn {
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
+      color: rgba(255,255,255,.35); font-family: var(--font-body);
+      font-size: .7rem; padding: 4px 10px; border-radius: 20px; cursor: pointer;
+      transition: all .15s;
+    }
+    .demo-btn:hover { border-color: rgba(201,146,42,.4); color: rgba(201,146,42,.7); }
+    .demo-btn.on { background: rgba(201,146,42,.15); border-color: rgba(201,146,42,.4); color: #d4a043; }
+
+    /* ── Viewport frame ── */
+    .stage {
+      position: fixed; inset: 40px 0 0;
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px;
+      background:
+        radial-gradient(ellipse 60% 50% at 40% 30%, rgba(201,146,42,.08) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 50% at 80% 80%, rgba(45,122,79,.06) 0%, transparent 60%),
+        #f4ede2;
+    }
+    .variant { display: none; width: 100%; max-width: 400px; }
+    .variant.active { display: block; }
+
+    /* ── Shared animations ── */
+    @keyframes popIn {
+      from { opacity:0; transform:translateY(16px) scale(.97); }
+      to   { opacity:1; transform:translateY(0) scale(1); }
+    }
+    @keyframes beat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+    @keyframes glow { 0%,100%{opacity:.6} 50%{opacity:1} }
+
+
+    /* ════════════════════════════════════════════════
+       VARIANT 1 — Warm Hero + Clean Card
+       Dark warm top, pure white body, full redesign
+    ════════════════════════════════════════════════ */
+    .v1-wrap {
+      background: var(--card);
+      border-radius: 22px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.12), 0 4px 16px rgba(0,0,0,.06);
+      overflow: hidden;
+      animation: popIn .5s cubic-bezier(.34,1.56,.64,1) both;
+    }
+
+    /* Hero */
+    .v1-hero {
+      background: linear-gradient(150deg, #1a120a 0%, #2e200e 60%, #1e160a 100%);
+      padding: 22px 24px 36px; text-align: center; position: relative; overflow: hidden;
+    }
+    .v1-hero::before {
+      content:''; position:absolute; inset:0;
+      background: radial-gradient(ellipse 70% 60% at 50% -10%, rgba(201,146,42,.28) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .v1-hero-glow {
+      position: absolute; border-radius: 50%; filter: blur(32px); pointer-events: none;
+    }
+    .v1-hero-glow.r { width:140px; height:140px; background:rgba(201,146,42,.1); top:-40px; right:-30px; }
+    .v1-hero-glow.l { width:100px; height:100px; background:rgba(45,122,79,.08); bottom:-20px; left:-20px; }
+
+    .v1-type {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: .62rem; letter-spacing: .18em; text-transform: uppercase;
+      color: rgba(201,146,42,.75); font-weight: 600; margin-bottom: 12px;
+    }
+    .v1-type-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--gold); animation: glow 1.8s ease-in-out infinite; }
+    .v1-emoji { font-size: 2.6rem; display: block; margin-bottom: 8px; animation: beat 2.4s ease-in-out infinite; }
+    .v1-title {
+      font-family: var(--font-head); font-style: italic; font-weight: 600;
+      font-size: 1.75rem; color: #fff; line-height: 1.15; margin-bottom: 4px;
+    }
+    .v1-from { font-size: .75rem; color: rgba(255,255,255,.4); }
+    .v1-from b { color: rgba(255,255,255,.7); font-weight: 500; }
+
+    /* Smooth arc connector — white on dark */
+    .v1-arc {
+      height: 28px; background: var(--card);
+      clip-path: ellipse(54% 100% at 50% 100%);
+      margin-top: -1px;
+    }
+
+    /* Body */
+    .v1-body { padding: 4px 20px 18px; }
+
+    /* Detail rows */
+    .v1-details { margin-bottom: 14px; }
+    .v1-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px; border-radius: 10px;
+      transition: background .15s;
+    }
+    .v1-row:hover { background: var(--paper); }
+    .v1-row-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: var(--warm); border: 1px solid rgba(201,146,42,.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .85rem; flex-shrink: 0; color: var(--gold);
+    }
+    .v1-row-lbl { font-size: .65rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; line-height: 1; margin-bottom: 2px; }
+    .v1-row-val { font-size: .88rem; font-weight: 600; color: var(--ink); }
+
+    /* Divider */
+    .v1-divider { height: 1px; background: var(--border); margin: 10px 0; }
+
+    /* Message */
+    .v1-msg {
+      background: linear-gradient(135deg, #fefaf4, var(--gold-light));
+      border-left: 3px solid var(--gold); border-radius: 10px;
+      padding: 10px 12px 10px 14px; margin-bottom: 14px;
+      font-family: var(--font-head); font-style: italic;
+      font-size: .85rem; line-height: 1.65; color: #4a3a20;
+    }
+
+    /* Participants */
+    .v1-participants { margin-bottom: 14px; }
+    .v1-p-header {
+      font-size: .62rem; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--muted); font-weight: 600; margin-bottom: 7px;
+    }
+    .v1-p-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px; background: var(--paper); border-radius: 9px; margin-bottom: 5px;
+    }
+    .v1-p-avatar {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--gold), #e8b84b);
+      color: #fff; font-size: .7rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .v1-p-name { flex: 1; font-size: .85rem; font-weight: 500; }
+    .v1-p-badge {
+      font-size: .68rem; font-weight: 600; padding: 2px 8px; border-radius: 14px;
+      letter-spacing: .02em;
+    }
+    .v1-p-badge.ok  { background: var(--green-bg); color: var(--green); }
+    .v1-p-badge.no  { background: var(--red-bg); color: var(--red); }
+    .v1-p-badge.wait{ background: var(--warm); color: var(--muted); }
+
+    /* ── BUTTONS V1 — Pill style with gradient ── */
+    .v1-actions { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+
+    .v1-btn-primary {
+      position: relative; overflow: hidden;
+      background: linear-gradient(135deg, #2d7a4f 0%, #1e5c38 100%);
+      color: #fff; border: none; border-radius: 14px;
+      padding: 13px 20px; font-size: .92rem; font-weight: 600;
+      letter-spacing: .01em; width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      box-shadow: 0 3px 14px rgba(45,122,79,.28), inset 0 1px 0 rgba(255,255,255,.18);
+      transition: all .2s var(--ease);
+    }
+    .v1-btn-primary::after {
+      content:''; position:absolute; inset:0;
+      background: linear-gradient(180deg, rgba(255,255,255,.1) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .v1-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(45,122,79,.38); }
+    .v1-btn-primary:active { transform: translateY(0); }
+
+    .v1-btn-gold {
+      background: rgba(201,146,42,.09); color: var(--gold);
+      border: 1.5px solid rgba(201,146,42,.28); border-radius: 14px;
+      padding: 11px 20px; font-size: .88rem; font-weight: 500; width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      transition: all .2s var(--ease);
+    }
+    .v1-btn-gold:hover { background: rgba(201,146,42,.16); transform: translateY(-1px); }
+
+    .v1-btn-ghost {
+      background: transparent; color: var(--red);
+      border: 1.5px solid rgba(192,57,43,.22); border-radius: 14px;
+      padding: 10px 20px; font-size: .85rem; font-weight: 500; width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      transition: all .2s var(--ease);
+    }
+    .v1-btn-ghost:hover { background: var(--red-bg); border-color: rgba(192,57,43,.4); }
+
+    /* Creator note */
+    .v1-creator-note {
+      background: var(--warm); border-radius: 10px; padding: 10px 14px;
+      font-size: .78rem; color: var(--muted); font-style: italic; text-align: center;
+      border: 1px solid var(--border); margin-bottom: 10px;
+    }
+
+    /* Footer */
+    .v1-footer {
+      display: flex; justify-content: center; gap: 18px;
+      padding-top: 10px; border-top: 1px solid var(--border);
+    }
+    .v1-flink {
+      background: none; border: none; font-size: .72rem; color: var(--muted);
+      text-decoration: underline; cursor: pointer; transition: color .15s;
+    }
+    .v1-flink:hover { color: var(--ink); }
+
+    /* Result */
+    .result-box { text-align: center; padding: 14px 0 4px; animation: popIn .45s cubic-bezier(.34,1.56,.64,1) both; }
+    .result-box .r-icon { font-size: 2.8rem; display: block; margin-bottom: 8px; }
+    .result-box .r-title { font-family: var(--font-head); font-size: 1.45rem; margin-bottom: 6px; }
+    .result-box .r-sub { font-size: .83rem; color: var(--muted); line-height: 1.5; }
+
+
+    /* ════════════════════════════════════════════════
+       VARIANT 2 — Soft Split Card
+       Warm left column + clean right, horizontal feel
+    ════════════════════════════════════════════════ */
+    .v2-wrap {
+      background: var(--card);
+      border-radius: 22px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.12), 0 4px 16px rgba(0,0,0,.06);
+      overflow: hidden;
+      animation: popIn .5s cubic-bezier(.34,1.56,.64,1) both;
+    }
+
+    /* Top banner — thinner but richer */
+    .v2-banner {
+      background: linear-gradient(150deg, #1a120a 0%, #2e200e 55%, #1e160a 100%);
+      padding: 20px 24px 0; position: relative; overflow: hidden;
+    }
+    .v2-banner::before {
+      content:''; position:absolute; inset:0;
+      background: radial-gradient(ellipse 80% 70% at 50% -20%, rgba(201,146,42,.25) 0%, transparent 65%);
+    }
+    .v2-banner-inner {
+      position: relative; display: flex; align-items: center; gap: 14px; padding-bottom: 20px;
+    }
+    .v2-emoji-wrap {
+      width: 56px; height: 56px; border-radius: 16px; flex-shrink: 0;
+      background: rgba(201,146,42,.15); border: 1px solid rgba(201,146,42,.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; animation: beat 2.4s ease-in-out infinite;
+    }
+    .v2-banner-text { flex: 1; }
+    .v2-banner-tag {
+      font-size: .6rem; letter-spacing: .18em; text-transform: uppercase;
+      color: rgba(201,146,42,.65); font-weight: 600; margin-bottom: 4px;
+    }
+    .v2-banner-title {
+      font-family: var(--font-head); font-style: italic; font-weight: 600;
+      font-size: 1.5rem; color: #fff; line-height: 1.15;
+    }
+    .v2-banner-from { font-size: .72rem; color: rgba(255,255,255,.4); margin-top: 2px; }
+    .v2-banner-from b { color: rgba(255,255,255,.65); }
+
+    /* Arc */
+    .v2-arc {
+      height: 26px; background: var(--card);
+      clip-path: ellipse(54% 100% at 50% 100%);
+      margin-top: -1px;
+    }
+
+    /* Body */
+    .v2-body { padding: 6px 20px 18px; }
+
+    /* Info pills row */
+    .v2-pills { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; }
+    .v2-pill {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--paper); border: 1px solid rgba(180,140,60,.15);
+      border-radius: 10px; padding: 6px 10px; flex: 1; min-width: 100px;
+    }
+    .v2-pill-icon { font-size: .8rem; opacity: .7; flex-shrink: 0; }
+    .v2-pill-content {}
+    .v2-pill-lbl { font-size: .6rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); line-height: 1; }
+    .v2-pill-val { font-size: .82rem; font-weight: 600; color: var(--ink); line-height: 1.3; }
+    .v2-pill.wide { flex: 100%; }
+
+    /* Message */
+    .v2-msg {
+      background: var(--warm); border-radius: 10px;
+      padding: 10px 12px; margin-bottom: 14px;
+      font-family: var(--font-head); font-style: italic;
+      font-size: .84rem; line-height: 1.65; color: #4a3a20;
+      border-left: 3px solid var(--gold);
+    }
+
+    /* Participants */
+    .v2-p-header { font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 7px; }
+    .v2-p-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px; border-radius: 9px; margin-bottom: 5px;
+      background: var(--paper);
+    }
+    .v2-p-avatar {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--gold), #e8b84b);
+      color: #fff; font-size: .7rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .v2-p-name { flex: 1; font-size: .85rem; font-weight: 500; }
+    .v2-p-badge { font-size: .68rem; font-weight: 600; padding: 2px 8px; border-radius: 14px; }
+    .v2-p-badge.ok  { background: var(--green-bg); color: var(--green); }
+    .v2-p-badge.wait{ background: var(--warm); color: var(--muted); }
+
+    /* ── BUTTONS V2 — Icon + text, rounded, prominent ── */
+    .v2-actions { display: flex; flex-direction: column; gap: 8px; margin: 14px 0 12px; }
+
+    .v2-btn-yes {
+      position: relative; overflow: hidden;
+      background: linear-gradient(135deg, var(--green) 0%, #236040 100%);
+      color: #fff; border: none; border-radius: 50px;
+      padding: 12px 20px; font-size: .9rem; font-weight: 600;
+      letter-spacing: .01em; width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 4px 16px rgba(45,122,79,.3);
+      transition: all .2s var(--ease);
+    }
+    .v2-btn-yes .v2-check {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; flex-shrink: 0;
+    }
+    .v2-btn-yes:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(45,122,79,.4); }
+
+    .v2-btn-reschedule {
+      background: var(--warm); color: #8a6820;
+      border: 1.5px solid rgba(201,146,42,.25); border-radius: 50px;
+      padding: 11px 20px; font-size: .86rem; font-weight: 500; width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: all .2s var(--ease);
+    }
+    .v2-btn-reschedule:hover { background: var(--gold-light); border-color: rgba(201,146,42,.45); }
+
+    .v2-btn-no {
+      background: transparent; color: var(--muted);
+      border: none; border-radius: 50px;
+      padding: 9px 20px; font-size: .82rem; font-weight: 400; width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: all .18s var(--ease); text-decoration: underline;
+      text-decoration-color: rgba(107,96,88,.3);
+    }
+    .v2-btn-no:hover { color: var(--red); text-decoration-color: var(--red); }
+
+    .v2-creator-note {
+      background: var(--warm); border-radius: 10px; padding: 10px 14px;
+      font-size: .78rem; color: var(--muted); font-style: italic;
+      text-align: center; border: 1px solid var(--border); margin-bottom: 10px;
+    }
+    .v2-footer { display: flex; justify-content: center; gap: 18px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .v2-flink { background: none; border: none; font-size: .72rem; color: var(--muted); text-decoration: underline; cursor: pointer; }
+    .v2-flink:hover { color: var(--ink); }
+
+
+    /* ════════════════════════════════════════════════
+       VARIANT 3 — Minimal Elegance
+       Full light, editorial, thin gold accents
+    ════════════════════════════════════════════════ */
+    .v3-wrap {
+      background: var(--card);
+      border-radius: 22px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.12), 0 4px 16px rgba(0,0,0,.06);
+      border: 1.5px solid rgba(201,146,42,.15);
+      overflow: hidden;
+      animation: popIn .5s cubic-bezier(.34,1.56,.64,1) both;
+    }
+
+    /* Gold stripe top */
+    .v3-stripe-top {
+      height: 4px;
+      background: linear-gradient(90deg, transparent 0%, var(--gold) 30%, #e8b84b 50%, var(--gold) 70%, transparent 100%);
+    }
+
+    /* Hero — warmer dark */
+    .v3-hero {
+      background: linear-gradient(150deg, #1a120a 0%, #2e200e 55%, #1e160a 100%);
+      padding: 20px 24px 34px; text-align: center; position: relative; overflow: hidden;
+    }
+    .v3-hero::before {
+      content:''; position:absolute; inset:0;
+      background: radial-gradient(ellipse 65% 55% at 50% -5%, rgba(201,146,42,.24) 0%, transparent 68%);
+      pointer-events: none;
+    }
+    .v3-hero-shine {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 60%; height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(201,146,42,.6), transparent);
+    }
+    .v3-type { font-size: .6rem; letter-spacing: .2em; text-transform: uppercase; color: rgba(201,146,42,.65); margin-bottom: 10px; }
+    .v3-emoji { font-size: 2.4rem; display: block; margin-bottom: 8px; animation: beat 2.4s ease-in-out infinite; }
+    .v3-title {
+      font-family: var(--font-head); font-style: italic; font-weight: 400;
+      font-size: 1.8rem; color: #fff; line-height: 1.15; margin-bottom: 3px;
+    }
+    .v3-from { font-size: .73rem; color: rgba(255,255,255,.38); }
+    .v3-from b { color: rgba(255,255,255,.65); font-weight: 500; }
+
+    /* Smooth arc — white on dark */
+    .v3-arc {
+      height: 26px; background: var(--card);
+      clip-path: ellipse(54% 100% at 50% 100%);
+      margin-top: -1px;
+    }
+
+    /* Body */
+    .v3-body { padding: 6px 20px 18px; }
+
+    /* Details — compact table */
+    .v3-table { margin-bottom: 14px; }
+    .v3-tr {
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 0; border-bottom: 1px solid rgba(180,140,60,.1);
+    }
+    .v3-tr:last-child { border-bottom: none; }
+    .v3-td-icon { font-size: .9rem; width: 22px; text-align: center; color: var(--gold); flex-shrink: 0; opacity: .75; }
+    .v3-td-label { font-size: .7rem; color: var(--muted); width: 52px; flex-shrink: 0; text-transform: uppercase; letter-spacing: .06em; }
+    .v3-td-value { font-size: .88rem; font-weight: 600; color: var(--ink); }
+
+    /* Message */
+    .v3-msg {
+      background: var(--warm); border-radius: 10px;
+      padding: 10px 14px; margin-bottom: 12px;
+      font-family: var(--font-head); font-style: italic;
+      font-size: .84rem; line-height: 1.65; color: #4a3a20;
+      position: relative; overflow: hidden;
+    }
+    .v3-msg::after {
+      content: '\201D'; font-family: var(--font-head); font-size: 4rem;
+      color: var(--gold); opacity: .12; line-height: 1;
+      position: absolute; bottom: -10px; right: 10px; pointer-events: none;
+    }
+
+    /* Participants */
+    .v3-p-header { font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 6px; }
+    .v3-p-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+    .v3-p-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px; border-radius: 9px; background: var(--paper);
+    }
+    .v3-p-av {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--gold), #e8b84b);
+      color: #fff; font-size: .7rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .v3-p-name { flex: 1; font-size: .85rem; font-weight: 500; }
+    .v3-pb { font-size: .68rem; font-weight: 600; padding: 2px 8px; border-radius: 14px; }
+    .v3-pb.ok  { background: var(--green-bg); color: var(--green); }
+    .v3-pb.wait{ background: var(--warm); color: var(--muted); }
+
+    /* ── BUTTONS V3 — Bold flat with strong visual weight ── */
+    .v3-actions { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+
+    .v3-btn-yes {
+      background: var(--green); color: #fff; border: none;
+      border-radius: 12px; padding: 13px 20px;
+      font-size: .9rem; font-weight: 600; width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+      box-shadow: 0 2px 0 #1a4a2f, 0 4px 14px rgba(45,122,79,.25);
+      transition: all .18s var(--ease); letter-spacing: .01em;
+    }
+    .v3-btn-yes:hover { background: #236040; transform: translateY(-1px); box-shadow: 0 4px 0 #1a4a2f, 0 6px 20px rgba(45,122,79,.3); }
+    .v3-btn-yes:active { transform: translateY(1px); box-shadow: 0 1px 0 #1a4a2f; }
+    .v3-btn-yes-icon {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(255,255,255,.22); display: flex; align-items: center; justify-content: center;
+      font-size: .72rem; flex-shrink: 0;
+    }
+
+    .v3-btn-row { display: flex; gap: 7px; }
+
+    .v3-btn-reschedule {
+      flex: 1; background: var(--warm); color: var(--ink);
+      border: 1.5px solid rgba(201,146,42,.22); border-radius: 12px;
+      padding: 11px 12px; font-size: .82rem; font-weight: 500;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: all .18s var(--ease);
+    }
+    .v3-btn-reschedule:hover { background: var(--gold-light); border-color: var(--gold); }
+
+    .v3-btn-no {
+      flex: 1; background: var(--red-bg); color: var(--red);
+      border: 1.5px solid rgba(192,57,43,.2); border-radius: 12px;
+      padding: 11px 12px; font-size: .82rem; font-weight: 500;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: all .18s var(--ease);
+    }
+    .v3-btn-no:hover { background: #fbd5d2; border-color: rgba(192,57,43,.4); }
+
+    .v3-creator-note {
+      background: var(--warm); border-radius: 10px; padding: 10px 14px;
+      font-size: .78rem; color: var(--muted); font-style: italic;
+      text-align: center; border: 1px solid var(--border); margin-bottom: 10px;
+    }
+    .v3-footer { display: flex; justify-content: center; gap: 18px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .v3-flink { background: none; border: none; font-size: .72rem; color: var(--muted); text-decoration: underline; cursor: pointer; }
+    .v3-flink:hover { color: var(--ink); }
+  </style>
+</head>
+<body>
+
+<!-- ── Switcher ── -->
+<div class="switcher">
+  <span class="sw-lbl">Варіант:</span>
+  <button class="sw-btn active" id="sw1" onclick="switchTo(1)">1 — Warm Hero</button>
+  <button class="sw-btn" id="sw2" onclick="switchTo(2)">2 — Split Pill</button>
+  <button class="sw-btn" id="sw3" onclick="switchTo(3)">3 — Minimal Gold</button>
+  <span class="demo-sep"></span>
+  <span class="sw-lbl">Демо:</span>
+  <button class="demo-btn" id="d-msg" onclick="toggleDemo('msg')">Без повідомлення</button>
+  <button class="demo-btn" id="d-part" onclick="toggleDemo('part')">Без учасників</button>
+  <button class="demo-btn" id="d-creator" onclick="toggleDemo('creator')">Творець</button>
+</div>
+
+<!-- ── Stage ── -->
+<div class="stage">
+
+  <!-- ════ VARIANT 1 ════ -->
+  <div class="variant active" id="v1">
+    <div class="v1-wrap">
+      <div class="v1-hero">
+        <div class="v1-hero-glow r"></div>
+        <div class="v1-hero-glow l"></div>
+        <div class="v1-type"><span class="v1-type-dot"></span>Групове запрошення</div>
+        <span class="v1-emoji">🎂</span>
+        <div class="v1-title">День народження</div>
+        <div class="v1-from">від <b>Artem</b></div>
+      </div>
+      <div class="v1-arc"></div>
+      <div class="v1-body">
+        <div class="v1-msg" id="v1-msg">Друзі, запрошую вас на своє свято! Буде весело, смачно і тепло 🥂</div>
+        <div class="v1-details">
+          <div class="v1-row">
+            <div class="v1-row-icon">📅</div>
+            <div><div class="v1-row-lbl">Дата</div><div class="v1-row-val">22 червня 2026</div></div>
+          </div>
+          <div class="v1-row">
+            <div class="v1-row-icon">🕐</div>
+            <div><div class="v1-row-lbl">Час</div><div class="v1-row-val">18:00</div></div>
+          </div>
+          <div class="v1-row">
+            <div class="v1-row-icon">📍</div>
+            <div><div class="v1-row-lbl">Місце</div><div class="v1-row-val">Хрещатик, 12</div></div>
+          </div>
+        </div>
+        <div class="v1-divider"></div>
+        <div class="v1-participants" id="v1-part">
+          <div class="v1-p-header">Учасники (2)</div>
+          <div class="v1-p-item">
+            <div class="v1-p-avatar">С</div>
+            <span class="v1-p-name">Сіґма</span>
+            <span class="v1-p-badge ok">✓ Прийнято</span>
+          </div>
+          <div class="v1-p-item">
+            <div class="v1-p-avatar" style="background:linear-gradient(135deg,#7c6a50,#5a4a30)">О</div>
+            <span class="v1-p-name">Олена</span>
+            <span class="v1-p-badge wait">⏳ Очікує</span>
+          </div>
+        </div>
+        <div id="v1-actions">
+          <div class="v1-actions">
+            <button class="v1-btn-primary" onclick="answer('v1','accepted')">
+              <span style="font-size:1rem">✓</span> Так, я приду!
+            </button>
+            <button class="v1-btn-gold">📅 Перенести зустріч</button>
+            <button class="v1-btn-ghost">✕ Ні, не зможу</button>
+          </div>
+        </div>
+        <div class="v1-footer">
+          <button class="v1-flink">← Меню</button>
+          <button class="v1-flink">⚠ Поскаржитися</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ VARIANT 2 ════ -->
+  <div class="variant" id="v2">
+    <div class="v2-wrap">
+      <div class="v2-banner">
+        <div class="v2-banner-inner">
+          <div class="v2-emoji-wrap">🎂</div>
+          <div class="v2-banner-text">
+            <div class="v2-banner-tag">✦ Групове запрошення</div>
+            <div class="v2-banner-title">День народження</div>
+            <div class="v2-banner-from">від <b>Artem</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="v2-arc"></div>
+      <div class="v2-body">
+        <div class="v2-msg" id="v2-msg">Друзі, запрошую вас на своє свято! Буде весело, смачно і тепло 🥂</div>
+        <div class="v2-pills">
+          <div class="v2-pill">
+            <span class="v2-pill-icon">📅</span>
+            <div class="v2-pill-content"><div class="v2-pill-lbl">Дата</div><div class="v2-pill-val">22 червня</div></div>
+          </div>
+          <div class="v2-pill">
+            <span class="v2-pill-icon">🕐</span>
+            <div class="v2-pill-content"><div class="v2-pill-lbl">Час</div><div class="v2-pill-val">18:00</div></div>
+          </div>
+          <div class="v2-pill wide">
+            <span class="v2-pill-icon">📍</span>
+            <div class="v2-pill-content"><div class="v2-pill-lbl">Місце</div><div class="v2-pill-val">вул. Хрещатик, 12</div></div>
+          </div>
+        </div>
+        <div id="v2-part">
+          <div class="v2-p-header">Учасники (2)</div>
+          <div class="v2-p-item">
+            <div class="v2-p-avatar">С</div>
+            <span class="v2-p-name">Сіґма</span>
+            <span class="v2-p-badge ok">✓ Прийнято</span>
+          </div>
+          <div class="v2-p-item">
+            <div class="v2-p-avatar" style="background:linear-gradient(135deg,#7c6a50,#5a4a30)">О</div>
+            <span class="v2-p-name">Олена</span>
+            <span class="v2-p-badge wait">⏳ Очікує</span>
+          </div>
+        </div>
+        <div id="v2-actions">
+          <div class="v2-actions">
+            <button class="v2-btn-yes" onclick="answer('v2','accepted')">
+              <span class="v2-check">✓</span> Так, я приду!
+            </button>
+            <button class="v2-btn-reschedule">📅 Перенести зустріч</button>
+            <button class="v2-btn-no" onclick="answer('v2','declined')">✕ Ні, не зможу</button>
+          </div>
+        </div>
+        <div class="v2-footer">
+          <button class="v2-flink">← Меню</button>
+          <button class="v2-flink">⚠ Поскаржитися</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ VARIANT 3 ════ -->
+  <div class="variant" id="v3">
+    <div class="v3-wrap">
+      <div class="v3-stripe-top"></div>
+      <div class="v3-hero">
+        <div class="v3-hero-shine"></div>
+        <div class="v3-type">✦ Групове запрошення ✦</div>
+        <span class="v3-emoji">🎂</span>
+        <div class="v3-title">День народження</div>
+        <div class="v3-from">від <b>Artem</b></div>
+      </div>
+      <div class="v3-arc"></div>
+      <div class="v3-body">
+        <div class="v3-msg" id="v3-msg">Друзі, запрошую вас на своє свято! Буде весело, смачно і тепло 🥂</div>
+        <div class="v3-table">
+          <div class="v3-tr">
+            <span class="v3-td-icon">📅</span>
+            <span class="v3-td-label">Дата</span>
+            <span class="v3-td-value">22 червня 2026</span>
+          </div>
+          <div class="v3-tr">
+            <span class="v3-td-icon">🕐</span>
+            <span class="v3-td-label">Час</span>
+            <span class="v3-td-value">18:00</span>
+          </div>
+          <div class="v3-tr">
+            <span class="v3-td-icon">📍</span>
+            <span class="v3-td-label">Місце</span>
+            <span class="v3-td-value">Хрещатик, 12</span>
+          </div>
+        </div>
+        <div class="v3-p-list" id="v3-part">
+          <div class="v3-p-header">Учасники (2)</div>
+          <div class="v3-p-item">
+            <div class="v3-p-av">С</div>
+            <span class="v3-p-name">Сіґма</span>
+            <span class="v3-pb ok">✓ Прийнято</span>
+          </div>
+          <div class="v3-p-item">
+            <div class="v3-p-av" style="background:linear-gradient(135deg,#7c6a50,#5a4a30)">О</div>
+            <span class="v3-p-name">Олена</span>
+            <span class="v3-pb wait">⏳ Очікує</span>
+          </div>
+        </div>
+        <div id="v3-actions">
+          <div class="v3-actions">
+            <button class="v3-btn-yes" onclick="answer('v3','accepted')">
+              <span class="v3-btn-yes-icon">✓</span> Так, я приду!
+            </button>
+            <div class="v3-btn-row">
+              <button class="v3-btn-reschedule">📅 Перенести</button>
+              <button class="v3-btn-no" onclick="answer('v3','declined')">✕ Не зможу</button>
+            </div>
+          </div>
+        </div>
+        <div class="v3-footer">
+          <button class="v3-flink">← Меню</button>
+          <button class="v3-flink">⚠ Поскаржитися</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /stage -->
+
+<script>
+  let current = 1;
+  const demoState = { msg: false, part: false, creator: false };
+
+  function switchTo(n) {
+    current = n;
+    document.querySelectorAll('.variant').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.sw-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('v' + n).classList.add('active');
+    document.getElementById('sw' + n).classList.add('active');
+    applyDemo();
+  }
+
+  function toggleDemo(key) {
+    demoState[key] = !demoState[key];
+    document.getElementById('d-' + key).classList.toggle('on', demoState[key]);
+    applyDemo();
+  }
+
+  function applyDemo() {
+    const n = current;
+    // Message
+    const msgEl = document.getElementById('v' + n + '-msg');
+    if (msgEl) msgEl.style.display = demoState.msg ? 'none' : '';
+    // Participants
+    const partEl = document.getElementById('v' + n + '-part');
+    if (partEl) partEl.style.display = demoState.part ? 'none' : '';
+    // Creator mode
+    const actEl = document.getElementById('v' + n + '-actions');
+    if (!actEl) return;
+    if (demoState.creator) {
+      actEl.innerHTML = creatorNote(n);
+    } else {
+      actEl.innerHTML = defaultActions(n);
+    }
+  }
+
+  function creatorNote(n) {
+    const cls = { 1: 'v1-creator-note', 2: 'v2-creator-note', 3: 'v3-creator-note' }[n];
+    return `<div class="${cls}">ℹ️ Це ваше запрошення. Ви не можете на нього відповісти.</div>`;
+  }
+
+  function defaultActions(n) {
+    if (n === 1) return `<div class="v1-actions">
+      <button class="v1-btn-primary" onclick="answer('v1','accepted')"><span style="font-size:1rem">✓</span> Так, я приду!</button>
+      <button class="v1-btn-gold">📅 Перенести зустріч</button>
+      <button class="v1-btn-ghost" onclick="answer('v1','declined')">✕ Ні, не зможу</button>
+    </div>`;
+    if (n === 2) return `<div class="v2-actions">
+      <button class="v2-btn-yes" onclick="answer('v2','accepted')"><span class="v2-check">✓</span> Так, я приду!</button>
+      <button class="v2-btn-reschedule">📅 Перенести зустріч</button>
+      <button class="v2-btn-no" onclick="answer('v2','declined')">✕ Ні, не зможу</button>
+    </div>`;
+    if (n === 3) return `<div class="v3-actions">
+      <button class="v3-btn-yes" onclick="answer('v3','accepted')"><span class="v3-btn-yes-icon">✓</span> Так, я приду!</button>
+      <div class="v3-btn-row">
+        <button class="v3-btn-reschedule">📅 Перенести</button>
+        <button class="v3-btn-no" onclick="answer('v3','declined')">✕ Не зможу</button>
+      </div>
+    </div>`;
+  }
+
+  function answer(variant, status) {
+    const n = parseInt(variant.replace('v',''));
+    const isOk = status === 'accepted';
+    const icon = isOk ? '🎉' : '💔';
+    const titleColor = isOk ? 'var(--green)' : 'var(--red)';
+    const title = isOk ? 'Ура! Так! ⭐' : 'Відмовлено';
+    const sub = isOk ? 'Ви погодились! Відправник дізнається автоматично.' : 'Ви відмовились. Відправник отримає сповіщення.';
+    const el = document.getElementById('v' + n + '-actions');
+    if (el) el.innerHTML = `<div class="result-box">
+      <span class="r-icon">${icon}</span>
+      <div class="r-title" style="color:${titleColor}">${title}</div>
+      <div class="r-sub">${sub}</div>
+    </div>`;
+  }
+</script>
+</body>
+</html>
