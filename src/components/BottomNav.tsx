@@ -11,6 +11,9 @@ export function BottomNav() {
 
   if (!user) return null;
 
+  const isHiddenPage = pathname === '/login' || pathname === '/register' || pathname?.startsWith('/i/') || pathname?.startsWith('/g/');
+  if (isHiddenPage) return null;
+
   const isActive = (path: string) => pathname === path ? 'on' : '';
 
   return (

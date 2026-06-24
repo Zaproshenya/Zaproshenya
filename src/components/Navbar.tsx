@@ -9,6 +9,9 @@ export function Navbar() {
   const pathname = usePathname();
   const unreadCount = 0; // TODO: fetch from notifications
 
+  const isHiddenPage = pathname === '/login' || pathname === '/register' || pathname?.startsWith('/i/') || pathname?.startsWith('/g/');
+  if (isHiddenPage) return null;
+
   if (pathname === '/' && !user) return null; // Landing uses its own navbar
 
   const isActive = (path: string) => pathname === path ? 'on' : '';
