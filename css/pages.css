@@ -2144,7 +2144,7 @@
 .chat-attach-btn:hover { color: var(--gold); border-color: var(--gold); background: rgba(201,146,42,.06); }
 .chat-text-input {
   flex: 1;
-  padding: 10px 14px;
+  padding: 9px 14px;
   border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--paper);
@@ -2152,10 +2152,13 @@
   font-size: .88rem;
   color: var(--ink);
   resize: none;
+  min-height: 40px;
+  height: 40px;
   max-height: 120px;
   line-height: 1.5;
   transition: border-color .15s;
   outline: none;
+  box-sizing: border-box;
 }
 .chat-text-input:focus { border-color: var(--gold); }
 .chat-send-btn {

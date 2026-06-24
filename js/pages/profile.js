@@ -550,7 +550,7 @@
         </div>
         <div class="form-group">
           <label class="lbl">Повідомлення</label>
-          <textarea id="ticket-first-msg" rows="5" placeholder="Детально опишіть..." 
+          <textarea id="ticket-first-msg" rows="5" maxlength="300" placeholder="Детально опишіть... (до 300 символів)" 
             style="width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg, var(--paper));color:var(--ink);resize:vertical;font-family:var(--font-body);font-size:.88rem;line-height:1.5"></textarea>
         </div>
         <div class="form-error" id="ticket-error"></div>
@@ -716,35 +716,34 @@
         <div id="chat-img-preview-wrap"></div>
 
         <!-- Resolved banner OR input -->
-        ${isResolved ? `
-          <div class="chat-resolved-banner">
-            <div class="chat-resolved-text">${icon('check-circle', 16)} Тікет ${statusText.toLowerCase()}</div>
-            <button class="chat-reopen-btn" onclick="ZAP.pages.profile._reopenTicket('${ticketId}')">
-              Відкрити знову
-            </button>
-          </div>
-        ` : `
-          <div id="chat-uploading-state" style="display:none" class="chat-uploading">
-            ${ZAP.utils.spinner()} Завантаження зображення...
-          </div>
-          <div class="chat-input-area">
-            <div class="chat-input-row">
-              <button class="chat-attach-btn" onclick="document.getElementById('chat-file-input').click()" title="Прикріпити зображення">
-                ${icon('paperclip', 18)}
-              </button>
-              <input type="file" id="chat-file-input" accept="image/*" style="display:none"
-                onchange="ZAP.pages.profile._onImageSelected(this.files[0])"/>
-              <textarea class="chat-text-input" id="chat-text-input" 
-                placeholder="Написати повідомлення..."
-                rows="1"
-                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ZAP.pages.profile._sendChatMsg();}"
-                oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
-              <button class="chat-send-btn" id="chat-send-btn" onclick="ZAP.pages.profile._sendChatMsg()">
-                ${icon('paper-plane-tilt', 18)}
-              </button>
+        <div id="chat-input-container">
+          ${isResolved ? `
+            <div class="chat-resolved-banner">
+              <div class="chat-resolved-text">${icon('check-circle', 16)} Звернення закрито</div>
             </div>
-          </div>
-        `}
+          ` : `
+            <div id="chat-uploading-state" style="display:none" class="chat-uploading">
+              ${ZAP.utils.spinner()} Завантаження зображення...
+            </div>
+            <div class="chat-input-area">
+              <div class="chat-input-row">
+                <button class="chat-attach-btn" onclick="document.getElementById('chat-file-input').click()" title="Прикріпити зображення">
+                  ${icon('paperclip', 18)}
+                </button>
+                <input type="file" id="chat-file-input" accept="image/*" style="display:none"
+                  onchange="ZAP.pages.profile._onImageSelected(this.files[0])"/>
+                <textarea class="chat-text-input" id="chat-text-input" maxlength="300"
+                  placeholder="Написати повідомлення..."
+                  rows="1"
+                  onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ZAP.pages.profile._sendChatMsg();}"
+                  oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+                <button class="chat-send-btn" id="chat-send-btn" onclick="ZAP.pages.profile._sendChatMsg()">
+                  ${icon('paper-plane-tilt', 18)}
+                </button>
+              </div>
+            </div>
+          `}
+        </div>
       </div>`;
 
     document.body.appendChild(overlay);
@@ -756,11 +755,25 @@
       area.innerHTML = _renderMessages(messages, user.uid);
       _scrollChatToBottom();
     });
+
+    // Start listening to ticket meta for real-time status updates
+    ZAP.db.listenTicket(ticketId, (ticketData) => {
+      if (!ticketData) return;
+      const isRes = ticketData.status !== 'open';
+      const container = document.getElementById('chat-input-container');
+      if (container && isRes && !container.innerHTML.includes('chat-resolved-banner')) {
+        container.innerHTML = `
+          <div class="chat-resolved-banner">
+            <div class="chat-resolved-text">${ZAP.utils.icon('check-circle', 16)} Звернення закрито</div>
+          </div>`;
+      }
+    });
   }
 
   function _closeChatModal() {
     if (_chatTicketId) {
       ZAP.db.stopListeningTicket(_chatTicketId);
+      ZAP.db.stopListeningTicketMeta(_chatTicketId);
       _chatTicketId = null;
     }
     _pendingImage = null;
@@ -834,18 +847,7 @@
     }
   }
 
-  async function _reopenTicket(ticketId) {
-    try {
-      await ZAP.db.reopenSupportTicket(ticketId);
-      ZAP.utils.toast('Тікет відкрито знову', 'success');
-      _closeChatModal();
-      myTickets = await ZAP.db.getUserTickets(ZAP.auth.getUser().uid);
-      ZAP.render();
-      setTimeout(() => openTicketChat(ticketId), 300);
-    } catch (e) {
-      ZAP.utils.toast('Помилка', 'error');
-    }
-  }
+  // Removed _reopenTicket function
 
   async function doLogout() {
     await ZAP.auth.logout();
@@ -866,6 +868,6 @@
     openSupportModal, submitSupportTicket,
     openNewTicket, _selectTicketType, _submitNewTicket,
     openTicketChat, _closeChatModal,
-    _onImageSelected, _removeImage, _sendChatMsg, _reopenTicket,
+    _onImageSelected, _removeImage, _sendChatMsg,
   };
 })();

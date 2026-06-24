@@ -865,33 +865,34 @@
       <div id="dash-chat-img-preview"></div>
 
       <!-- Input -->
-      ${!isResolved ? `
-        <div id="dash-chat-uploading" style="display:none" class="chat-uploading">
-          ${ZAP.utils.spinner()} Завантаження...
-        </div>
-        <div class="chat-input-area">
-          <div class="chat-input-row">
-            <button class="chat-attach-btn" onclick="document.getElementById('dash-chat-file').click()" title="Прикріпити зображення">
-              ${icon('paperclip', 18)}
-            </button>
-            <input type="file" id="dash-chat-file" accept="image/*" style="display:none"
-              onchange="ZAP.pages.dashboard._dashOnImage(this.files[0])"/>
-            <textarea class="chat-text-input" id="dash-chat-input"
-              placeholder="Написати відповідь..."
-              rows="1"
-              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ZAP.pages.dashboard._dashSendMsg();}"
-              oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
-            <button class="chat-send-btn" id="dash-send-btn" onclick="ZAP.pages.dashboard._dashSendMsg()">
-              ${icon('paper-plane-tilt', 18)}
-            </button>
+      <div id="dash-chat-input-container">
+        ${!isResolved ? `
+          <div id="dash-chat-uploading" style="display:none" class="chat-uploading">
+            ${ZAP.utils.spinner()} Завантаження...
           </div>
-        </div>
-      ` : `
-        <div class="chat-resolved-banner">
-          <div class="chat-resolved-text">${icon('check-circle', 16)} Тікет закрито</div>
-          <button class="chat-reopen-btn" onclick="ZAP.pages.dashboard._dashReopenTicket('${t.id}')">Відкрити знову</button>
-        </div>
-      `}
+          <div class="chat-input-area">
+            <div class="chat-input-row">
+              <button class="chat-attach-btn" onclick="document.getElementById('dash-chat-file').click()" title="Прикріпити зображення">
+                ${icon('paperclip', 18)}
+              </button>
+              <input type="file" id="dash-chat-file" accept="image/*" style="display:none"
+                onchange="ZAP.pages.dashboard._dashOnImage(this.files[0])"/>
+              <textarea class="chat-text-input" id="dash-chat-input" maxlength="300"
+                placeholder="Написати відповідь..."
+                rows="1"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ZAP.pages.dashboard._dashSendMsg();}"
+                oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+              <button class="chat-send-btn" id="dash-send-btn" onclick="ZAP.pages.dashboard._dashSendMsg()">
+                ${icon('paper-plane-tilt', 18)}
+              </button>
+            </div>
+          </div>
+        ` : `
+          <div class="chat-resolved-banner">
+            <div class="chat-resolved-text">${icon('check-circle', 16)} Тікет закрито</div>
+          </div>
+        `}
+      </div>
     </div>`;
   }
 
@@ -942,11 +943,27 @@
         area.scrollTop = area.scrollHeight;
       }
     });
+
+    ZAP.db.listenTicket(ticketId, (ticketData) => {
+      if (!ticketData) return;
+      if (_dashOpenTicket && _dashOpenTicket.id === ticketData.id) {
+        _dashOpenTicket.status = ticketData.status;
+      }
+      const isRes = ticketData.status !== 'open';
+      const container = document.getElementById('dash-chat-input-container');
+      if (container && isRes && !container.innerHTML.includes('chat-resolved-banner')) {
+        container.innerHTML = `
+          <div class="chat-resolved-banner">
+            <div class="chat-resolved-text">${ZAP.utils.icon('check-circle', 16)} Тікет закрито</div>
+          </div>`;
+      }
+    });
   }
 
   function closeSupportChat() {
     if (_dashOpenTicket) {
       ZAP.db.stopListeningTicket(_dashOpenTicket.id);
+      ZAP.db.stopListeningTicketMeta(_dashOpenTicket.id);
       _dashOpenTicket = null;
       _dashChatMessages = [];
       _dashPendingImage = null;
@@ -1011,18 +1028,7 @@
     }
   }
 
-  async function _dashReopenTicket(ticketId) {
-    try {
-      await ZAP.db.reopenSupportTicket(ticketId);
-      const t = supportTickets.find(t => t.id === ticketId);
-      if (t) t.status = 'open';
-      if (_dashOpenTicket && _dashOpenTicket.id === ticketId) _dashOpenTicket.status = 'open';
-      ZAP.utils.toast('Тікет відкрито знову', 'success');
-      ZAP.render();
-    } catch (e) {
-      ZAP.utils.toast('Помилка', 'error');
-    }
-  }
+  // Removed _dashReopenTicket
   // ═══════════════════════════════════════════════════════
   // Moderation — all invites
   // ═══════════════════════════════════════════════════════
@@ -1583,7 +1589,7 @@
     changeRole, toggleBan,
     resolveReport, resolveSupportTicket, deleteReportedInvite,
     openSupportChat, closeSupportChat,
-    _dashOnImage, _dashRemoveImage, _dashSendMsg, _dashReopenTicket,
+    _dashOnImage, _dashRemoveImage, _dashSendMsg,
     searchInvites, setInvitePage, modDeleteInvite, retryLoad,
   };
 })();

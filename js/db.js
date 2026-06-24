@@ -426,6 +426,18 @@
     db().ref('support_tickets/' + ticketId + '/messages').off();
   }
 
+  function listenTicket(ticketId, callback) {
+    if (!db()) return;
+    db().ref('support_tickets/' + ticketId).on('value', snap => {
+      if (snap.exists()) callback(snap.val());
+    });
+  }
+
+  function stopListeningTicketMeta(ticketId) {
+    if (!db()) return;
+    db().ref('support_tickets/' + ticketId).off();
+  }
+
   async function resolveSupportTicket(ticketId, action, moderatorUid) {
     if (!db()) return;
     await db().ref('support_tickets/' + ticketId).update({
@@ -715,6 +727,7 @@
     createReport, getReports, resolveReport,
     createSupportTicket, getUserTickets, getTicket, getSupportTickets,
     sendTicketMessage, listenTicketMessages, stopListeningTicket,
+    listenTicket, stopListeningTicketMeta,
     resolveSupportTicket, reopenSupportTicket,
     markTicketReadBySupport, markTicketReadByUser,
     uploadTicketImage,
