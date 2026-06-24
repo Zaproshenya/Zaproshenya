@@ -79,8 +79,9 @@ export async function updateInviteStatus(invId: string, status: string, uid?: st
   }
 }
 
-export async function deleteInvite(invId: string, uid?: string) {
-  await remove(ref(db, 'invites/' + invId));
+export async function deleteInvite(invId: string, uid?: string, isGroup?: boolean) {
+  const path = isGroup ? 'group-invites/' : 'invites/';
+  await remove(ref(db, path + invId));
   await remove(ref(db, 'statuses/' + invId));
   await remove(ref(db, 'reschedule/' + invId));
   if (uid) {
@@ -300,6 +301,7 @@ export async function sendTicketMessage(ticketId: string, message: any) {
     uid: message.uid,
     name: message.name,
     role: message.role,
+    avatar: message.avatar || null,
     text: message.text || null,
     imageUrl: message.imageUrl || null,
     createdAt: Date.now(),

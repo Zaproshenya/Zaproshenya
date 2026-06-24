@@ -95,6 +95,7 @@ export default function ClientAdminPage() {
         uid: user?.uid,
         name: profile?.name,
         role: profile?.role,
+        avatar: profile?.avatar || null,
         text: ticketReply.trim(),
       });
       setTicketReply('');
@@ -142,7 +143,9 @@ export default function ClientAdminPage() {
         
         <div style={{marginTop:'auto',padding:'16px',borderTop:'1px solid rgba(255,255,255,.08)'}}>
           <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-            <div className="avatar avatar-sm">{profile?.name?.charAt(0)}</div>
+            <div className="avatar avatar-sm">
+              {profile?.avatar ? <img src={profile.avatar} alt="" /> : profile?.name?.charAt(0)}
+            </div>
             <div>
               <div style={{color:'#fff',fontSize:'.85rem',fontWeight:500}}>{profile?.name}</div>
               <div style={{fontSize:'.7rem',color:'rgba(255,255,255,.4)'}}>{profile?.role}</div>
@@ -173,11 +176,12 @@ export default function ClientAdminPage() {
 
               {dashTab === 'overview' && <AdminOverview stats={stats} users={users} />}
               {dashTab === 'users' && <AdminUsers users={users} profile={profile} reload={loadData} />}
-              {dashTab === 'moderation' && <AdminModeration invites={invites} users={users} />}
+              {dashTab === 'moderation' && <AdminModeration invites={invites} users={users} reload={loadData} />}
               {dashTab === 'reports' && <AdminReports reports={reports} reload={loadData} />}
               {dashTab === 'support' && (
                 <AdminSupport 
                   supportTickets={supportTickets} 
+                  users={users}
                   reload={loadData} 
                   openTicket={openTicket} 
                   setOpenTicket={setOpenTicket} 

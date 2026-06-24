@@ -3,8 +3,9 @@ import { useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { TYPE_MAP } from '@/lib/utils';
 import Link from 'next/link';
+import { deleteInvite } from '@/lib/firebase/db';
 
-export default function AdminModeration({ invites, users }: { invites: any[], users: any[] }) {
+export default function AdminModeration({ invites, users, reload }: { invites: any[], users: any[], reload?: () => void }) {
   const [inviteSearch, setInviteSearch] = useState('');
   const [invitePage, setInvitePage] = useState(0);
   const INVITE_PAGE_SIZE = 30;
@@ -58,7 +59,17 @@ export default function AdminModeration({ invites, users }: { invites: any[], us
                     <div style={{fontSize:'.95rem',fontWeight:600}}>{t.e} {t.l}</div>
                     <div style={{fontSize:'.85rem',marginTop:'4px'}} dangerouslySetInnerHTML={{__html: recipientHtml}} />
                   </div>
-                  <Link href={`/${inv.isGroup ? 'g' : 'i'}/${inv.id}`} target="_blank" className="btn btn-outline btn-sm">Переглянути ↗</Link>
+                  <div style={{display:'flex',gap:'8px'}}>
+                    <Link href={`/${inv.isGroup ? 'g' : 'i'}/${inv.id}`} target="_blank" className="btn btn-outline btn-sm"><Icon name="link" size={14} /></Link>
+                    <button className="btn btn-outline btn-sm" style={{color:'var(--red)',borderColor:'var(--red)'}} onClick={async () => {
+                      if(confirm('Видалити це запрошення?')) {
+                        await deleteInvite(inv.id, inv.creatorUid, inv.isGroup);
+                        if(reload) reload();
+                      }
+                    }}>
+                      <Icon name="trash" size={14} /> Видалити
+                    </button>
+                  </div>
                 </div>
                 {inv.msg && (
                   <div style={{background:'var(--warm)',padding:'10px',borderRadius:'8px',fontSize:'.85rem',color:'var(--ink)',fontStyle:'italic'}}>

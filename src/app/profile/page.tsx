@@ -210,6 +210,7 @@ export default function ProfilePage() {
         uid: user.uid,
         name: profile.name,
         role: 'user',
+        avatar: profile.avatar || null,
         text
       });
     } catch (e) {
@@ -602,7 +603,13 @@ export default function ProfilePage() {
                   const time = new Date(msg.createdAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
                   return (
                     <div key={msg.id || i} className={`chat-msg ${isUser ? 'user' : 'support'}`}>
-                      <div className="chat-msg-avatar">{isUser ? (msg.name || '?').charAt(0).toUpperCase() : <Icon name="headset" size={16}/>}</div>
+                      <div className="chat-msg-avatar">
+                        {isUser ? (
+                          profile.avatar ? <img src={profile.avatar} alt=""/> : (msg.name || '?').charAt(0).toUpperCase()
+                        ) : (
+                          msg.avatar ? <img src={msg.avatar} alt=""/> : <Icon name="headset" size={16}/>
+                        )}
+                      </div>
                       <div className="chat-msg-content">
                         {msg.text && <div className="chat-bubble">{msg.text}</div>}
                         <div className="chat-msg-time">{!isUser && 'Підтримка · '} {time}</div>

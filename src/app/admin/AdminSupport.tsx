@@ -12,7 +12,8 @@ export default function AdminSupport({
   ticketMessages, 
   ticketReply, 
   setTicketReply, 
-  sendSupportReply 
+  sendSupportReply,
+  users
 }: any) {
   const pending = supportTickets.filter((t: any) => t.status === 'pending' || (t.status === 'open' && t.unreadBySupport));
   const active = supportTickets.filter((t: any) => t.status === 'open' && !t.unreadBySupport);
@@ -103,10 +104,13 @@ export default function AdminSupport({
             <div style={{flex:1,overflowY:'auto',padding:'16px',display:'flex',flexDirection:'column',gap:'12px', background: 'var(--paper)'}}>
               {ticketMessages.map((m: any) => {
                 const isSupport = m.role === 'tech-admin' || m.role === 'moderator' || m.role === 'founder';
+                const userObj = users?.find((u: any) => u.uid === m.uid);
+                const avatarUrl = m.avatar || userObj?.avatar;
+                
                 return (
                   <div key={m.id} className={`chat-msg ${isSupport ? 'support' : 'user'}`}>
                     <div className="chat-msg-avatar">
-                      {isSupport ? <Icon name="headset" size={16}/> : (m.name || '?').charAt(0).toUpperCase()}
+                      {avatarUrl ? <img src={avatarUrl} alt="" /> : (isSupport ? <Icon name="headset" size={16}/> : (m.name || '?').charAt(0).toUpperCase())}
                     </div>
                     <div className="chat-msg-content">
                       <div className="chat-bubble">

@@ -102,36 +102,46 @@ export default function ClientUserProfile({ uid }: { uid: string }) {
   }
 
   return (
-    <div className="uprofile-wrap wrap" style={{marginTop:'40px'}}>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'24px'}}>
-        <h1 className="page-title" style={{marginBottom:0}}>Профіль</h1>
-      </div>
+    <div className="uprofile-wrap">
+      {/* Back button */}
+      <Link href="/" className="uprofile-back-btn" style={{textDecoration:'none',display:'inline-flex',alignItems:'center',gap:'8px',marginBottom:'24px',color:'var(--muted)',fontSize:'.9rem'}}>
+        <Icon name="arrow-left" size={16}/> Назад
+      </Link>
 
-      <div className="uprofile-card" style={{background:'var(--card)',borderRadius:'var(--radius-lg)',border:'1px solid var(--border)',padding:'30px',marginBottom:'24px'}}>
-        <div className="uprofile-avatar-ring">
-          <div className="avatar avatar-xl">
-            {userData.avatar ? <img src={userData.avatar} alt="Avatar"/> : (userData.name||'?').charAt(0).toUpperCase()}
+      {/* Hero card */}
+      <div className="uprofile-hero">
+        {/* Avatar with online ring */}
+        <div className="uprofile-avatar-wrap">
+          <div className={`uprofile-avatar-ring ${isOnline ? 'online' : ''}`}>
+            <div className="avatar avatar-xl">
+              {userData.avatar ? <img src={userData.avatar} alt="Avatar"/> : (userData.name||'?').charAt(0).toUpperCase()}
+            </div>
           </div>
-          {isOnline && <div className="friend-online-dot" style={{width:'18px',height:'18px',bottom:'6px',right:'6px',border:'3px solid var(--card)'}}></div>}
+          {isOnline && <div className="uprofile-online-badge">В мережі</div>}
         </div>
         
-        <h2 className="uprofile-name">{userData.name}</h2>
-        <div className="uprofile-meta" style={{color:'var(--muted)',fontSize:'.9rem',display:'flex',alignItems:'center',gap:'8px',justifyContent:'center',marginBottom:'16px'}}>
-          <span style={{fontFamily:'monospace',fontSize:'.85rem'}}>{userData.uniqueId}</span>
+        {/* Name + badges */}
+        <div className="uprofile-name">{userData.name}</div>
+        <div className="uprofile-badges">
           {userData.role === 'founder' && <span className="role-badge founder">Засновник</span>}
           {userData.role === 'tech-admin' && <span className="role-badge founder" style={{background:'var(--ink)',color:'#fff'}}>Тех-адмін</span>}
+          {userData.role === 'moderator' && <span className="role-badge founder" style={{background:'var(--blue)',color:'#fff'}}>Модератор</span>}
+          {userData.role === 'support' && <span className="role-badge founder" style={{background:'var(--purple)',color:'#fff'}}>Підтримка</span>}
+          <span className="uprofile-id">{userData.uniqueId}</span>
         </div>
-
-        <div className="uprofile-since" style={{fontSize:'.85rem',color:'var(--muted)',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px'}}>
-          <Icon name="calendar-blank" size={14}/> В системі з {memberSince}
-        </div>
+        
+        {memberSince && (
+          <div className="uprofile-since">
+            <Icon name="calendar-blank" size={13}/> З {memberSince}
+          </div>
+        )}
 
         {/* Actions */}
         {!isMe && me && (
-          <div className="uprofile-actions" style={{marginTop:'24px',display:'flex',justifyContent:'center',gap:'12px'}}>
+          <div className="uprofile-actions">
             {friendStatus === 'friend' && (
               <button className="btn btn-sm" disabled style={{background:'var(--green-bg)',color:'var(--green)',border:'1.5px solid rgba(45,122,79,.25)',borderRadius:'12px',padding:'12px 22px'}}>
-                <Icon name="check-circle" size={15}/> Ви друзі
+                <Icon name="check-circle" size={15}/> У друзях
               </button>
             )}
             {friendStatus === 'pending-sent' && (
@@ -145,21 +155,52 @@ export default function ClientUserProfile({ uid }: { uid: string }) {
               </button>
             )}
             {friendStatus === 'none' && (
-              <button className="btn btn-gold btn-sm" onClick={handleAddFriend} style={{padding:'12px 22px'}}>
-                <Icon name="user-plus" size={15}/> Додати в друзі
+              <button className="btn btn-dark btn-sm" onClick={handleAddFriend} style={{padding:'12px 22px'}}>
+                <Icon name="hand-waving" size={15}/> Додати в друзі
               </button>
             )}
+            <Link href="/create" className="btn btn-gold btn-sm" style={{padding:'12px 22px',textDecoration:'none'}}>
+              <Icon name="paper-plane-tilt" size={15}/> Запросити
+            </Link>
           </div>
         )}
 
         {isMe && (
-          <div className="uprofile-actions" style={{marginTop:'24px',display:'flex',justifyContent:'center'}}>
+          <div className="uprofile-actions">
             <Link href="/profile" className="btn btn-outline btn-sm" style={{padding:'12px 22px',textDecoration:'none'}}>
               <Icon name="gear" size={15}/> Налаштування
             </Link>
           </div>
         )}
       </div>
+
+      {/* Info card (if not me) */}
+      {!isMe && (
+        <div className="uprofile-info-card">
+          {friendStatus === 'friend' ? (
+            <div className="uprofile-friend-status">
+              <div className="uprofile-friend-status-icon"><Icon name="check-circle" size={20}/></div>
+              <div>
+                <div className="uprofile-friend-status-title">Ви друзі</div>
+                <div className="uprofile-friend-status-sub">Ви можете надсилати запрошення напряму</div>
+              </div>
+            </div>
+          ) : friendStatus === 'pending-sent' ? (
+            <div className="uprofile-friend-status pending">
+              <div className="uprofile-friend-status-icon"><Icon name="clock" size={20}/></div>
+              <div>
+                <div className="uprofile-friend-status-title">Запит надіслано</div>
+                <div className="uprofile-friend-status-sub">Очікуємо відповіді від {userData.name}</div>
+              </div>
+            </div>
+          ) : (
+            <div className="uprofile-info-row">
+              <span className="uprofile-info-icon"><Icon name="info" size={16}/></span>
+              <span className="uprofile-info-text">Додайте {userData.name} у друзі, щоб надсилати запрошення напряму</span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
