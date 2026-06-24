@@ -99,8 +99,8 @@
        HERO
     ═══════════════════════════════════════ */
     .hero {
-      min-height: 100svh;
-      padding-top: calc(66px + 5.5rem);
+      min-height: 90svh;
+      padding-top: calc(66px + 2rem);
       padding-bottom: 5.5rem;
       padding-left: clamp(1.25rem, 5vw, 4rem);
       padding-right: clamp(1.25rem, 5vw, 4rem);

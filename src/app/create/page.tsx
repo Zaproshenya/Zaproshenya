@@ -226,14 +226,14 @@ export default function CreatePage() {
                           type="button"
                           className={`friend-chip ${selectedFriends.includes(f.uid) ? 'on' : ''}`}
                           onClick={() => toggleFriend(f.uid)}
-                          style={{display:'flex', alignItems:'center', gap:'10px', padding:'8px 12px'}}
+                          style={{width: '100px'}}
                         >
-                          <div className="avatar avatar-sm" style={{flexShrink:0}}>
+                          <div className="avatar avatar-md" style={{flexShrink:0}}>
                             {f.avatar ? <img src={f.avatar} alt=""/> : f.name?.charAt(0).toUpperCase()}
                           </div>
-                          <div style={{display:'flex', flexDirection:'column', alignItems:'flex-start', minWidth:0, textAlign:'left'}}>
-                            <span className="friend-chip-name" style={{fontSize:'.9rem', fontWeight:600, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'100px'}}>{f.name}</span>
-                            {f.login && <span style={{fontSize:'.75rem', color:'var(--muted)'}}>@{f.login}</span>}
+                          <div style={{display:'flex', flexDirection:'column', alignItems:'center', minWidth:0, textAlign:'center'}}>
+                            <span className="friend-chip-name" style={{fontSize:'.9rem', fontWeight:500, color:'var(--ink)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'80px'}}>{f.name}</span>
+                            {f.uniqueId && <span style={{fontSize:'.75rem', color:'var(--muted)'}}>{f.uniqueId}</span>}
                           </div>
                         </button>
                       ))}

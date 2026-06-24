@@ -34,74 +34,260 @@ export default function AdminSupport({
   const renderTicketCard = (t: any) => {
     const isResolved = t.status === 'resolved' || t.status === 'dismissed';
     return (
-      <div key={t.id} className={`complaint-card ${isResolved ? 'resolved' : ''}`} style={{cursor:'pointer',transition:'box-shadow .15s',marginBottom:'12px'}} onClick={() => setOpenTicket(t)}>
-        <div className="complaint-icon" style={{color:'var(--gold)',background:'rgba(212,175,55,0.1)',borderColor:'rgba(212,175,55,0.2)'}}>
-          <Icon name="chat-circle-dots" size={20}/>
+      <div key={t.id} className={`support-card ${isResolved ? 'resolved' : ''} ${t.unreadBySupport ? 'unread' : ''}`} onClick={() => setOpenTicket(t)}>
+        <div className="support-card-icon">
+          <Icon name="chat-circle-dots" size={22}/>
         </div>
-        <div className="complaint-body" style={{flex:1}}>
-          <div style={{display:'flex',justifyContent:'space-between',marginBottom:'4px',alignItems:'center'}}>
-            <div className="complaint-reason" style={{fontSize:'.92rem',marginBottom:0}}>{t.subject}</div>
-            <span style={{fontSize:'.68rem',fontWeight:700,textTransform:'uppercase',padding:'3px 8px',borderRadius:'20px',background:t.status==='open'?'rgba(37,99,235,.1)':'rgba(45,122,79,.1)',color:t.status==='open'?'var(--blue)':'var(--green)'}}>
+        <div className="support-card-body">
+          <div className="support-card-header">
+            <h3 className="support-card-title">{t.subject}</h3>
+            <span className={`support-card-badge ${t.status}`}>
               {t.status === 'open' ? 'Відкрито' : t.status === 'resolved' ? 'Вирішено' : t.status}
             </span>
           </div>
-          <div className="complaint-meta">
-            Від: <strong>{t.authorName}</strong> • {timeAgo(t.createdAt)}
-            {t.unreadBySupport && <span style={{display:'inline-block',width:'7px',height:'7px',borderRadius:'50%',background:'var(--gold)',marginLeft:'6px'}}></span>}
+          <div className="support-card-meta">
+            <span className="support-card-author">
+              <Icon name="user" size={14} /> {t.authorName}
+            </span>
+            <span className="support-card-dot">•</span>
+            <span className="support-card-time">
+              <Icon name="clock" size={14} /> {timeAgo(t.createdAt)}
+            </span>
           </div>
         </div>
+        {t.unreadBySupport && <div className="support-card-unread-indicator"></div>}
       </div>
     );
   };
 
   return (
     <>
-      <div style={{maxWidth: '800px', margin: '0 auto'}}>
-        <h2 style={{fontSize:'1.1rem',fontWeight:600,marginBottom:'12px',display:'flex',alignItems:'center',gap:'8px'}}>
-          <Icon name="warning-circle" size={18}/> Нові звернення ({pending.length})
-        </h2>
-        {pending.length === 0 ? (
-          <div style={{background:'var(--green-bg)',borderRadius:'12px',padding:'14px',textAlign:'center',marginBottom:'24px'}}>
-            <p style={{color:'var(--green)',fontSize:'.9rem'}}><Icon name="check-circle" size={14}/> Немає звернень</p>
-          </div>
-        ) : (
-          <div style={{marginBottom:'24px'}}>{pending.map(renderTicketCard)}</div>
-        )}
+      <style>{`
+        .support-dashboard {
+          max-width: 900px;
+          margin: 0 auto;
+          display: flex;
+          flex-direction: column;
+          gap: 32px;
+        }
+        .support-section-title {
+          font-family: var(--font-heading);
+          font-size: 1.4rem;
+          font-weight: 600;
+          color: var(--ink);
+          margin-bottom: 16px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          border-bottom: 2px solid rgba(201,146,42,.15);
+          padding-bottom: 8px;
+        }
+        .support-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+          gap: 16px;
+        }
+        .support-card {
+          background: var(--card);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 20px;
+          display: flex;
+          gap: 16px;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .support-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 24px rgba(201,146,42,.12);
+          border-color: rgba(201,146,42,.3);
+        }
+        .support-card::before {
+          content: '';
+          position: absolute;
+          left: 0; top: 0; bottom: 0;
+          width: 4px;
+          background: transparent;
+          transition: background 0.3s ease;
+        }
+        .support-card.unread::before {
+          background: var(--gold);
+        }
+        .support-card.resolved {
+          opacity: 0.7;
+          box-shadow: none;
+        }
+        .support-card.resolved:hover {
+          transform: translateY(-2px);
+          opacity: 1;
+        }
+        .support-card.resolved::before {
+          background: var(--green);
+        }
+        .support-card-icon {
+          width: 48px;
+          height: 48px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, rgba(201,146,42,.15), rgba(201,146,42,.05));
+          color: var(--gold);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .support-card.resolved .support-card-icon {
+          background: linear-gradient(135deg, rgba(45,122,79,.15), rgba(45,122,79,.05));
+          color: var(--green);
+        }
+        .support-card-body {
+          flex: 1;
+          min-width: 0;
+        }
+        .support-card-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 8px;
+          gap: 12px;
+        }
+        .support-card-title {
+          font-size: 1.05rem;
+          font-weight: 600;
+          color: var(--ink);
+          margin: 0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .support-card-badge {
+          font-size: 0.65rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          padding: 4px 10px;
+          border-radius: 20px;
+          flex-shrink: 0;
+        }
+        .support-card-badge.pending, .support-card-badge.open {
+          background: rgba(37,99,235,.1);
+          color: var(--blue);
+        }
+        .support-card-badge.resolved {
+          background: rgba(45,122,79,.1);
+          color: var(--green);
+        }
+        .support-card-meta {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 0.85rem;
+          color: var(--muted);
+        }
+        .support-card-author, .support-card-time {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+        .support-card-author {
+          font-weight: 500;
+          color: var(--ink);
+        }
+        .support-card-unread-indicator {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: var(--red);
+          box-shadow: 0 0 8px rgba(192,57,43,.6);
+          animation: pulse 2s infinite;
+        }
+        .empty-state {
+          background: linear-gradient(135deg, rgba(45,122,79,.08), rgba(45,122,79,.02));
+          border: 1px dashed rgba(45,122,79,.3);
+          border-radius: 16px;
+          padding: 32px;
+          text-align: center;
+          color: var(--green);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+        }
+        .empty-state-icon {
+          width: 56px;
+          height: 56px;
+          background: rgba(45,122,79,.1);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+      `}</style>
+      <div className="support-dashboard">
+        <section>
+          <h2 className="support-section-title">
+            <Icon name="warning-circle" size={24} color="var(--red)"/> Нові звернення <span style={{color:'var(--muted)', fontSize:'1rem'}}>({pending.length})</span>
+          </h2>
+          {pending.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state-icon"><Icon name="check-circle" size={28}/></div>
+              <p style={{fontSize:'1.05rem', fontWeight:500}}>Немає нових звернень, ви чудово працюєте!</p>
+            </div>
+          ) : (
+            <div className="support-grid">{pending.map(renderTicketCard)}</div>
+          )}
+        </section>
 
-        <h2 style={{fontSize:'1.1rem',fontWeight:600,marginBottom:'12px',display:'flex',alignItems:'center',gap:'8px'}}>
-          <Icon name="envelope-open" size={18}/> Активні ({active.length})
-        </h2>
-        <div style={{marginBottom:'24px'}}>{active.map(renderTicketCard)}</div>
+        <section>
+          <h2 className="support-section-title">
+            <Icon name="envelope-open" size={24} color="var(--blue)"/> Активні <span style={{color:'var(--muted)', fontSize:'1rem'}}>({active.length})</span>
+          </h2>
+          {active.length === 0 ? (
+            <div style={{color:'var(--muted)', fontSize:'.9rem', fontStyle:'italic'}}>Немає активних звернень</div>
+          ) : (
+            <div className="support-grid">{active.map(renderTicketCard)}</div>
+          )}
+        </section>
 
-        <h2 style={{fontSize:'1.1rem',fontWeight:600,marginBottom:'12px',display:'flex',alignItems:'center',gap:'8px'}}>
-          <Icon name="archive" size={18}/> Архів
-        </h2>
-        <div>{closed.slice(0,10).map(renderTicketCard)}</div>
+        <section>
+          <h2 className="support-section-title">
+            <Icon name="archive" size={24} color="var(--muted)"/> Архів
+          </h2>
+          <div className="support-grid">{closed.slice(0,10).map(renderTicketCard)}</div>
+        </section>
       </div>
 
       {openTicket && typeof window !== 'undefined' && createPortal(
         <div className="overlay" onClick={() => setOpenTicket(null)}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{maxWidth:'600px', width: '100%', margin: '0 20px', padding: 0, display: 'flex', flexDirection: 'column', height: '80vh'}}>
-            <div style={{padding:'16px',borderBottom:'1px solid var(--border)',display:'flex',justifyContent:'space-between',alignItems:'center', flexShrink: 0}}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{maxWidth:'650px', width: '100%', margin: '0 20px', padding: 0, display: 'flex', flexDirection: 'column', height: '85vh', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 24px 48px rgba(0,0,0,0.2)'}}>
+            <div style={{padding:'24px',borderBottom:'1px solid var(--border)',display:'flex',justifyContent:'space-between',alignItems:'center', flexShrink: 0, background: 'var(--card)'}}>
               <div>
-                <div style={{fontWeight:600, display: 'flex', alignItems: 'center', gap: '8px'}}>
-                  <Icon name="lightbulb" size={18} color="var(--gold)"/> {openTicket.subject}
+                <div style={{fontWeight:700, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--ink)'}}>
+                  <div style={{width:'36px',height:'36px',borderRadius:'10px',background:'var(--gold-dim)',color:'var(--gold)',display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name="lightbulb" size={20}/></div>
+                  {openTicket.subject}
                 </div>
-                <div style={{fontSize:'.8rem',color:'var(--muted)'}}>Від: {openTicket.authorName} ({openTicket.authorUid})</div>
+                <div style={{fontSize:'.85rem',color:'var(--muted)', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px'}}>
+                  <Icon name="user" size={14}/> Від: <strong>{openTicket.authorName}</strong> <span style={{opacity:0.6}}>({openTicket.authorUid})</span>
+                </div>
               </div>
-              <div style={{display:'flex',gap:'8px'}}>
+              <div style={{display:'flex',gap:'12px', alignItems:'center'}}>
                 {openTicket.status !== 'resolved' && (
-                  <button className="btn btn-outline btn-sm" onClick={() => handleResolve(openTicket.id, 'resolved')}>
-                    <Icon name="check" size={14}/> Вирішити
+                  <button className="btn btn-gold btn-sm" onClick={() => handleResolve(openTicket.id, 'resolved')} style={{padding: '10px 16px', borderRadius: '12px'}}>
+                    <Icon name="check" size={16}/> Вирішити
                   </button>
                 )}
-                <button className="modal-close" onClick={() => setOpenTicket(null)}>
+                <button className="modal-close" onClick={() => setOpenTicket(null)} style={{background: 'var(--warm)', border: 'none'}}>
                   <Icon name="x" size={20}/>
                 </button>
               </div>
             </div>
 
-            <div style={{flex:1,overflowY:'auto',padding:'16px',display:'flex',flexDirection:'column',gap:'12px', background: 'var(--paper)'}}>
+            <div style={{flex:1,overflowY:'auto',padding:'24px',display:'flex',flexDirection:'column',gap:'16px', background: 'var(--paper)'}}>
               {ticketMessages.map((m: any) => {
                 const isSupport = m.role === 'tech-admin' || m.role === 'moderator' || m.role === 'founder';
                 const userObj = users?.find((u: any) => u.uid === m.uid);
@@ -109,15 +295,15 @@ export default function AdminSupport({
                 
                 return (
                   <div key={m.id} className={`chat-msg ${isSupport ? 'support' : 'user'}`}>
-                    <div className="chat-msg-avatar">
-                      {avatarUrl ? <img src={avatarUrl} alt="" /> : (isSupport ? <Icon name="headset" size={16}/> : (m.name || '?').charAt(0).toUpperCase())}
+                    <div className="chat-msg-avatar" style={{width:'40px',height:'40px',borderRadius:'12px',boxShadow:'var(--shadow-sm)'}}>
+                      {avatarUrl ? <img src={avatarUrl} alt="" style={{width:'100%',height:'100%',borderRadius:'12px',objectFit:'cover'}} /> : (isSupport ? <Icon name="headset" size={20}/> : (m.name || '?').charAt(0).toUpperCase())}
                     </div>
-                    <div className="chat-msg-content">
-                      <div className="chat-bubble">
+                    <div className="chat-msg-content" style={{maxWidth: '85%'}}>
+                      <div className="chat-bubble" style={{padding: '12px 16px', borderRadius: '16px', fontSize: '.95rem', lineHeight: '1.5', boxShadow: '0 2px 8px rgba(0,0,0,0.04)'}}>
                         {m.text}
-                        {m.imageUrl && <img src={m.imageUrl} className="chat-bubble-img" alt="attachment"/>}
+                        {m.imageUrl && <img src={m.imageUrl} className="chat-bubble-img" alt="attachment" style={{borderRadius: '8px', marginTop: '8px'}}/>}
                       </div>
-                      <div className="chat-msg-time">
+                      <div className="chat-msg-time" style={{marginTop: '6px', fontSize: '.75rem'}}>
                         {timeAgo(m.createdAt)}
                       </div>
                     </div>
@@ -127,21 +313,21 @@ export default function AdminSupport({
             </div>
 
             {openTicket.status !== 'resolved' && openTicket.status !== 'dismissed' ? (
-              <div style={{padding:'16px',borderTop:'1px solid var(--border)',display:'flex',gap:'10px', flexShrink: 0, background: 'var(--card)', borderRadius: '0 0 var(--radius-lg) var(--radius-lg)'}}>
+              <div style={{padding:'20px',borderTop:'1px solid var(--border)',display:'flex',gap:'12px', flexShrink: 0, background: 'var(--card)'}}>
                 <textarea 
-                  placeholder="Ваша відповідь..." 
-                  style={{flex:1,padding:'10px',border:'1px solid var(--border)',borderRadius:'8px',resize:'none',height:'44px'}}
+                  placeholder="Написати відповідь користувачу..." 
+                  style={{flex:1,padding:'14px 16px',border:'1.5px solid var(--border)',borderRadius:'14px',resize:'none',height:'52px', fontSize: '.95rem', fontFamily: 'inherit', transition: 'border-color 0.2s', outline: 'none'}}
                   value={ticketReply}
                   onChange={e => setTicketReply(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSupportReply(); } }}
                 ></textarea>
-                <button className="btn btn-dark" style={{padding:'0 16px'}} onClick={sendSupportReply}>
-                  <Icon name="paper-plane-right" size={18}/>
+                <button className="btn btn-dark" style={{padding:'0 20px', borderRadius:'14px'}} onClick={sendSupportReply}>
+                  <Icon name="paper-plane-right" size={20}/>
                 </button>
               </div>
             ) : (
-              <div style={{padding:'16px',textAlign:'center',color:'var(--muted)',fontStyle:'italic',borderTop:'1px solid var(--border)', flexShrink: 0, background: 'var(--card)', borderRadius: '0 0 var(--radius-lg) var(--radius-lg)'}}>
-                Звернення закрите
+              <div style={{padding:'20px',textAlign:'center',color:'var(--muted)',fontStyle:'italic',borderTop:'1px solid var(--border)', flexShrink: 0, background: 'var(--card)'}}>
+                <span style={{marginRight:'8px'}}><Icon name="lock" size={16}/></span> Звернення закрите. Відповідь неможлива.
               </div>
             )}
           </div>

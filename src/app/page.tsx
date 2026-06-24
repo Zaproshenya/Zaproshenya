@@ -40,9 +40,9 @@ export default function LandingPage() {
           Надсилайте красиві запрошення з датою, часом і місцем. Отримуйте чіткі відповіді — без «ну давай якось» у чаті.
         </p>
         <div className="hero-ctas">
-          <a href="#"  className="btn-primary">
+          <Link href="/login" className="btn-primary">
             Спробувати безкоштовно
-          </a>
+          </Link>
           <a href="#features" className="btn-outline">
             Дізнатись більше
           </a>
