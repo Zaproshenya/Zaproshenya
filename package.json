@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "pages:build": "npx @cloudflare/next-on-pages && node -e \"const fs = require('fs'); const path = '.vercel/output/static/_routes.json'; if (fs.existsSync(path)) { const r = JSON.parse(fs.readFileSync(path)); if (!r.exclude.includes('/_next/*')) { r.exclude.push('/_next/*'); fs.writeFileSync(path, JSON.stringify(r)); console.log('Patched _routes.json'); } }\""
+    "pages:build": "npx @cloudflare/next-on-pages"
   },
   "dependencies": {
     "firebase": "^12.15.0",
