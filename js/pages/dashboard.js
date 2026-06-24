@@ -731,12 +731,21 @@
   }
 
   // ═══════════════════════════════════════════════════════
-  // Support Tickets
+  // Support Tickets — Full Chat System
   // ═══════════════════════════════════════════════════════
+  let _dashOpenTicket = null;    // ticket object currently open in chat
+  let _dashChatMessages = [];    // messages for current open ticket
+
   function renderSupport() {
+    if (_dashOpenTicket) return renderSupportChat();
+    return renderSupportList();
+  }
+
+  function renderSupportList() {
     const { icon } = ZAP.utils;
-    const pending = supportTickets.filter(t => t.status === 'pending');
-    const resolved = supportTickets.filter(t => t.status !== 'pending');
+    const open = supportTickets.filter(t => t.status === 'open');
+    const resolved = supportTickets.filter(t => t.status !== 'open');
+    const typeLabel = { bug: '🐛 Баг', idea: '💡 Ідея', question: '❓ Питання', other: '💬 Інше' };
 
     return `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
@@ -744,69 +753,276 @@
       <button class="hamburger" onclick="ZAP.pages.dashboard.toggleSidebar()">${icon('list', 20)}</button>
     </div>
 
-    ${pending.length > 0 ? `
-      <div class="dash-section">
-        <div class="dash-section-title">Очікують розгляду (${pending.length})</div>
-        ${pending.map(t => renderSupportTicketCard(t)).join('')}
+    ${open.length === 0 ? `
+      <div style="background:var(--green-bg);border-radius:12px;padding:18px;margin-bottom:24px;text-align:center">
+        <p style="color:var(--green);font-size:.95rem">${icon('check-circle',16)} Немає відкритих звернень</p>
       </div>
     ` : `
-      <div style="background:var(--green-bg);border-radius:12px;padding:18px;margin-bottom:24px;text-align:center">
-        <p style="color:var(--green);font-size:.95rem">${icon('check-circle',16)} Немає нових звернень</p>
+      <div class="dash-section">
+        <div class="dash-section-title">Відкриті (${open.length})</div>
+        ${open.map(t => renderSupportTicketRow(t)).join('')}
       </div>
     `}
 
     ${resolved.length > 0 ? `
-      <div class="dash-section">
-        <div class="dash-section-title">Розглянуті (${resolved.length})</div>
-        ${resolved.slice(0, 20).map(t => renderSupportTicketCard(t, true)).join('')}
+      <div class="dash-section" style="margin-top:20px">
+        <div class="dash-section-title">Завершені (${resolved.length})</div>
+        ${resolved.slice(0, 30).map(t => renderSupportTicketRow(t, true)).join('')}
       </div>
     ` : ''}`;
   }
 
-  function renderSupportTicketCard(t, isResolved) {
+  function renderSupportTicketRow(t, isResolved) {
     const { icon } = ZAP.utils;
-
     const authorProfile = users.find(u => u.uid === t.authorUid);
-    const authorIdText = authorProfile 
-      ? ` (<strong>${ZAP.utils.esc(authorProfile.uniqueId)}</strong>, @${ZAP.utils.esc(authorProfile.login)})`
-      : (t.authorUid ? ` (ID: ${ZAP.utils.esc(t.authorUid)})` : '');
-
-    let typeText = 'Інше';
-    if (t.type === 'bug') typeText = 'Баг / Помилка';
-    if (t.type === 'idea') typeText = 'Ідея / Пропозиція';
-    if (t.type === 'question') typeText = 'Питання';
+    const authorDisplay = authorProfile 
+      ? `${ZAP.utils.esc(t.authorName)} (@${ZAP.utils.esc(authorProfile.login)})`
+      : ZAP.utils.esc(t.authorName || 'Анонім');
+    const typeIcons = { bug: '🐛', idea: '💡', question: '❓', other: '💬' };
+    const statusColors = { open: 'var(--blue)', resolved: 'var(--green)', dismissed: 'var(--muted)' };
 
     return `
-    <div class="complaint-card ${isResolved ? 'resolved' : ''}">
-      <div class="complaint-icon" style="color:var(--gold);background:rgba(212,175,55,0.1);border-color:rgba(212,175,55,0.2)">${icon('lifebuoy', 20)}</div>
-      <div class="complaint-body">
-        <div class="complaint-reason" style="white-space:pre-wrap;font-family:inherit;font-size:.9rem">${ZAP.utils.esc(t.message)}</div>
-        <div class="complaint-meta" style="margin-top:12px">
-          Від: <strong>${ZAP.utils.esc(t.authorName || 'Анонім')}</strong>${authorIdText} ·
-          Тип: ${typeText} ·
-          ${ZAP.utils.timeAgo(t.createdAt)}
-        </div>
-        ${!isResolved ? `
-          <div class="complaint-actions" style="margin-top:12px">
-            <button class="btn btn-sm btn-dark" style="background:var(--green);color:#fff"
-              onclick="ZAP.pages.dashboard.resolveSupportTicket('${t.id}','resolved')">
-              ${icon('check',14)} Вирішено
-            </button>
-            <button class="btn btn-sm btn-outline"
-              onclick="ZAP.pages.dashboard.resolveSupportTicket('${t.id}','dismissed')">
-              Відхилити
-            </button>
-          </div>
-        ` : `
-          <div style="margin-top:8px;font-size:.78rem;color:var(--muted)">
-            ${t.status === 'resolved' ? `${icon('check',14)} Вирішено` : `${icon('x',14)} Відхилено`}
-            ${t.resolvedAt ? ' · ' + ZAP.utils.timeAgo(t.resolvedAt) : ''}
-          </div>
-        `}
+    <div class="complaint-card ${isResolved ? 'resolved' : ''}" 
+      style="cursor:pointer;transition:box-shadow .15s" 
+      onclick="ZAP.pages.dashboard.openSupportChat('${t.id}')">
+      <div class="complaint-icon" style="color:var(--gold);background:rgba(212,175,55,0.1);border-color:rgba(212,175,55,0.2);font-size:1.1rem">
+        ${typeIcons[t.type] || '💬'}
       </div>
+      <div class="complaint-body" style="flex:1">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px">
+          <div class="complaint-reason" style="font-size:.92rem;margin-bottom:0">
+            ${ZAP.utils.esc(t.subject || t.type || 'Звернення')}
+          </div>
+          <span style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:20px;background:rgba(${t.status==='open'?'37,99,235':'45,122,79'},.1);color:${statusColors[t.status] || 'var(--blue)'};flex-shrink:0">
+            ${t.status === 'open' ? 'Відкрито' : t.status === 'resolved' ? 'Вирішено' : 'Закрито'}
+          </span>
+        </div>
+        <div class="complaint-meta">
+          Від: <strong>${authorDisplay}</strong> · 
+          ${ZAP.utils.esc((t.lastMessageText || '').slice(0, 60))} · 
+          ${ZAP.utils.timeAgo(t.lastMessageAt || t.createdAt)}
+          ${t.unreadBySupport ? `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gold);margin-left:6px;vertical-align:middle"></span>` : ''}
+        </div>
+      </div>
+      <div style="color:var(--muted);font-size:.8rem;flex-shrink:0">${icon('caret-right', 16)}</div>
     </div>`;
   }
 
+  // ─── Chat view ───────────────────────────────────────────
+  function renderSupportChat() {
+    if (!_dashOpenTicket) return renderSupportList();
+    const { icon } = ZAP.utils;
+    const t = _dashOpenTicket;
+    const me = ZAP.auth.getUser();
+    const myProfile = ZAP.auth.getProfile();
+    const isResolved = t.status !== 'open';
+    const typeIcons = { bug: '🐛', idea: '💡', question: '❓', other: '💬' };
+    const typeLabels = { bug: 'Баг / Помилка', idea: 'Ідея / Пропозиція', question: 'Питання', other: 'Інше' };
+
+    return `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="hamburger" onclick="ZAP.pages.dashboard.toggleSidebar()" style="margin-right:4px">${icon('list', 20)}</button>
+        <button class="dash-chat-back" onclick="ZAP.pages.dashboard.closeSupportChat()">
+          ${icon('arrow-left', 14)} Назад
+        </button>
+      </div>
+    </div>
+
+    <div class="dash-ticket-chat">
+      <!-- Chat header -->
+      <div class="dash-chat-header">
+        <div style="font-size:1.5rem">${typeIcons[t.type] || '💬'}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:.95rem;color:var(--ink)">${ZAP.utils.esc(t.subject || 'Звернення')}</div>
+          <div style="font-size:.75rem;color:var(--muted)">
+            ${typeLabels[t.type] || 'Інше'} · Від: <strong>${ZAP.utils.esc(t.authorName)}</strong> · ${ZAP.utils.timeAgo(t.createdAt)}
+          </div>
+        </div>
+        ${!isResolved ? `
+          <button class="btn btn-sm" style="background:var(--green);color:#fff;border:none"
+            onclick="ZAP.pages.dashboard.resolveSupportTicket('${t.id}','resolved')">
+            ${icon('check', 14)} Вирішити
+          </button>
+          <button class="btn btn-sm btn-outline"
+            onclick="ZAP.pages.dashboard.resolveSupportTicket('${t.id}','dismissed')">
+            Закрити
+          </button>
+        ` : `
+          <span style="font-size:.78rem;font-weight:600;color:var(--green)">✓ ${t.status === 'resolved' ? 'Вирішено' : 'Закрито'}</span>
+        `}
+      </div>
+
+      <!-- Messages area -->
+      <div class="chat-messages-area" id="dash-chat-msgs">
+        ${_dashChatMessages.length === 0 
+          ? `<div class="chat-loading-spinner">${ZAP.utils.spinner()}</div>`
+          : _renderDashMessages(_dashChatMessages, me?.uid)
+        }
+      </div>
+
+      <!-- Image preview area -->
+      <div id="dash-chat-img-preview"></div>
+
+      <!-- Input -->
+      ${!isResolved ? `
+        <div id="dash-chat-uploading" style="display:none" class="chat-uploading">
+          ${ZAP.utils.spinner()} Завантаження...
+        </div>
+        <div class="chat-input-area">
+          <div class="chat-input-row">
+            <button class="chat-attach-btn" onclick="document.getElementById('dash-chat-file').click()" title="Прикріпити зображення">
+              ${icon('paperclip', 18)}
+            </button>
+            <input type="file" id="dash-chat-file" accept="image/*" style="display:none"
+              onchange="ZAP.pages.dashboard._dashOnImage(this.files[0])"/>
+            <textarea class="chat-text-input" id="dash-chat-input"
+              placeholder="Написати відповідь..."
+              rows="1"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ZAP.pages.dashboard._dashSendMsg();}"
+              oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+            <button class="chat-send-btn" id="dash-send-btn" onclick="ZAP.pages.dashboard._dashSendMsg()">
+              ${icon('paper-plane-tilt', 18)}
+            </button>
+          </div>
+        </div>
+      ` : `
+        <div class="chat-resolved-banner">
+          <div class="chat-resolved-text">${icon('check-circle', 16)} Тікет закрито</div>
+          <button class="chat-reopen-btn" onclick="ZAP.pages.dashboard._dashReopenTicket('${t.id}')">Відкрити знову</button>
+        </div>
+      `}
+    </div>`;
+  }
+
+  function _renderDashMessages(messages, currentUid) {
+    if (!messages || messages.length === 0) {
+      return `<div class="chat-empty-state"><div class="chat-empty-icon">💬</div><div class="chat-empty-text">Повідомлень ще немає</div></div>`;
+    }
+    let lastDate = null;
+    return messages.map(msg => {
+      const isUser = msg.role === 'user';
+      const d = new Date(msg.createdAt);
+      const dateStr = d.toDateString();
+      const today = new Date();
+      let dateLabel = dateStr === today.toDateString() ? 'Сьогодні' : d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
+      const dateSep = dateStr !== lastDate ? `<div class="chat-date-separator">${dateLabel}</div>` : '';
+      lastDate = dateStr;
+      const time = d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+      const initials = (msg.name || '?').charAt(0).toUpperCase();
+      const imgHtml = msg.imageUrl ? `<img src="${ZAP.utils.esc(msg.imageUrl)}" class="chat-bubble-img" onclick="window.open('${ZAP.utils.esc(msg.imageUrl)}','_blank')" alt="Зображення">` : '';
+      const textHtml = msg.text ? `<div class="chat-bubble">${ZAP.utils.esc(msg.text)}</div>` : '';
+      return `${dateSep}
+        <div class="chat-msg ${isUser ? 'support' : 'user'}">
+          <div class="chat-msg-avatar">${initials}</div>
+          <div class="chat-msg-content">
+            ${textHtml}${imgHtml}
+            <div class="chat-msg-time">${isUser ? ZAP.utils.esc(msg.name) : 'Підтримка'} · ${time}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  let _dashPendingImage = null;
+
+  async function openSupportChat(ticketId) {
+    const ticket = supportTickets.find(t => t.id === ticketId);
+    if (!ticket) return;
+    _dashOpenTicket = ticket;
+    _dashChatMessages = [];
+    _dashPendingImage = null;
+    if (ticket.unreadBySupport) ZAP.db.markTicketReadBySupport(ticketId).catch(() => {});
+    ZAP.render();
+    // Start listening
+    ZAP.db.listenTicketMessages(ticketId, (msgs) => {
+      _dashChatMessages = msgs;
+      const area = document.getElementById('dash-chat-msgs');
+      if (area) {
+        area.innerHTML = _renderDashMessages(msgs, ZAP.auth.getUser()?.uid);
+        area.scrollTop = area.scrollHeight;
+      }
+    });
+  }
+
+  function closeSupportChat() {
+    if (_dashOpenTicket) {
+      ZAP.db.stopListeningTicket(_dashOpenTicket.id);
+      _dashOpenTicket = null;
+      _dashChatMessages = [];
+      _dashPendingImage = null;
+    }
+    ZAP.render();
+  }
+
+  function _dashOnImage(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      _dashPendingImage = { file, dataUrl: e.target.result };
+      const wrap = document.getElementById('dash-chat-img-preview');
+      if (wrap) {
+        wrap.innerHTML = `<div class="chat-img-preview-wrap"><div class="chat-img-preview">
+          <img src="${e.target.result}" alt="preview">
+          <button class="chat-img-preview-remove" onclick="ZAP.pages.dashboard._dashRemoveImage()">×</button>
+        </div></div>`;
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function _dashRemoveImage() {
+    _dashPendingImage = null;
+    const wrap = document.getElementById('dash-chat-img-preview');
+    if (wrap) wrap.innerHTML = '';
+    const inp = document.getElementById('dash-chat-file');
+    if (inp) inp.value = '';
+  }
+
+  async function _dashSendMsg() {
+    if (!_dashOpenTicket) return;
+    const textEl = document.getElementById('dash-chat-input');
+    const text = textEl?.value.trim();
+    if (!text && !_dashPendingImage) return;
+    const sendBtn = document.getElementById('dash-send-btn');
+    if (sendBtn) sendBtn.disabled = true;
+    const profile = ZAP.auth.getProfile();
+    const user = ZAP.auth.getUser();
+    try {
+      let imageUrl = null;
+      if (_dashPendingImage) {
+        const up = document.getElementById('dash-chat-uploading');
+        if (up) up.style.display = 'flex';
+        imageUrl = await ZAP.db.uploadTicketImage(_dashOpenTicket.id, _dashPendingImage.file);
+        if (up) up.style.display = 'none';
+        _dashRemoveImage();
+      }
+      await ZAP.db.sendTicketMessage(_dashOpenTicket.id, {
+        uid: user.uid,
+        name: profile.name + ' (Підтримка)',
+        role: 'support',
+        text: text || null,
+        imageUrl,
+      });
+      if (textEl) { textEl.value = ''; textEl.style.height = 'auto'; }
+    } catch (e) {
+      ZAP.utils.toast('Помилка надсилання', 'error');
+    } finally {
+      if (sendBtn) sendBtn.disabled = false;
+    }
+  }
+
+  async function _dashReopenTicket(ticketId) {
+    try {
+      await ZAP.db.reopenSupportTicket(ticketId);
+      const t = supportTickets.find(t => t.id === ticketId);
+      if (t) t.status = 'open';
+      if (_dashOpenTicket && _dashOpenTicket.id === ticketId) _dashOpenTicket.status = 'open';
+      ZAP.utils.toast('Тікет відкрито знову', 'success');
+      ZAP.render();
+    } catch (e) {
+      ZAP.utils.toast('Помилка', 'error');
+    }
+  }
   // ═══════════════════════════════════════════════════════
   // Moderation — all invites
   // ═══════════════════════════════════════════════════════
@@ -1327,7 +1543,8 @@
       await ZAP.db.resolveSupportTicket(ticketId, action, ZAP.auth.getUser()?.uid);
       const t = supportTickets.find(t => t.id === ticketId);
       if (t) t.status = action;
-      ZAP.utils.toast(action === 'resolved' ? 'Звернення вирішено' : 'Звернення відхилено', 'success');
+      if (_dashOpenTicket && _dashOpenTicket.id === ticketId) _dashOpenTicket.status = action;
+      ZAP.utils.toast(action === 'resolved' ? 'Звернення вирішено' : 'Звернення закрито', 'success');
       ZAP.render();
     } catch (e) {
       ZAP.utils.toast('Не вдалося обробити звернення. Спробуйте пізніше', 'error');
@@ -1365,6 +1582,8 @@
     searchUsers, setUserPage,
     changeRole, toggleBan,
     resolveReport, resolveSupportTicket, deleteReportedInvite,
+    openSupportChat, closeSupportChat,
+    _dashOnImage, _dashRemoveImage, _dashSendMsg, _dashReopenTicket,
     searchInvites, setInvitePage, modDeleteInvite, retryLoad,
   };
 })();

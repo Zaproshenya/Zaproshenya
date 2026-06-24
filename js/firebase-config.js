@@ -19,6 +19,7 @@ try {
   ZAP.firebaseApp = firebase.initializeApp(ZAP.FIREBASE_CONFIG);
   ZAP.authInstance = firebase.auth();
   ZAP.dbRef = firebase.database();
+  ZAP.storage = firebase.storage();
   ZAP.messaging = null;
   ZAP.analytics = firebase.analytics();
   try {

@@ -322,18 +322,62 @@
   }
 
   // ═══════════════════════════════════════════════════════
-  // Support Tickets
+  // Support Tickets — Full Chat System
   // ═══════════════════════════════════════════════════════
 
+  function storage() {
+    return ZAP.storage || null;
+  }
+
   async function createSupportTicket(ticket) {
-    if (!db()) return;
+    if (!db()) return null;
     const ref = db().ref('support_tickets').push();
-    await ref.set({
+    const ticketData = {
       id: ref.key,
-      ...ticket,
-      status: 'pending', // pending, resolved, dismissed
+      type: ticket.type,
+      subject: ticket.subject || ticket.type,
+      authorUid: ticket.authorUid,
+      authorName: ticket.authorName,
+      status: 'open', // open, resolved, dismissed
+      createdAt: Date.now(),
+      lastMessageAt: Date.now(),
+      lastMessageText: ticket.firstMessage,
+      unreadBySupport: true,
+    };
+    await ref.set(ticketData);
+
+    // Send first message
+    const msgRef = db().ref('support_tickets/' + ref.key + '/messages').push();
+    await msgRef.set({
+      id: msgRef.key,
+      uid: ticket.authorUid,
+      name: ticket.authorName,
+      role: 'user',
+      text: ticket.firstMessage,
+      imageUrl: null,
       createdAt: Date.now(),
     });
+
+    return ref.key;
+  }
+
+  async function getUserTickets(uid) {
+    if (!db()) return [];
+    const snap = await db().ref('support_tickets').orderByChild('createdAt').get();
+    if (!snap.exists()) return [];
+    const list = [];
+    snap.forEach(c => {
+      const t = c.val();
+      if (t.authorUid === uid) list.push(t);
+    });
+    return list.reverse();
+  }
+
+  async function getTicket(ticketId) {
+    if (!db()) return null;
+    const snap = await db().ref('support_tickets/' + ticketId).get();
+    if (!snap.exists()) return null;
+    return snap.val();
   }
 
   async function getSupportTickets() {
@@ -345,13 +389,83 @@
     return list.reverse();
   }
 
+  async function sendTicketMessage(ticketId, message) {
+    if (!db()) return;
+    const msgRef = db().ref('support_tickets/' + ticketId + '/messages').push();
+    await msgRef.set({
+      id: msgRef.key,
+      uid: message.uid,
+      name: message.name,
+      role: message.role, // 'user' | 'support'
+      text: message.text || null,
+      imageUrl: message.imageUrl || null,
+      createdAt: Date.now(),
+    });
+    // Update ticket meta
+    const ticketUpdate = {
+      lastMessageAt: Date.now(),
+      lastMessageText: message.text || '📷 Зображення',
+    };
+    if (message.role === 'user') {
+      ticketUpdate.unreadBySupport = true;
+    } else {
+      ticketUpdate.unreadByUser = true;
+      ticketUpdate.unreadBySupport = false;
+    }
+    await db().ref('support_tickets/' + ticketId).update(ticketUpdate);
+  }
+
+  function listenTicketMessages(ticketId, callback) {
+    if (!db()) return;
+    db().ref('support_tickets/' + ticketId + '/messages').on('value', snap => {
+      const list = [];
+      if (snap.exists()) snap.forEach(c => { list.push(c.val()); });
+      callback(list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)));
+    });
+  }
+
+  function stopListeningTicket(ticketId) {
+    if (!db()) return;
+    db().ref('support_tickets/' + ticketId + '/messages').off();
+  }
+
   async function resolveSupportTicket(ticketId, action, moderatorUid) {
     if (!db()) return;
     await db().ref('support_tickets/' + ticketId).update({
       status: action, // 'resolved' or 'dismissed'
       resolvedBy: moderatorUid,
       resolvedAt: Date.now(),
+      unreadByUser: true,
     });
+  }
+
+  async function reopenSupportTicket(ticketId) {
+    if (!db()) return;
+    await db().ref('support_tickets/' + ticketId).update({
+      status: 'open',
+      resolvedBy: null,
+      resolvedAt: null,
+    });
+  }
+
+  async function markTicketReadBySupport(ticketId) {
+    if (!db()) return;
+    await db().ref('support_tickets/' + ticketId + '/unreadBySupport').set(false);
+  }
+
+  async function markTicketReadByUser(ticketId) {
+    if (!db()) return;
+    await db().ref('support_tickets/' + ticketId + '/unreadByUser').set(false);
+  }
+
+  async function uploadTicketImage(ticketId, file) {
+    if (!storage()) throw new Error('Storage not initialized');
+    const ext = file.name.split('.').pop() || 'jpg';
+    const filename = Date.now() + '.' + ext;
+    const ref = storage().ref('support-chat/' + ticketId + '/' + filename);
+    const snapshot = await ref.put(file);
+    const url = await snapshot.ref.getDownloadURL();
+    return url;
   }
 
   // ═══════════════════════════════════════════════════════
@@ -602,7 +716,11 @@
     removeFriend, getFriends, getFriendRequests,
     // Reports
     createReport, getReports, resolveReport,
-    createSupportTicket, getSupportTickets, resolveSupportTicket,
+    createSupportTicket, getUserTickets, getTicket, getSupportTickets,
+    sendTicketMessage, listenTicketMessages, stopListeningTicket,
+    resolveSupportTicket, reopenSupportTicket,
+    markTicketReadBySupport, markTicketReadByUser,
+    uploadTicketImage,
     // Stats
     getStats,
     // Real-time

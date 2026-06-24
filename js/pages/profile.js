@@ -7,35 +7,43 @@
   let saving = false;
   let loading = true;
   let stats = null;
+  let myTickets = [];
+  let _chatTicketId = null;  // currently open chat ticket
+  let _chatListener = null; // active Firebase listener off-handle
+  let _pendingImage = null; // { file, dataUrl } for attachment
+  let _isSupportAdmin = false; // is current user a support admin
 
   async function load() {
     loading = true;
     stats = null;
+    myTickets = [];
     editing = null;
     saving = false;
     const user = ZAP.auth.getUser();
     if (!user) { loading = false; return; }
 
+    _isSupportAdmin = ZAP.auth.isAdmin() || ZAP.auth.isModerator();
+
     try {
-      const invites = await ZAP.db.getUserInvites(user.uid);
-      const friends = await ZAP.db.getFriends(user.uid);
+      const [invites, friends, tickets] = await Promise.all([
+        ZAP.db.getUserInvites(user.uid),
+        ZAP.db.getFriends(user.uid),
+        ZAP.db.getUserTickets(user.uid),
+      ]);
 
       const personalCount = invites.filter(inv => !inv.isGroup).length;
       const groupCount = invites.filter(inv => inv.isGroup).length;
-
       const acceptedCount = invites.filter(inv => inv.status === 'accepted').length;
       const declinedCount = invites.filter(inv => inv.status === 'declined').length;
       const pendingCount = invites.filter(inv => inv.status === 'pending').length;
 
       stats = {
         totalInvites: invites.length,
-        personalCount,
-        groupCount,
-        acceptedCount,
-        declinedCount,
-        pendingCount,
+        personalCount, groupCount,
+        acceptedCount, declinedCount, pendingCount,
         totalFriends: friends.length
       };
+      myTickets = tickets;
     } catch (e) {
       console.warn('Profile load stats:', e);
     }
@@ -203,36 +211,57 @@
         <div class="profile-section-icon">${icon('lifebuoy', 16)}</div>
         <div class="profile-section-title">Допомога та підтримка</div>
       </div>
-      <div class="profile-section-content">
-        <div class="profile-field" style="flex-direction:column;align-items:flex-start;gap:12px">
-          <div>
-            <div class="profile-field-label">Зворотній зв'язок</div>
-            <div class="profile-field-value" style="font-size:.9rem;white-space:normal;line-height:1.5">
-              Знайшли баг або маєте ідею як покращити Запрошення? Напишіть нам!
-            </div>
-          </div>
-          <button class="btn btn-outline" style="width:100%;justify-content:center" onclick="ZAP.pages.profile.openSupportModal()">
-            ${icon('chat-teardrop-text', 16)} Написати в підтримку
-          </button>
-        </div>
+      <div class="support-action-grid">
+        <button class="support-action-btn" onclick="ZAP.pages.profile.openNewTicket('bug')">
+          <span class="sa-icon">🐛</span>Знайшов баг
+        </button>
+        <button class="support-action-btn" onclick="ZAP.pages.profile.openNewTicket('idea')">
+          <span class="sa-icon">💡</span>Є ідея
+        </button>
+        <button class="support-action-btn" onclick="ZAP.pages.profile.openNewTicket('question')">
+          <span class="sa-icon">❓</span>Питання
+        </button>
       </div>
+      ${myTickets.length > 0 ? `
+        <div class="my-tickets-header">
+          <span>Мої звернення</span>
+          <span style="font-size:.7rem;font-weight:500">${myTickets.length}</span>
+        </div>
+        ${myTickets.map(t => {
+          const icons = { bug: '🐛', idea: '💡', question: '❓', other: '💬' };
+          const statusText = { open: 'Відкрито', resolved: 'Вирішено', dismissed: 'Закрито' };
+          const ago = ZAP.utils.timeAgo(t.lastMessageAt || t.createdAt);
+          const hasUnread = t.unreadByUser;
+          return `
+          <div class="ticket-item" onclick="ZAP.pages.profile.openTicketChat('${t.id}')">
+            <div class="ticket-item-icon ${t.type || 'other'}">${icons[t.type] || '💬'}</div>
+            <div class="ticket-item-body">
+              <div class="ticket-item-subject">${ZAP.utils.esc(t.subject || t.type || 'Звернення')}</div>
+              <div class="ticket-item-preview">${ZAP.utils.esc((t.lastMessageText || '').slice(0, 50))}</div>
+            </div>
+            <div class="ticket-item-meta">
+              <span class="ticket-status ${t.status || 'open'}">${statusText[t.status] || 'Відкрито'}</span>
+              <span style="font-size:.68rem;color:var(--muted)">${ago}</span>
+              ${hasUnread ? '<div class="ticket-unread-dot"></div>' : ''}
+            </div>
+          </div>`;
+        }).join('')}
+      ` : ''}
     </div>
 
-    <!-- Donation -->
-    <div class="profile-section" style="border:1px solid var(--gold);background:rgba(212,175,55,0.03)">
-      <div class="profile-section-header">
-        <div class="profile-section-icon" style="color:var(--gold);background:rgba(212,175,55,0.1)">☕</div>
-        <div class="profile-section-title" style="color:var(--gold)">Підтримати проєкт</div>
+    <!-- Donation Block -->
+    <div class="donation-block">
+      <div class="donation-header">
+        <div class="donation-header-icon">✦</div>
+        <div class="donation-header-title">Підтримати проєкт</div>
       </div>
-      <div class="profile-section-content">
-        <div class="profile-field" style="flex-direction:column;align-items:flex-start;gap:12px;border:none">
-          <div style="font-size:.9rem;color:var(--muted);line-height:1.5">
-            Цей проєкт є безкоштовним та розробляється з любов'ю. Ви можете допомогти йому розвиватися, пригостивши автора кавою.
-          </div>
-          <a href="https://send.monobank.ua/jar/5se11GGQ5i" target="_blank" class="btn btn-dark" style="width:100%;justify-content:center;background:var(--gold);color:#000">
-            ☕ Підтримати (Monobank)
-          </a>
+      <div class="donation-body">
+        <div class="donation-text">
+          Запрошення ✦ — це безкоштовний незалежний проєкт. Якщо він приносить вам радість — ви можете підтримати його розвиток.
         </div>
+        <a href="https://send.monobank.ua/jar/5se11GGQ5i" target="_blank" class="donation-btn">
+          ${icon('heart', 18)} Підтримати через Monobank
+        </a>
       </div>
     </div>
 
@@ -484,74 +513,343 @@
     }
   }
 
-  async function doLogout() {
-    await ZAP.auth.logout();
-    ZAP.utils.toast('Ви вийшли з акаунту', 'info');
-    ZAP.router.go('login');
-  }
-
-  function openSupportModal() {
+  // ─── New Ticket Modal ───────────────────────────────────
+  function openNewTicket(defaultType) {
     const { icon } = ZAP.utils;
+    let selectedType = defaultType || 'bug';
+    const types = [
+      { value: 'bug',      icon: '🐛', label: 'Знайшов баг',    desc: 'Помилка у роботі' },
+      { value: 'idea',     icon: '💡', label: 'Є ідея',          desc: 'Пропозиція' },
+      { value: 'question', icon: '❓', label: 'Питання',          desc: 'Потрібна відповідь' },
+      { value: 'other',    icon: '💬', label: 'Інше',             desc: 'Загальне' },
+    ];
+
     const modal = document.createElement('div');
     modal.className = 'overlay';
-    modal.id = 'support-modal';
+    modal.id = 'new-ticket-modal';
     modal.onclick = e => { if (e.target === modal) modal.remove(); };
     modal.innerHTML = `
-      <div class="modal" onclick="event.stopPropagation()">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-          <h3 class="modal-title" style="margin-bottom:0">${icon('lifebuoy', 20)} Написати в підтримку</h3>
-          <button onclick="document.getElementById('support-modal').remove()" class="modal-close">×</button>
+      <div class="modal new-ticket-modal" onclick="event.stopPropagation()" style="max-width:480px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <h3 class="modal-title" style="margin-bottom:0">Нове звернення</h3>
+          <button onclick="document.getElementById('new-ticket-modal').remove()" class="modal-close">×</button>
+        </div>
+        <div class="ticket-type-grid">
+          ${types.map(t => `
+            <button class="ticket-type-option${t.value === selectedType ? ' selected' : ''}" 
+              onclick="ZAP.pages.profile._selectTicketType('${t.value}')"
+              data-type="${t.value}">
+              <span class="tt-icon">${t.icon}</span>
+              <span>${t.label}</span>
+              <span style="font-size:.7rem;color:var(--muted);font-weight:400">${t.desc}</span>
+            </button>`).join('')}
         </div>
         <div class="form-group">
-          <label class="lbl">Тип звернення</label>
-          <select id="support-type" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--ink)">
-            <option value="bug">Повідомити про баг / помилку</option>
-            <option value="idea">Запропонувати ідею</option>
-            <option value="question">Задати питання</option>
-            <option value="other">Інше</option>
-          </select>
+          <label class="lbl">Тема</label>
+          <input id="ticket-subject" placeholder="Коротко опишіть проблему або ідею..." maxlength="100"/>
         </div>
         <div class="form-group">
           <label class="lbl">Повідомлення</label>
-          <textarea id="support-msg" rows="4" placeholder="Опишіть детально ваше запитання або пропозицію..." style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--ink);resize:vertical"></textarea>
+          <textarea id="ticket-first-msg" rows="5" placeholder="Детально опишіть..." 
+            style="width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg, var(--paper));color:var(--ink);resize:vertical;font-family:var(--font-body);font-size:.88rem;line-height:1.5"></textarea>
         </div>
-        <div class="form-error" id="support-error"></div>
-        <button class="btn btn-dark btn-full" id="btn-submit-support" onclick="ZAP.pages.profile.submitSupportTicket()">
-          Надіслати
+        <div class="form-error" id="ticket-error"></div>
+        <button class="btn btn-dark btn-full" id="btn-create-ticket" onclick="ZAP.pages.profile._submitNewTicket()">
+          ${icon('paper-plane-tilt', 16)} Надіслати
         </button>
       </div>`;
     document.body.appendChild(modal);
   }
 
-  async function submitSupportTicket() {
-    const type = document.getElementById('support-type').value;
-    const msg = document.getElementById('support-msg').value.trim();
-    if (!msg) {
-      const el = document.getElementById('support-error');
-      if (el) { el.textContent = 'Будь ласка, введіть повідомлення'; el.classList.add('show'); }
-      return;
-    }
-    
-    const btn = document.getElementById('btn-submit-support');
+  function _selectTicketType(type) {
+    document.querySelectorAll('.ticket-type-option').forEach(btn => {
+      btn.classList.toggle('selected', btn.dataset.type === type);
+    });
+    // store selected
+    document.getElementById('new-ticket-modal')._selectedType = type;
+  }
+
+  async function _submitNewTicket() {
+    const modal = document.getElementById('new-ticket-modal');
+    const type = (modal && modal._selectedType) ||
+      (document.querySelector('.ticket-type-option.selected')?.dataset?.type) || 'bug';
+    const subject = document.getElementById('ticket-subject')?.value.trim();
+    const msg = document.getElementById('ticket-first-msg')?.value.trim();
+
+    const errEl = document.getElementById('ticket-error');
+    if (!subject) { if (errEl) { errEl.textContent = 'Введіть тему'; errEl.classList.add('show'); } return; }
+    if (!msg) { if (errEl) { errEl.textContent = 'Введіть повідомлення'; errEl.classList.add('show'); } return; }
+
+    const btn = document.getElementById('btn-create-ticket');
     if (btn) { btn.disabled = true; btn.textContent = 'Надсилання...'; }
 
     try {
-      const profile = ZAP.auth.getProfile();
       const user = ZAP.auth.getUser();
-      await ZAP.db.createSupportTicket({
+      const profile = ZAP.auth.getProfile();
+      const ticketId = await ZAP.db.createSupportTicket({
+        type, subject,
+        firstMessage: msg,
         authorUid: user.uid,
         authorName: profile.name,
-        type: type,
-        message: msg,
       });
-      document.getElementById('support-modal')?.remove();
-      ZAP.utils.toast('Ваше повідомлення надіслано!', 'success');
+      modal?.remove();
+      ZAP.utils.toast('Звернення створено!', 'success');
+      // Reload tickets and open chat
+      myTickets = await ZAP.db.getUserTickets(user.uid);
+      ZAP.render();
+      setTimeout(() => openTicketChat(ticketId), 300);
     } catch (e) {
-      const el = document.getElementById('support-error');
-      if (el) { el.textContent = 'Помилка надсилання'; el.classList.add('show'); }
+      console.error('Create ticket error:', e);
+      if (errEl) { errEl.textContent = 'Помилка. Спробуйте ще раз'; errEl.classList.add('show'); }
       if (btn) { btn.disabled = false; btn.textContent = 'Надіслати'; }
     }
   }
+
+  // ─── Support Chat ───────────────────────────────────────
+  function _typeLabel(type) {
+    return { bug: '🐛 Баг / Помилка', idea: '💡 Ідея', question: '❓ Питання', other: '💬 Інше' }[type] || '💬 Звернення';
+  }
+
+  function _formatChatTime(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    return d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function _formatChatDate(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    const today = new Date();
+    if (d.toDateString() === today.toDateString()) return 'Сьогодні';
+    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    if (d.toDateString() === yesterday.toDateString()) return 'Вчора';
+    return d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
+  }
+
+  function _renderMessages(messages, currentUid) {
+    if (!messages || messages.length === 0) {
+      return `<div class="chat-empty-state">
+        <div class="chat-empty-icon">💬</div>
+        <div class="chat-empty-text">Очікуйте відповіді від команди підтримки</div>
+      </div>`;
+    }
+    let lastDate = null;
+    return messages.map(msg => {
+      const isUser = msg.uid === currentUid;
+      const msgDate = new Date(msg.createdAt).toDateString();
+      const dateSep = msgDate !== lastDate 
+        ? `<div class="chat-date-separator">${_formatChatDate(msg.createdAt)}</div>` : '';
+      lastDate = msgDate;
+      const initials = (msg.name || '?').charAt(0).toUpperCase();
+      const roleLabel = isUser ? '' : 'Підтримка';
+      const imgHtml = msg.imageUrl 
+        ? `<img src="${ZAP.utils.esc(msg.imageUrl)}" class="chat-bubble-img" 
+             onclick="window.open('${ZAP.utils.esc(msg.imageUrl)}','_blank')" alt="Зображення">` : '';
+      const textHtml = msg.text ? `<div class="chat-bubble">${ZAP.utils.esc(msg.text)}</div>` : '';
+
+      return `${dateSep}
+        <div class="chat-msg ${isUser ? 'user' : 'support'}">
+          <div class="chat-msg-avatar">${initials}</div>
+          <div class="chat-msg-content">
+            ${textHtml}${imgHtml}
+            <div class="chat-msg-time">${roleLabel ? roleLabel + ' · ' : ''}${_formatChatTime(msg.createdAt)}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function _scrollChatToBottom() {
+    const area = document.getElementById('chat-msgs-area');
+    if (area) area.scrollTop = area.scrollHeight;
+  }
+
+  async function openTicketChat(ticketId) {
+    // Stop any previous listener
+    if (_chatTicketId) {
+      ZAP.db.stopListeningTicket(_chatTicketId);
+    }
+    _chatTicketId = ticketId;
+    _pendingImage = null;
+
+    const user = ZAP.auth.getUser();
+    const profile = ZAP.auth.getProfile();
+    const ticket = myTickets.find(t => t.id === ticketId) || await ZAP.db.getTicket(ticketId);
+    if (!ticket) return;
+
+    // Mark as read
+    if (ticket.unreadByUser) {
+      ZAP.db.markTicketReadByUser(ticketId).catch(() => {});
+    }
+
+    const { icon } = ZAP.utils;
+    const isResolved = ticket.status === 'resolved' || ticket.status === 'dismissed';
+    const statusText = { open: 'Відкрито', resolved: 'Вирішено', dismissed: 'Закрито' }[ticket.status] || 'Відкрито';
+
+    // Remove existing
+    document.getElementById('support-chat-overlay')?.remove();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'support-chat-overlay';
+    overlay.id = 'support-chat-overlay';
+    overlay.onclick = e => { if (e.target === overlay) _closeChatModal(); };
+
+    overlay.innerHTML = `
+      <div class="support-chat-modal">
+        <!-- Header -->
+        <div class="chat-modal-header">
+          <button class="chat-modal-back" onclick="ZAP.pages.profile._closeChatModal()">
+            ${icon('arrow-left', 16)}
+          </button>
+          <div class="chat-modal-info">
+            <div class="chat-modal-title">${_typeLabel(ticket.type)} · ${ZAP.utils.esc(ticket.subject || 'Звернення')}</div>
+            <div class="chat-modal-subtitle">${statusText} · ${ZAP.utils.timeAgo(ticket.createdAt)}</div>
+          </div>
+          <button class="chat-modal-close" onclick="ZAP.pages.profile._closeChatModal()">×</button>
+        </div>
+
+        <!-- Messages -->
+        <div class="chat-messages-area" id="chat-msgs-area">
+          <div class="chat-loading-spinner">${ZAP.utils.spinner()}</div>
+        </div>
+
+        <!-- Image preview placeholder -->
+        <div id="chat-img-preview-wrap"></div>
+
+        <!-- Resolved banner OR input -->
+        ${isResolved ? `
+          <div class="chat-resolved-banner">
+            <div class="chat-resolved-text">${icon('check-circle', 16)} Тікет ${statusText.toLowerCase()}</div>
+            <button class="chat-reopen-btn" onclick="ZAP.pages.profile._reopenTicket('${ticketId}')">
+              Відкрити знову
+            </button>
+          </div>
+        ` : `
+          <div id="chat-uploading-state" style="display:none" class="chat-uploading">
+            ${ZAP.utils.spinner()} Завантаження зображення...
+          </div>
+          <div class="chat-input-area">
+            <div class="chat-input-row">
+              <button class="chat-attach-btn" onclick="document.getElementById('chat-file-input').click()" title="Прикріпити зображення">
+                ${icon('paperclip', 18)}
+              </button>
+              <input type="file" id="chat-file-input" accept="image/*" style="display:none"
+                onchange="ZAP.pages.profile._onImageSelected(this.files[0])"/>
+              <textarea class="chat-text-input" id="chat-text-input" 
+                placeholder="Написати повідомлення..."
+                rows="1"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ZAP.pages.profile._sendChatMsg();}"
+                oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+              <button class="chat-send-btn" id="chat-send-btn" onclick="ZAP.pages.profile._sendChatMsg()">
+                ${icon('paper-plane-tilt', 18)}
+              </button>
+            </div>
+          </div>
+        `}
+      </div>`;
+
+    document.body.appendChild(overlay);
+
+    // Start listening to messages
+    ZAP.db.listenTicketMessages(ticketId, (messages) => {
+      const area = document.getElementById('chat-msgs-area');
+      if (!area) return;
+      area.innerHTML = _renderMessages(messages, user.uid);
+      _scrollChatToBottom();
+    });
+  }
+
+  function _closeChatModal() {
+    if (_chatTicketId) {
+      ZAP.db.stopListeningTicket(_chatTicketId);
+      _chatTicketId = null;
+    }
+    _pendingImage = null;
+    document.getElementById('support-chat-overlay')?.remove();
+  }
+
+  function _onImageSelected(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      _pendingImage = { file, dataUrl: e.target.result };
+      const wrap = document.getElementById('chat-img-preview-wrap');
+      if (wrap) {
+        wrap.innerHTML = `
+          <div class="chat-img-preview-wrap">
+            <div class="chat-img-preview">
+              <img src="${e.target.result}" alt="preview">
+              <button class="chat-img-preview-remove" onclick="ZAP.pages.profile._removeImage()">×</button>
+            </div>
+          </div>`;
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function _removeImage() {
+    _pendingImage = null;
+    const wrap = document.getElementById('chat-img-preview-wrap');
+    if (wrap) wrap.innerHTML = '';
+    const inp = document.getElementById('chat-file-input');
+    if (inp) inp.value = '';
+  }
+
+  async function _sendChatMsg() {
+    if (!_chatTicketId) return;
+    const textEl = document.getElementById('chat-text-input');
+    const text = textEl?.value.trim();
+    if (!text && !_pendingImage) return;
+
+    const sendBtn = document.getElementById('chat-send-btn');
+    if (sendBtn) sendBtn.disabled = true;
+
+    const user = ZAP.auth.getUser();
+    const profile = ZAP.auth.getProfile();
+
+    try {
+      let imageUrl = null;
+
+      if (_pendingImage) {
+        const uploadState = document.getElementById('chat-uploading-state');
+        if (uploadState) uploadState.style.display = 'flex';
+        imageUrl = await ZAP.db.uploadTicketImage(_chatTicketId, _pendingImage.file);
+        if (uploadState) uploadState.style.display = 'none';
+        _removeImage();
+      }
+
+      await ZAP.db.sendTicketMessage(_chatTicketId, {
+        uid: user.uid,
+        name: profile.name,
+        role: 'user',
+        text: text || null,
+        imageUrl,
+      });
+
+      if (textEl) { textEl.value = ''; textEl.style.height = 'auto'; }
+    } catch (e) {
+      console.error('Send message error:', e);
+      ZAP.utils.toast('Помилка надсилання', 'error');
+    } finally {
+      if (sendBtn) sendBtn.disabled = false;
+    }
+  }
+
+  async function _reopenTicket(ticketId) {
+    try {
+      await ZAP.db.reopenSupportTicket(ticketId);
+      ZAP.utils.toast('Тікет відкрито знову', 'success');
+      _closeChatModal();
+      myTickets = await ZAP.db.getUserTickets(ZAP.auth.getUser().uid);
+      ZAP.render();
+      setTimeout(() => openTicketChat(ticketId), 300);
+    } catch (e) {
+      ZAP.utils.toast('Помилка', 'error');
+    }
+  }
+
+  // ─── Old simple submit (kept for compat, now unused) ──
+  function openSupportModal() { openNewTicket('bug'); }
+  function submitSupportTicket() {}
 
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.profile = {
@@ -559,6 +857,9 @@
     render, load, startEdit, cancelEdit,
     saveName, saveLogin, savePassword,
     uploadAvatar, confirmDelete, doDelete, doLogout,
-    openSupportModal, submitSupportTicket
+    openSupportModal, submitSupportTicket,
+    openNewTicket, _selectTicketType, _submitNewTicket,
+    openTicketChat, _closeChatModal,
+    _onImageSelected, _removeImage, _sendChatMsg, _reopenTicket,
   };
 })();
