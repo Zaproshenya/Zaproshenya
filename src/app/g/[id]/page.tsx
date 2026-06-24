@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import { TYPE_MAP } from '@/lib/utils';
 import ClientGroupInvitePage from './ClientGroupInvitePage';
 
+export const runtime = 'edge';
+
 const dbUrl = "https://zaproshenya-82751-default-rtdb.europe-west1.firebasedatabase.app";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
