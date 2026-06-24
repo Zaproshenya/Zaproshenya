@@ -847,6 +847,12 @@
     }
   }
 
+  async function doLogout() {
+    await ZAP.auth.logout();
+    ZAP.utils.toast('Ви вийшли з акаунту', 'info');
+    ZAP.router.go('login');
+  }
+
   // ─── Old simple submit (kept for compat, now unused) ──
   function openSupportModal() { openNewTicket('bug'); }
   function submitSupportTicket() {}
