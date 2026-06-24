@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { TYPE_MAP } from '@/lib/utils';
 import ClientInvitePage from './ClientInvitePage';
 
-export const runtime = 'edge';
+
 
 const dbUrl = "https://zaproshenya-82751-default-rtdb.europe-west1.firebasedatabase.app";
 

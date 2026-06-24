@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { TYPE_MAP } from '@/lib/utils';
 
-export const runtime = 'edge';
+
 
 // Standard OG image size
 export const alt = 'Запрошення';

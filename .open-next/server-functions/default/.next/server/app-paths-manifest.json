@@ -1,0 +1,15 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/g/[id]/opengraph-image/route": "app/g/[id]/opengraph-image/route.js",
+  "/i/[id]/opengraph-image/route": "app/i/[id]/opengraph-image/route.js",
+  "/g/[id]/page": "app/g/[id]/page.js",
+  "/friends/page": "app/friends/page.js",
+  "/i/[id]/page": "app/i/[id]/page.js",
+  "/home/page": "app/home/page.js",
+  "/create/page": "app/create/page.js",
+  "/notifications/page": "app/notifications/page.js",
+  "/profile/page": "app/profile/page.js",
+  "/page": "app/page.js",
+  "/login/page": "app/login/page.js"
+}
