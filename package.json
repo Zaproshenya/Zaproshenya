@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "pages:build": "npx @cloudflare/next-on-pages"
   },
   "dependencies": {
     "firebase": "^12.15.0",
@@ -22,5 +23,10 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@cloudflare/next-on-pages": {
+      "next": "$next"
+    }
   }
 }
