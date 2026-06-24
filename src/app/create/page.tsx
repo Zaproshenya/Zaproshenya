@@ -226,11 +226,15 @@ export default function CreatePage() {
                           type="button"
                           className={`friend-chip ${selectedFriends.includes(f.uid) ? 'on' : ''}`}
                           onClick={() => toggleFriend(f.uid)}
+                          style={{display:'flex', alignItems:'center', gap:'10px', padding:'8px 12px'}}
                         >
-                          <div className="avatar avatar-sm">
-                            {f.avatar ? <img src={f.avatar} alt=""/> : f.name?.charAt(0)}
+                          <div className="avatar avatar-sm" style={{flexShrink:0}}>
+                            {f.avatar ? <img src={f.avatar} alt=""/> : f.name?.charAt(0).toUpperCase()}
                           </div>
-                          <span className="friend-chip-name">{f.name}</span>
+                          <div style={{display:'flex', flexDirection:'column', alignItems:'flex-start', minWidth:0, textAlign:'left'}}>
+                            <span className="friend-chip-name" style={{fontSize:'.9rem', fontWeight:600, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'100px'}}>{f.name}</span>
+                            {f.login && <span style={{fontSize:'.75rem', color:'var(--muted)'}}>@{f.login}</span>}
+                          </div>
                         </button>
                       ))}
                     </div>
@@ -377,10 +381,20 @@ export default function CreatePage() {
                     {filteredFriends.length === 0 ? (
                       <p style={{fontSize:'.85rem', color:'var(--muted)', fontStyle:'italic'}}>Нікого не знайдено</p>
                     ) : filteredFriends.map(f => (
-                      <button key={f.uid} type="button" className={`friend-chip ${selectedFriends.includes(f.uid) ? 'on' : ''}`} onClick={() => toggleFriend(f.uid)}>
-                        <div className="avatar avatar-sm">{f.avatar ? <img src={f.avatar} alt=""/> : f.name?.charAt(0)}</div>
-                        <span className="friend-chip-name">{f.name}</span>
-                        {f.uniqueId && <span className="friend-chip-id">{f.uniqueId}</span>}
+                      <button 
+                        key={f.uid} 
+                        type="button" 
+                        className={`friend-chip ${selectedFriends.includes(f.uid) ? 'on' : ''}`} 
+                        onClick={() => toggleFriend(f.uid)}
+                        style={{display:'flex', alignItems:'center', gap:'10px', padding:'8px 12px'}}
+                      >
+                        <div className="avatar avatar-sm" style={{flexShrink:0}}>
+                          {f.avatar ? <img src={f.avatar} alt=""/> : f.name?.charAt(0).toUpperCase()}
+                        </div>
+                        <div style={{display:'flex', flexDirection:'column', alignItems:'flex-start', minWidth:0, textAlign:'left'}}>
+                          <span className="friend-chip-name" style={{fontSize:'.9rem', fontWeight:600, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'100px'}}>{f.name}</span>
+                          {f.login && <span style={{fontSize:'.75rem', color:'var(--muted)'}}>@{f.login}</span>}
+                        </div>
                       </button>
                     ))}
                   </div>

@@ -9,6 +9,9 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
   const [userPage, setUserPage] = useState(0);
   const PAGE_SIZE = 15;
 
+  const [banModalOpen, setBanModalOpen] = useState(false);
+  const [banTarget, setBanTarget] = useState<any>(null);
+
   const filtered = userSearch
     ? users.filter(u =>
         u.login.toLowerCase().includes(userSearch.toLowerCase()) ||
@@ -41,25 +44,30 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
     }
   };
 
-  const handleBan = async (uid: string, banned: boolean) => {
-    const actionStr = banned ? 'заблокувати' : 'розблокувати';
-    if (confirm(`Дійсно ${actionStr} цього користувача?`)) {
-      try {
-        // If banning, let's ask for days, 0 = permanent
-        let until = null;
-        if (banned) {
-          const daysStr = prompt('На скільки днів заблокувати? (Залиште порожнім або 0 для вічного бану)');
-          if (daysStr === null) return; // cancelled
-          const days = parseInt(daysStr, 10);
-          if (days > 0) {
-            until = Date.now() + days * 24 * 60 * 60 * 1000;
-          }
-        }
-        await banUser(uid, banned, until);
-        reload();
-      } catch (err) {
-        alert('Помилка: ' + err);
+  const handleBanClick = (u: any) => {
+    if (u.banned) {
+      if (confirm('Дійсно розблокувати цього користувача?')) {
+        banUser(u.uid, false, null).then(() => reload()).catch(e => alert('Помилка: ' + e));
       }
+    } else {
+      setBanTarget(u);
+      setBanModalOpen(true);
+    }
+  };
+
+  const submitBan = async (hours: number) => {
+    if (!banTarget) return;
+    try {
+      let until = null;
+      if (hours > 0 && hours < 999999) {
+        until = Date.now() + hours * 60 * 60 * 1000;
+      }
+      await banUser(banTarget.uid, true, until);
+      setBanModalOpen(false);
+      setBanTarget(null);
+      reload();
+    } catch (err) {
+      alert('Помилка: ' + err);
     }
   };
 
@@ -89,12 +97,17 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
                 <tr><td colSpan={6} style={{textAlign:'center',padding:'24px',color:'var(--muted)'}}>Нікого не знайдено</td></tr>
               ) : paged.map(u => {
                 const uRank = getRank(u.role);
-                const canEdit = myRank > uRank && u.uid !== profile.uid;
+                const canEditRole = myRank > uRank || myRank === 100; // founders can edit founders
+                const canBan = myRank > uRank; // cannot ban equal or higher unless... wait, let's just use myRank > uRank so tech-admin can't ban tech-admin
+                
                 const roleOptions = [
                   {v:'user', l:'Користувач'},
                   {v:'moderator', l:'Модератор'},
                   {v:'tech-admin', l:'Тех-адмін'}
                 ];
+                if (profile?.role === 'founder' || u.role === 'founder') {
+                  roleOptions.push({v:'founder', l:'Засновник'});
+                }
 
                 return (
                   <tr key={u.uid} style={u.banned ? {opacity:0.6, background:'rgba(255,0,0,0.02)'} : {}}>
@@ -110,29 +123,28 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
                       <div style={{fontFamily:'monospace',fontSize:'.75rem',color:'var(--muted)'}}>{u.uniqueId || '—'}</div>
                     </td>
                     <td>
-                      {canEdit && !isModeOnly ? (
+                      {canEditRole && !isModeOnly ? (
                         <select
                           defaultValue={u.role || 'user'}
                           onChange={e => handleRoleChange(u.uid, e)}
                           style={{padding:'4px 8px',borderRadius:'6px',border:'1px solid var(--border)',background:'var(--card)',fontSize:'.8rem'}}
                         >
                           {roleOptions.map(opt => <option key={opt.v} value={opt.v}>{opt.l}</option>)}
-                          {u.role === 'founder' && <option value="founder">Засновник</option>}
                         </select>
                       ) : (
                         <div style={{fontSize:'.8rem',padding:'4px 8px',borderRadius:'6px',background:'var(--border)',display:'inline-block'}}>
-                          {u.role || 'user'}
+                          {roleOptions.find(o => o.v === (u.role || 'user'))?.l || u.role || 'user'}
                         </div>
                       )}
                     </td>
                     <td style={{fontSize:'.82rem',color:'var(--muted)'}}>{timeAgo(u.createdAt)}</td>
                     <td style={{fontSize:'.82rem',color:'var(--muted)'}}>{u.lastSeen ? timeAgo(u.lastSeen) : 'Ніколи'}</td>
                     <td>
-                      {canEdit ? (
+                      {canBan && u.uid !== profile.uid ? (
                         <button 
                           className={`btn btn-sm ${u.banned ? 'btn-outline' : 'btn-red'}`} 
                           style={{padding:'4px 10px'}}
-                          onClick={() => handleBan(u.uid, !u.banned)}
+                          onClick={() => handleBanClick(u)}
                         >
                           {u.banned ? 'Розблокувати' : 'Бан'}
                         </button>
@@ -153,6 +165,30 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
               {i + 1}
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Ban Modal */}
+      {banModalOpen && banTarget && (
+        <div className="overlay" onClick={() => setBanModalOpen(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{maxWidth:'400px'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>
+              <h3 className="modal-title" style={{marginBottom:0}}>Блокування</h3>
+              <button className="modal-close" onClick={() => setBanModalOpen(false)}>×</button>
+            </div>
+            <p style={{fontSize:'.9rem',color:'var(--muted)',marginBottom:'20px'}}>
+              Оберіть термін блокування для користувача <strong style={{color:'var(--ink)'}}>{banTarget.name}</strong> (@{banTarget.login}).
+            </p>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',marginBottom:'20px'}}>
+              <button className="btn btn-outline btn-sm" onClick={() => submitBan(24)}>1 День</button>
+              <button className="btn btn-outline btn-sm" onClick={() => submitBan(72)}>3 Дні</button>
+              <button className="btn btn-outline btn-sm" onClick={() => submitBan(168)}>Тиждень</button>
+              <button className="btn btn-outline btn-sm" onClick={() => submitBan(720)}>Місяць</button>
+              <button className="btn btn-outline btn-sm" onClick={() => submitBan(8760)}>Рік</button>
+              <button className="btn btn-red btn-sm" onClick={() => submitBan(999999)}>Назавжди</button>
+            </div>
+            <button className="btn btn-ghost btn-full" onClick={() => setBanModalOpen(false)}>Скасувати</button>
+          </div>
         </div>
       )}
     </>

@@ -94,13 +94,18 @@ export default function AdminSupport({
               {ticketMessages.map((m: any) => {
                 const isSupport = m.role === 'tech-admin' || m.role === 'moderator' || m.role === 'founder';
                 return (
-                  <div key={m.id} style={{alignSelf: isSupport ? 'flex-end' : 'flex-start', maxWidth:'80%'}}>
-                    <div style={{fontSize:'.75rem',color:'var(--muted)',marginBottom:'4px',textAlign: isSupport ? 'right' : 'left'}}>
-                      {m.name} {isSupport ? `(${m.role})` : ''} • {timeAgo(m.createdAt)}
+                  <div key={m.id} className={`chat-msg ${isSupport ? 'user' : 'support'}`}>
+                    <div className="chat-msg-avatar">
+                      {isSupport ? 'A' : (m.name || '?').charAt(0).toUpperCase()}
                     </div>
-                    <div style={{background: isSupport ? 'var(--gold)' : 'var(--warm)', color: isSupport ? '#fff' : 'var(--ink)', padding:'10px 14px', borderRadius: isSupport ? '16px 16px 4px 16px' : '16px 16px 16px 4px', fontSize:'.9rem', whiteSpace:'pre-wrap'}}>
-                      {m.text}
-                      {m.imageUrl && <img src={m.imageUrl} alt="attachment" style={{maxWidth:'100%',borderRadius:'8px',marginTop:'8px'}}/>}
+                    <div className="chat-msg-content">
+                      <div className="chat-bubble">
+                        {m.text}
+                        {m.imageUrl && <img src={m.imageUrl} className="chat-bubble-img" alt="attachment"/>}
+                      </div>
+                      <div className="chat-msg-time">
+                        {m.name} {isSupport && `(${m.role})`} • {timeAgo(m.createdAt)}
+                      </div>
                     </div>
                   </div>
                 );

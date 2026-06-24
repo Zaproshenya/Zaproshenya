@@ -148,6 +148,7 @@ export default function FriendsPage() {
 
   const toggleMenu = (e: React.MouseEvent, fUid: string) => {
     e.stopPropagation();
+    e.nativeEvent.stopImmediatePropagation();
     setOpenMenuId(openMenuId === fUid ? null : fUid);
   };
 
@@ -219,7 +220,7 @@ export default function FriendsPage() {
               <div style={{flex:1, minWidth:0}}>
                 <div style={{fontSize:'.95rem', fontWeight:600, color:'var(--ink)', marginBottom:'2px'}}>{searchResult.name}</div>
                 <div style={{fontSize:'.8rem', color:'var(--muted)'}}>
-                  {searchResult.uniqueId}
+                  @{searchResult.login} • {searchResult.uniqueId}
                 </div>
               </div>
               <button className="btn btn-dark" onClick={handleSendRequest} style={{padding:'8px 16px', fontSize:'.85rem'}}>
@@ -273,7 +274,10 @@ export default function FriendsPage() {
                     {online && <span className="friend-online-dot"></span>}
                   </div>
                   <div className="friend-row-info">
-                    <div className="friend-row-name">{f.name}</div>
+                    <div className="friend-row-name">
+                      {f.name}
+                      {f.login && <span style={{fontSize:'.8rem', color:'var(--muted)', marginLeft:'6px', fontWeight:400}}>@{f.login}</span>}
+                    </div>
                     {statusText && <div className={`friend-row-status ${online ? 'online' : ''}`}>{statusText}</div>}
                   </div>
                   <div style={{position:'relative'}}>

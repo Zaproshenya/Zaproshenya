@@ -220,6 +220,43 @@ export default function ProfilePage() {
     }
   };
 
+  const handleAvatarChange = async (e: any) => {
+    const file = e.target.files?.[0];
+    if (!file || !user || !profile) return;
+    if (!file.type.startsWith('image/')) {
+      toast('Недійсний файл', 'error');
+      return;
+    }
+    
+    setSaving(true);
+    toast('Завантаження...', 'info');
+    try {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = async () => {
+          const maxSize = 256;
+          let w = img.width, h = img.height;
+          if (w > h) { if (w > maxSize) { h = h * maxSize / w; w = maxSize; } }
+          else { if (h > maxSize) { w = w * maxSize / h; h = maxSize; } }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d')?.drawImage(img, 0, 0, w, h);
+          const base64Url = canvas.toDataURL('image/jpeg', 0.85);
+          
+          await updateProfileData(user.uid, { avatar: base64Url });
+          toast('Аватар оновлено!', 'success');
+          setSaving(false);
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    } catch (err: any) {
+      toast('Помилка: ' + err.message, 'error');
+      setSaving(false);
+    }
+  };
+
   if (loading || user === undefined || !profile) {
     return (
       <div className="wrap">
@@ -255,6 +292,7 @@ export default function ProfilePage() {
             </div>
             <label className="profile-avatar-edit" title="Змінити аватар">
               <Icon name="camera" size={14}/>
+              <input type="file" accept="image/jpeg, image/png" style={{display:'none'}} onChange={handleAvatarChange} />
             </label>
           </div>
           <div className="profile-hero-info">
@@ -340,23 +378,6 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Admin Panel */}
-      {(profile.role === 'founder' || profile.role === 'tech-admin' || profile.role === 'moderator') && (
-        <div className="profile-section" style={{ border: '1px solid var(--gold)', background: 'rgba(212, 175, 55, 0.05)' }}>
-          <div className="profile-section-header">
-            <div className="profile-section-icon" style={{ color: 'var(--gold)' }}><Icon name="crown" size={16}/></div>
-            <div className="profile-section-title" style={{ color: 'var(--gold)' }}>Панель адміністратора</div>
-          </div>
-          <div className="profile-section-content" style={{ padding: '16px' }}>
-            <p style={{ fontSize: '.85rem', color: 'var(--muted)', marginBottom: '12px' }}>
-              Керування користувачами, перегляд скарг, модерація запрошень та відповіді на тикети підтримки.
-            </p>
-            <Link href="/admin" className="btn btn-dark" style={{ width: '100%', justifyContent: 'center' }}>
-              <Icon name="wrench" size={16} /> Відкрити дашборд
-            </Link>
-          </div>
-        </div>
-      )}
 
       {/* Support & Ideas */}
       <div className="profile-section">
@@ -566,7 +587,7 @@ export default function ProfilePage() {
                   const time = new Date(msg.createdAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
                   return (
                     <div key={msg.id || i} className={`chat-msg ${isUser ? 'user' : 'support'}`}>
-                      <div className="chat-msg-avatar">{(msg.name || '?').charAt(0).toUpperCase()}</div>
+                      <div className="chat-msg-avatar">{isUser ? (msg.name || '?').charAt(0).toUpperCase() : 'A'}</div>
                       <div className="chat-msg-content">
                         {msg.text && <div className="chat-bubble">{msg.text}</div>}
                         <div className="chat-msg-time">{!isUser && 'Підтримка · '} {time}</div>

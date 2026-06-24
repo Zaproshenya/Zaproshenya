@@ -137,21 +137,21 @@ export default function NotificationsPage() {
             const wrapperProps: any = {};
             if (isInvite && n.inviteId) {
               wrapperProps.href = `/${n.type === 'group-invite' ? 'g' : 'i'}/${n.inviteId}`;
-              wrapperProps.className = `notif-card ${!n.read ? 'unread' : ''}`;
+              wrapperProps.className = `notif-item ${!n.read ? 'unread' : ''}`;
             } else {
-              wrapperProps.className = `notif-card ${!n.read ? 'unread' : ''}`;
+              wrapperProps.className = `notif-item ${!n.read ? 'unread' : ''}`;
               wrapperProps.onClick = () => !n.read && !isRequest && handleMarkRead(n.id);
             }
 
             return (
-              <Wrapper key={n.id} {...wrapperProps} style={isInvite ? {textDecoration:'none', color:'inherit', display:'flex'} : {}}>
-                <div className={`notif-icon-circle ${n.type || 'system'}`}>
+              <Wrapper key={n.id} {...wrapperProps} style={isInvite ? {textDecoration:'none', color:'inherit'} : {}}>
+                <div className={`notif-icon-wrap type-${n.type || 'default'}`}>
                   {renderIcon(n.type)}
                 </div>
                 <div className="notif-body">
-                  <div className="notif-item-title">{n.title}</div>
-                  <div className="notif-item-text">{n.body}</div>
-                  <div className="notif-item-time">{timeAgo(n.createdAt)}</div>
+                  <div className="notif-title">{n.title}</div>
+                  <div className="notif-text">{n.body}</div>
+                  <div className="notif-time">{timeAgo(n.createdAt)}</div>
                 </div>
                 <div className="notif-actions">
                   {!n.read && <div className="notif-unread-dot"></div>}

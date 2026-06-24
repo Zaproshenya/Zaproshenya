@@ -150,6 +150,7 @@ export async function getFriends(uid: string) {
       if (pf.name) f.name = pf.name;
       if (pf.uniqueId) f.uniqueId = pf.uniqueId;
       if (pf.lastSeen) f.lastSeen = pf.lastSeen;
+      if (pf.login) f.login = pf.login;
       f._pf = pf;
     }
   }

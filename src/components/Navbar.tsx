@@ -33,6 +33,13 @@ export function Navbar() {
                 <Icon name="users" size={18} />
               </Link>
             </div>
+            {profile && (profile.role === 'founder' || profile.role === 'tech-admin' || profile.role === 'moderator') && (
+              <div className="pill-wrap">
+                <Link href="/admin" className={`nb ${isActive('/admin')}`} aria-label="Дашборд">
+                  <Icon name="wrench" size={18} />
+                </Link>
+              </div>
+            )}
             <div className="pill-wrap">
               <Link href="/notifications" className={`nb ${isActive('/notifications')}`} aria-label="Сповіщення">
                 <Icon name="bell" size={18} />

@@ -16,65 +16,82 @@ export default function AdminOverview({ stats, users }: { stats: any, users: any
       const canvas = chartActivityRef.current;
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const days = 7;
-        const counts = Array(days).fill(0);
-        const now = Date.now();
-        const dayMs = 24 * 60 * 60 * 1000;
-        
-        stats.users.forEach((u: any) => {
-          if (u.createdAt) {
-            const diff = now - u.createdAt;
-            const dIndex = days - 1 - Math.floor(diff / dayMs);
-            if (dIndex >= 0 && dIndex < days) counts[dIndex]++;
-          }
+        const W = canvas.parentElement?.clientWidth ? canvas.parentElement.clientWidth - 40 : 400;
+        const H = 200;
+        canvas.width = W * 2; canvas.height = H * 2;
+        canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+        ctx.scale(2, 2);
+
+        const days = [];
+        const labels = [];
+        for (let i = 13; i >= 0; i--) {
+          const d = new Date(); d.setDate(d.getDate() - i);
+          const key = d.toISOString().split('T')[0];
+          days.push(key);
+          labels.push(d.getDate() + '/' + (d.getMonth() + 1));
+        }
+
+        const counts = days.map(day => {
+          return stats.users.filter((u: any) => {
+            if (!u.createdAt) return false;
+            const d = new Date(u.createdAt);
+            if (isNaN(d.getTime())) return false;
+            return d.toISOString().split('T')[0] === day;
+          }).length;
         });
 
-        const W = canvas.width;
-        const H = canvas.height;
-        const padT = 20, padB = 20, padL = 30, padR = 10;
+        const max = Math.max(...counts, 1);
+        const padL = 30, padR = 10, padT = 20, padB = 30;
         const chartW = W - padL - padR;
         const chartH = H - padT - padB;
 
-        const maxCount = Math.max(...counts, 5);
-        const max = Math.ceil(maxCount / 5) * 5;
-
         // Grid
-        ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+        ctx.strokeStyle = 'rgba(180,140,60,0.1)';
         ctx.lineWidth = 1;
-        ctx.fillStyle = '#999';
-        ctx.font = '10px sans-serif';
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'middle';
         for (let i = 0; i <= 4; i++) {
           const y = padT + (chartH / 4) * i;
-          ctx.beginPath();
-          ctx.moveTo(padL - 5, y);
-          ctx.lineTo(W - padR, y);
-          ctx.stroke();
-          ctx.fillText(String(Math.round(max - (max / 4) * i)), padL - 10, y);
+          ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+          ctx.fillStyle = '#6b6058'; ctx.font = '10px Inter, sans-serif';
+          ctx.textAlign = 'right';
+          ctx.fillText(String(Math.round(max - (max / 4) * i)), padL - 6, y + 4);
         }
 
-        const step = chartW / (days - 1);
+        // Labels
+        ctx.fillStyle = '#6b6058'; ctx.font = '9px Inter, sans-serif'; ctx.textAlign = 'center';
+        const step = chartW / (days.length - 1);
+        labels.forEach((l, i) => {
+          if (i % 2 === 0) ctx.fillText(l, padL + i * step, H - 8);
+        });
+
+        // Line
         ctx.beginPath();
-        for (let i = 0; i < counts.length; i++) {
-          const c = counts[i];
+        ctx.strokeStyle = '#c9922a'; ctx.lineWidth = 2.5;
+        ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        counts.forEach((c, i) => {
           const x = padL + i * step;
           const y = padT + chartH - (c / max) * chartH;
           if (i === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
-        }
-        ctx.strokeStyle = '#2d7a4f';
-        ctx.lineWidth = 3;
+        });
         ctx.stroke();
 
-        ctx.lineTo(padL + (counts.length - 1) * step, padT + chartH);
+        // Area under line
+        ctx.lineTo(padL + chartW, padT + chartH);
         ctx.lineTo(padL, padT + chartH);
+        ctx.closePath();
         const grad = ctx.createLinearGradient(0, padT, 0, padT + chartH);
-        grad.addColorStop(0, 'rgba(45, 122, 79, 0.2)');
-        grad.addColorStop(1, 'rgba(45, 122, 79, 0)');
-        ctx.fillStyle = grad;
-        ctx.fill();
+        grad.addColorStop(0, 'rgba(201,146,42,0.15)');
+        grad.addColorStop(1, 'rgba(201,146,42,0)');
+        ctx.fillStyle = grad; ctx.fill();
+
+        // Points
+        counts.forEach((c, i) => {
+          const x = padL + i * step;
+          const y = padT + chartH - (c / max) * chartH;
+          ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+          ctx.fillStyle = '#c9922a'; ctx.fill();
+          ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+        });
       }
     }
 
@@ -84,32 +101,59 @@ export default function AdminOverview({ stats, users }: { stats: any, users: any
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const W = canvas.width;
-        const H = canvas.height;
-        const cx = W / 2;
-        const cy = H / 2;
-        const R = Math.min(cx, cy) - 20;
-        
-        const data = [
-          { val: stats.roleCounts.founder, color: '#f59e0b', label: 'Founder' },
-          { val: stats.roleCounts.techAdmin, color: '#3b82f6', label: 'Tech' },
-          { val: stats.roleCounts.moderator, color: '#8b5cf6', label: 'Mod' },
-          { val: stats.roleCounts.user, color: '#10b981', label: 'User' },
-        ];
-        
-        const total = data.reduce((sum, item) => sum + item.val, 0);
-        if (total === 0) return;
+        const W = canvas.parentElement?.clientWidth ? canvas.parentElement.clientWidth - 40 : 400;
+        const H = 200;
+        canvas.width = W * 2; canvas.height = H * 2;
+        canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+        ctx.scale(2, 2);
 
-        let startAngle = -0.5 * Math.PI;
-        data.forEach(item => {
-          if (item.val === 0) return;
-          const sliceAngle = (item.val / total) * 2 * Math.PI;
+        const roles = [
+          { label: 'Користувачі', color: '#6b6058', count: stats.roleCounts.user || 0 },
+          { label: 'Модератори', color: '#c9922a', count: stats.roleCounts.moderator || 0 },
+          { label: 'Тех-адміни', color: '#2563eb', count: stats.roleCounts.techAdmin || 0 },
+          { label: 'Засновники', color: '#7c3aed', count: stats.roleCounts.founder || 0 },
+        ].filter(r => r.count > 0);
+        
+        const total = roles.reduce((s, r) => s + r.count, 0) || 1;
+
+        const cx = W / 2, cy = H / 2 - 10;
+        const outerR = Math.min(cx, cy) - 20;
+        const innerR = outerR * 0.55;
+
+        let angle = -Math.PI / 2;
+        roles.forEach(r => {
+          const sliceAngle = (r.count / total) * Math.PI * 2;
           ctx.beginPath();
-          ctx.arc(cx, cy, R, startAngle, startAngle + sliceAngle);
-          ctx.lineWidth = 20;
-          ctx.strokeStyle = item.color;
-          ctx.stroke();
-          startAngle += sliceAngle;
+          ctx.moveTo(cx, cy);
+          ctx.arc(cx, cy, outerR, angle, angle + sliceAngle);
+          ctx.closePath();
+          ctx.fillStyle = r.color;
+          ctx.fill();
+          angle += sliceAngle;
+        });
+
+        // Inner circle
+        ctx.beginPath();
+        ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+
+        // Center text
+        ctx.fillStyle = '#18120a'; ctx.font = 'bold 20px Inter, sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(String(total), cx, cy + 4);
+        ctx.fillStyle = '#6b6058'; ctx.font = '10px Inter, sans-serif';
+        ctx.fillText('Всього', cx, cy + 18);
+
+        // Legend
+        let ly = H - 14;
+        ctx.textAlign = 'left';
+        const legendX = 10;
+        roles.forEach((r, i) => {
+          const x = legendX + i * (W / roles.length);
+          ctx.fillStyle = r.color;
+          ctx.fillRect(x, ly - 8, 8, 8);
+          ctx.fillStyle = '#18120a'; ctx.font = '10px Inter, sans-serif';
+          ctx.fillText(r.label, x + 12, ly);
         });
       }
     }
