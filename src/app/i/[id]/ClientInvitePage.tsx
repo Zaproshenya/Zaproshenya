@@ -139,17 +139,28 @@ export default function ClientInvitePage({ id }: { id: string }) {
           </div>
 
           {answered ? (
-            <div className={`answer-result result-${answerStatus}`}>
-              <div className="result-icon">
-                {answerStatus === 'accepted' && <Icon name="check" size={24}/>}
-                {answerStatus === 'declined' && <Icon name="x" size={24}/>}
-                {answerStatus === 'reschedule' && <Icon name="clock-counter-clockwise" size={24}/>}
-              </div>
-              <div className="result-title">
-                {answerStatus === 'accepted' && 'Ви прийняли запрошення!'}
-                {answerStatus === 'declined' && 'Ви відхилили запрошення'}
-                {answerStatus === 'reschedule' && 'Ви запропонували інший час'}
-              </div>
+            <div className="result-screen" style={{animation:'pop .5s cubic-bezier(.34,1.56,.64,1) both'}}>
+              {answerStatus === 'accepted' && (
+                <>
+                  <span className="result-icon"><Icon name="confetti" size={32}/></span>
+                  <div className="result-title" style={{color:'var(--green)'}}>Ура! Так! <Icon name="star" size={14}/></div>
+                  <div className="result-sub">Ви погодились! Відправник дізнається автоматично <Icon name="check" size={14}/></div>
+                </>
+              )}
+              {answerStatus === 'declined' && (
+                <>
+                  <span className="result-icon"><Icon name="heart-crack" size={32}/></span>
+                  <div className="result-title" style={{color:'var(--red)'}}>Відмовлено</div>
+                  <div className="result-sub">Ви відмовились. Відправник дізнається автоматично.</div>
+                </>
+              )}
+              {answerStatus === 'reschedule' && (
+                <>
+                  <span className="result-icon"><Icon name="calendar-blank" size={32}/></span>
+                  <div className="result-title" style={{color:'var(--gold)'}}>Пропозицію надіслано!</div>
+                  <div className="result-sub">Відправник отримає ваш варіант часу і зв'яжеться з вами.</div>
+                </>
+              )}
             </div>
           ) : (
             isCreator ? (

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserInvites } from '@/lib/firebase/db';
+import { getUserInvites, getNotifications } from '@/lib/firebase/db';
 import { TYPE_MAP } from '@/lib/utils';
 import { Icon } from '@/components/Icon';
 import { toast } from '@/components/Toast';
@@ -13,6 +13,7 @@ export default function HomePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [invites, setInvites] = useState<any[]>([]);
+  const [incomingInvites, setIncomingInvites] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'outgoing' | 'incoming'>('outgoing');
   const [filter, setFilter] = useState('all');
 
@@ -25,9 +26,20 @@ export default function HomePage() {
 
     const loadData = async () => {
       try {
-        const data = await getUserInvites(user.uid);
+        const [data, notifs] = await Promise.all([
+          getUserInvites(user.uid),
+          getNotifications(user.uid)
+        ]);
         data.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         setInvites(data);
+
+        const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+        const now = Date.now();
+        const incoming = notifs.filter(n =>
+          (n.type === 'invite' || n.type === 'group-invite') && n.inviteId &&
+          (!n.read || (now - n.createdAt < SEVEN_DAYS))
+        );
+        setIncomingInvites(incoming);
       } catch (err) {
         console.error('Error fetching invites', err);
       } finally {
@@ -46,8 +58,7 @@ export default function HomePage() {
     }
   };
 
-  const incomingInvites = [] as any[];
-  const incomingCount = incomingInvites.length;
+  const incomingCount = incomingInvites.filter(i => !i.read).length;
 
   const counts = {
     all:        invites.length,
@@ -212,11 +223,44 @@ export default function HomePage() {
           })
         )
       ) : (
-        <div className="home-empty">
-          <div className="home-empty-icon"><Icon name="users" size={40} /></div>
-          <div className="home-empty-title">Немає нових запрошень</div>
-          <p className="home-empty-sub">Тут будуть запрошення від друзів</p>
-        </div>
+        incomingInvites.length === 0 ? (
+          <div className="home-empty">
+            <div className="home-empty-icon"><Icon name="users" size={40} /></div>
+            <div className="home-empty-title">Немає нових запрошень</div>
+            <p className="home-empty-sub">Тут будуть запрошення від друзів</p>
+          </div>
+        ) : (
+          incomingInvites.map((inv, i) => {
+            return (
+              <Link
+                href={`/${inv.type === 'group-invite' ? 'g' : 'i'}/${inv.inviteId}`}
+                key={inv.id}
+                className={`home-inv-card ${!inv.read ? 'unread' : ''}`}
+                style={{ animationDelay: `${i * 35}ms` }}
+              >
+                <div className="home-inv-emoji">
+                  <Icon name="paper-plane-tilt" size={24} />
+                </div>
+                <div className="home-inv-body">
+                  <div className="home-inv-title">
+                    {inv.title || 'Нове запрошення'}
+                    {!inv.read && (
+                      <span className="home-inv-group-badge" style={{background:'var(--blue-bg)', color:'var(--blue)', borderColor:'var(--blue-border)'}}>
+                        Нове
+                      </span>
+                    )}
+                  </div>
+                  <div className="home-inv-meta">
+                    {inv.body || `Від ${inv.fromName || 'когось'}`}
+                  </div>
+                </div>
+                <div className="home-inv-right">
+                  <Icon name="caret-right" size={16} color="var(--muted)"/>
+                </div>
+              </Link>
+            );
+          })
+        )
       )}
     </div>
   );

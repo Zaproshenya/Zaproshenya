@@ -309,6 +309,87 @@ export default function CreatePage() {
           </div>
         </div>
 
+        <div className="form-section">
+          <div className="form-section-header">
+            <div className="form-section-icon"><Icon name="shield" size={14}/></div>
+            <div className="form-section-label">Налаштування доступу</div>
+          </div>
+          <div className="form-section-body" style={{paddingTop:'4px', paddingBottom:'4px'}}>
+            {mode === 'group' && (
+              <div className="toggle-row">
+                <button className={`toggle ${isPublic ? 'on' : ''}`} onClick={() => { setIsPublic(!isPublic); if (isPublic) setSelectedFriends([]); }} role="switch" aria-checked={isPublic}></button>
+                <div className="toggle-row-text">
+                  <div className="toggle-row-label">
+                    {isPublic ? <><Icon name="globe-hemisphere-west" size={13}/> Публічне</> : <><Icon name="lock" size={13}/> Приватне</>}
+                  </div>
+                  <div className="toggle-row-desc">
+                    {isPublic ? 'Будь-хто може приєднатися за посиланням' : 'Тільки для обраних друзів'}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {selectedFriends.length === 0 && (
+              <div className="toggle-row">
+                <button className={`toggle ${requireAuth ? 'on' : ''}`} onClick={() => setRequireAuth(!requireAuth)} role="switch" aria-checked={requireAuth}></button>
+                <div className="toggle-row-text">
+                  <div className="toggle-row-label">
+                    {requireAuth ? <><Icon name="lock" size={13}/> Тільки для зареєстрованих</> : <><Icon name="globe-hemisphere-west" size={13}/> Для всіх</>}
+                  </div>
+                  <div className="toggle-row-desc">
+                    {requireAuth ? 'Отримувач повинен увійти в акаунт' : 'Будь-хто може переглянути запрошення'}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="toggle-row">
+              <button className={`toggle ${showSender !== false ? 'on' : ''}`} onClick={() => setShowSender(!showSender)} role="switch" aria-checked={showSender !== false}></button>
+              <div className="toggle-row-text">
+                <div className="toggle-row-label">
+                  {showSender !== false ? <><Icon name="eye" size={13}/> Показувати від кого</> : <><Icon name="eye-slash" size={13}/> Анонімне запрошення</>}
+                </div>
+                <div className="toggle-row-desc">
+                  {showSender !== false ? 'Отримувач бачитиме ваше ім\'я' : 'Відправник прихований'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {mode === 'group' && (!isPublic || selectedFriends.length > 0) && (
+          <div className="form-section">
+            <div className="form-section-header">
+              <div className="form-section-icon"><Icon name="users" size={14}/></div>
+              <div className="form-section-label">Запросити друзів {selectedFriends.length > 0 && <span className="tab-count">{selectedFriends.length}</span>}</div>
+            </div>
+            <div className="form-section-body">
+              {friends.length === 0 ? (
+                <p style={{fontSize:'.88rem', color:'var(--muted)', fontStyle:'italic'}}>
+                  У вас ще немає друзів. <Link href="/friends" className="btn-ghost" style={{display:'inline-block'}}>Додати →</Link>
+                </p>
+              ) : (
+                <>
+                  {friends.length > 4 && (
+                    <input type="text" placeholder="Пошук друга..." value={friendFilter} onChange={e => setFriendFilter(e.target.value)} style={{marginBottom:'10px'}}/>
+                  )}
+                  <div className="friends-grid">
+                    {filteredFriends.length === 0 ? (
+                      <p style={{fontSize:'.85rem', color:'var(--muted)', fontStyle:'italic'}}>Нікого не знайдено</p>
+                    ) : filteredFriends.map(f => (
+                      <button key={f.uid} type="button" className={`friend-chip ${selectedFriends.includes(f.uid) ? 'on' : ''}`} onClick={() => toggleFriend(f.uid)}>
+                        <div className="avatar avatar-sm">{f.avatar ? <img src={f.avatar} alt=""/> : f.name?.charAt(0)}</div>
+                        <span className="friend-chip-name">{f.name}</span>
+                        {f.uniqueId && <span className="friend-chip-id">{f.uniqueId}</span>}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="create-submit-wrap">
           <button
             className="btn btn-dark btn-full"

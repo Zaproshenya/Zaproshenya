@@ -2,9 +2,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { getFriends, getUserByLogin, getUserById, sendFriendRequest } from '@/lib/firebase/db';
+import { 
+  getFriends, getUserByLogin, getUserById, sendFriendRequest,
+  getFriendRequests, acceptFriendRequest, declineFriendRequest, removeFriend,
+  getNotifications, markNotifRead
+} from '@/lib/firebase/db';
 import { timeAgo } from '@/lib/utils';
 import { Icon } from '@/components/Icon';
+import { toast } from '@/components/Toast';
 import Link from 'next/link';
 
 export default function FriendsPage() {
@@ -20,27 +25,55 @@ export default function FriendsPage() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchResult, setSearchResult] = useState<any>(null);
 
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  const loadData = async () => {
+    if (!user) return;
+    try {
+      const [fList, reqList, notifs] = await Promise.all([
+        getFriends(user.uid),
+        getFriendRequests(user.uid),
+        getNotifications(user.uid)
+      ]);
+      
+      setFriends(fList);
+      
+      const reqsWithProfiles = [];
+      for (const r of reqList) {
+        // getFriendRequests now returns raw data from node, but wait, 
+        // the old logic stored name/uid in the node or sent via addNotification?
+        // Let's rely on the notification data that stores fromUid and fromName
+      }
+      
+      const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+      const now = Date.now();
+      
+      // Parse requests from notifications
+      const pendingReqs = notifs.filter(n => n.type === 'friend-request' && !n.read && now - n.createdAt < SEVEN_DAYS);
+      setRequests(pendingReqs);
+
+      // Parse invites via friends
+      const invs = notifs.filter(n => (n.type === 'invite' || n.type === 'group-invite') && n.inviteId && !n.read && now - n.createdAt < SEVEN_DAYS);
+      setFriendInvites(invs);
+
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (user === undefined) return;
     if (user === null) {
       router.push('/login');
       return;
     }
-
-    const loadData = async () => {
-      try {
-        const fList = await getFriends(user.uid);
-        setFriends(fList);
-        
-        // Let's assume requests and invites are empty for now 
-        // to simplify the UI migration, since we haven't ported all DB methods yet
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadData();
+    // Close menu when clicking outside
+    const handleGlobalClick = () => setOpenMenuId(null);
+    document.addEventListener('click', handleGlobalClick);
+    return () => document.removeEventListener('click', handleGlobalClick);
   }, [user, router]);
 
   const handleSearch = async () => {
@@ -69,12 +102,53 @@ export default function FriendsPage() {
     if (!searchResult || !searchResult.uid || !user) return;
     try {
       await sendFriendRequest(user.uid, searchResult.uid, user.displayName || 'Користувач');
-      alert('Запит надіслано!');
+      toast('Запит надіслано!', 'success');
       setSearchResult(null);
       setSearchInput('');
     } catch (e: any) {
-      alert(e.message || 'Помилка');
+      toast(e.message || 'Помилка', 'error');
     }
+  };
+
+  const handleAcceptRequest = async (notifId: string, fromUid: string) => {
+    if (!user) return;
+    try {
+      await acceptFriendRequest(user.uid, fromUid);
+      await markNotifRead(user.uid, notifId);
+      toast('Запит прийнято', 'success');
+      loadData();
+    } catch (e: any) {
+      toast('Помилка прийняття', 'error');
+    }
+  };
+
+  const handleDeclineRequest = async (notifId: string, fromUid: string) => {
+    if (!user) return;
+    try {
+      await declineFriendRequest(user.uid, fromUid);
+      await markNotifRead(user.uid, notifId);
+      toast('Запит відхилено', 'info');
+      loadData();
+    } catch (e: any) {
+      toast('Помилка відхилення', 'error');
+    }
+  };
+
+  const handleRemoveFriend = async (friendUid: string) => {
+    if (!user) return;
+    if (!confirm('Видалити користувача з друзів?')) return;
+    try {
+      await removeFriend(user.uid, friendUid);
+      toast('Друга видалено', 'info');
+      loadData();
+    } catch (e: any) {
+      toast('Помилка', 'error');
+    }
+  };
+
+  const toggleMenu = (e: React.MouseEvent, fUid: string) => {
+    e.stopPropagation();
+    setOpenMenuId(openMenuId === fUid ? null : fUid);
   };
 
   if (loading || user === undefined) {
@@ -113,7 +187,7 @@ export default function FriendsPage() {
   const isOnline = (f: any) => f.lastSeen && (Date.now() - f.lastSeen < 2 * 60 * 1000);
 
   return (
-    <div className="wrap">
+    <div className="wrap" style={{paddingBottom:'80px'}}>
       <div className="friends-header">
         <div>
           <h1 className="friends-title">Друзі</h1>
@@ -202,9 +276,18 @@ export default function FriendsPage() {
                     <div className="friend-row-name">{f.name}</div>
                     {statusText && <div className={`friend-row-status ${online ? 'online' : ''}`}>{statusText}</div>}
                   </div>
-                  <button className="friend-menu-btn" title="Дії">
-                    <Icon name="dots-three-vertical" size={20}/>
-                  </button>
+                  <div style={{position:'relative'}}>
+                    <button className="friend-menu-btn" title="Дії" onClick={e => toggleMenu(e, f.uid)}>
+                      <Icon name="dots-three-vertical" size={20}/>
+                    </button>
+                    {openMenuId === f.uid && (
+                      <div className="context-menu show" onClick={e => e.stopPropagation()} style={{top:'30px', right:'0', width:'180px'}}>
+                        <button className="context-menu-item text-red" onClick={() => { setOpenMenuId(null); handleRemoveFriend(f.uid); }}>
+                          <Icon name="user-minus" size={16}/> Видалити з друзів
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -213,18 +296,63 @@ export default function FriendsPage() {
       )}
 
       {tab === 'requests' && (
-        <div className="friends-empty">
-          <div className="friends-empty-icon"><Icon name="hand-waving" size={40}/></div>
-          <div className="friends-empty-title">Немає запитів</div>
-          <p className="friends-empty-sub">Нові запити на дружбу з'являться тут</p>
-        </div>
+        requests.length === 0 ? (
+          <div className="friends-empty">
+            <div className="friends-empty-icon"><Icon name="hand-waving" size={40}/></div>
+            <div className="friends-empty-title">Немає запитів</div>
+            <p className="friends-empty-sub">Нові запити на дружбу з'являться тут</p>
+          </div>
+        ) : (
+          <div className="friend-list">
+            {requests.map(r => (
+              <div key={r.id} className="friend-row" style={{flexWrap: 'wrap'}}>
+                <div style={{display:'flex', alignItems:'center', gap:'14px', flex:1, minWidth:'200px'}}>
+                  <div className="avatar avatar-sm">
+                    {(r.fromName || '?').charAt(0).toUpperCase()}
+                  </div>
+                  <div className="friend-row-info">
+                    <div className="friend-row-name">{r.fromName || 'Невідомий'}</div>
+                    <div className="friend-row-status">Хоче додати вас у друзі</div>
+                  </div>
+                </div>
+                <div style={{display:'flex', gap:'8px', width:'100%', marginTop:'10px'}}>
+                  <button className="btn btn-dark" style={{flex:1, padding:'10px', fontSize:'.85rem'}} onClick={() => handleAcceptRequest(r.id, r.fromUid)}>
+                    Прийняти
+                  </button>
+                  <button className="btn btn-outline" style={{flex:1, padding:'10px', fontSize:'.85rem'}} onClick={() => handleDeclineRequest(r.id, r.fromUid)}>
+                    Відхилити
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
       )}
 
       {tab === 'invites' && (
-        <div className="friends-empty">
-          <div className="friends-empty-icon"><Icon name="paper-plane-tilt" size={40}/></div>
-          <div className="friends-empty-title">Немає запрошень</div>
-        </div>
+        friendInvites.length === 0 ? (
+          <div className="friends-empty">
+            <div className="friends-empty-icon"><Icon name="paper-plane-tilt" size={40}/></div>
+            <div className="friends-empty-title">Немає запрошень</div>
+          </div>
+        ) : (
+          <div className="friend-list">
+            {friendInvites.map(inv => (
+              <Link href={`/${inv.type === 'group-invite' ? 'g' : 'i'}/${inv.inviteId}`} key={inv.id} className="friend-row" style={{textDecoration:'none', color:'inherit'}}>
+                <div style={{display:'flex', alignItems:'center', gap:'14px', flex:1}}>
+                  <div className="avatar avatar-sm" style={{background:'var(--blue-bg)', color:'var(--blue)', border:'none'}}>
+                    <Icon name="paper-plane-tilt" size={18}/>
+                  </div>
+                  <div className="friend-row-info">
+                    <div className="friend-row-name" style={{fontSize:'.95rem', color:'var(--ink)'}}>{inv.title}</div>
+                    <div className="friend-row-status" style={{color:'var(--muted)'}}>{inv.body}</div>
+                  </div>
+                </div>
+                <Icon name="caret-right" size={16} color="var(--muted)"/>
+              </Link>
+            ))}
+          </div>
+        )
       )}
     </div>
   );

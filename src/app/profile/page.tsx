@@ -1,15 +1,47 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { logoutUser } from '@/lib/firebase/auth';
+import { logoutUser, updateProfileData, changeLogin, changePassword, deleteAccount } from '@/lib/firebase/auth';
+import { getUserInvites, getFriends, getUserTickets, createSupportTicket, listenTicketMessages, stopListeningTicket, listenTicket, stopListeningTicketMeta, sendTicketMessage, markTicketReadByUser } from '@/lib/firebase/db';
 import { Icon } from '@/components/Icon';
+import { toast } from '@/components/Toast';
 import Link from 'next/link';
 
 export default function ProfilePage() {
   const router = useRouter();
   const { user, profile } = useAuth();
+  
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<any>(null);
+  const [tickets, setTickets] = useState<any[]>([]);
+
+  // Modals state
+  const [editMode, setEditMode] = useState<'name'|'login'|'password'|null>(null);
+  const [saving, setSaving] = useState(false);
+  const [editError, setEditError] = useState('');
+  
+  const [newTicketOpen, setNewTicketOpen] = useState(false);
+  const [ticketType, setTicketType] = useState('bug');
+  
+  const [chatTicketId, setChatTicketId] = useState<string | null>(null);
+  const [chatTicket, setChatTicket] = useState<any>(null);
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Form refs
+  const nameRef = useRef<HTMLInputElement>(null);
+  const loginRef = useRef<HTMLInputElement>(null);
+  const oldPassRef = useRef<HTMLInputElement>(null);
+  const newPassRef = useRef<HTMLInputElement>(null);
+  const newPass2Ref = useRef<HTMLInputElement>(null);
+  
+  const ticketSubjectRef = useRef<HTMLInputElement>(null);
+  const ticketMsgRef = useRef<HTMLTextAreaElement>(null);
+  const chatInputRef = useRef<HTMLTextAreaElement>(null);
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const deletePassRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (user === undefined) return;
@@ -17,8 +49,53 @@ export default function ProfilePage() {
       router.push('/login');
       return;
     }
-    setLoading(false);
+
+    const loadData = async () => {
+      try {
+        const [invs, frnds, tkts] = await Promise.all([
+          getUserInvites(user.uid),
+          getFriends(user.uid),
+          getUserTickets(user.uid)
+        ]);
+        
+        const personalCount = invs.filter((i: any) => !i.isGroup).length;
+        const groupCount = invs.filter((i: any) => i.isGroup).length;
+        const acceptedCount = invs.filter((i: any) => i.status === 'accepted').length;
+        const declinedCount = invs.filter((i: any) => i.status === 'declined').length;
+        const pendingCount = invs.filter((i: any) => i.status === 'pending' || !i.status).length;
+
+        setStats({
+          totalInvites: invs.length,
+          personalCount, groupCount,
+          acceptedCount, declinedCount, pendingCount,
+          totalFriends: frnds.length
+        });
+        setTickets(tkts);
+      } catch (e) {
+        console.warn('Profile load error:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
   }, [user, router]);
+
+  useEffect(() => {
+    if (chatTicketId) {
+      listenTicketMessages(chatTicketId, setChatMessages);
+      listenTicket(chatTicketId, setChatTicket);
+      return () => {
+        stopListeningTicket(chatTicketId);
+        stopListeningTicketMeta(chatTicketId);
+      };
+    }
+  }, [chatTicketId]);
+
+  useEffect(() => {
+    if (chatMessages.length > 0) {
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages]);
 
   const handleLogout = async () => {
     try {
@@ -29,75 +106,316 @@ export default function ProfilePage() {
     }
   };
 
+  const handleCopyId = () => {
+    if (!profile?.uniqueId) return;
+    navigator.clipboard.writeText(profile.uniqueId);
+    toast('ID скопійовано', 'success');
+  };
+
+  const handleSaveEdit = async () => {
+    if (!user || !profile) return;
+    setEditError('');
+    setSaving(true);
+    try {
+      if (editMode === 'name') {
+        const val = nameRef.current?.value.trim();
+        if (!val || val.length < 2) throw new Error("Ім'я має бути не менше 2 символів");
+        await updateProfileData(user.uid, { name: val });
+        toast("Ім'я змінено", 'success');
+      } else if (editMode === 'login') {
+        const val = loginRef.current?.value.trim();
+        if (!val) throw new Error("Введіть логін");
+        await changeLogin(user, profile, val);
+        toast("Логін змінено", 'success');
+      } else if (editMode === 'password') {
+        const oldP = oldPassRef.current?.value;
+        const newP = newPassRef.current?.value;
+        const newP2 = newPass2Ref.current?.value;
+        if (!oldP || !newP) throw new Error("Заповніть всі поля");
+        if (newP !== newP2) throw new Error("Паролі не співпадають");
+        await changePassword(user, profile, oldP, newP);
+        toast("Пароль змінено", 'success');
+      }
+      setEditMode(null);
+    } catch (e: any) {
+      let msg = e.message || 'Помилка';
+      if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') msg = 'Невірний поточний пароль';
+      if (e.code === 'auth/requires-recent-login') msg = 'Для зміни логіну увійдіть знову';
+      setEditError(msg);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCreateTicket = async () => {
+    if (!user || !profile) return;
+    const subj = ticketSubjectRef.current?.value.trim();
+    const msg = ticketMsgRef.current?.value.trim();
+    if (!subj) return setEditError("Введіть тему");
+    if (!msg) return setEditError("Введіть повідомлення");
+
+    setSaving(true);
+    try {
+      const tid = await createSupportTicket({
+        type: ticketType,
+        subject: subj,
+        firstMessage: msg,
+        authorUid: user.uid,
+        authorName: profile.name
+      });
+      toast('Звернення створено!', 'success');
+      setNewTicketOpen(false);
+      if (tid) {
+        const tkts = await getUserTickets(user.uid);
+        setTickets(tkts);
+        openChat(tid);
+      }
+    } catch (e: any) {
+      setEditError(e.message || "Помилка");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const openChat = (tid: string) => {
+    setChatTicketId(tid);
+    const t = tickets.find(x => x.id === tid);
+    if (t?.unreadByUser) {
+      markTicketReadByUser(tid).catch(console.warn);
+      setTickets(prev => prev.map(x => x.id === tid ? { ...x, unreadByUser: false } : x));
+    }
+  };
+
+  const handleSendChat = async () => {
+    if (!user || !profile || !chatTicketId) return;
+    const text = chatInputRef.current?.value.trim();
+    if (!text) return;
+    
+    if (chatInputRef.current) chatInputRef.current.value = '';
+    
+    try {
+      await sendTicketMessage(chatTicketId, {
+        uid: user.uid,
+        name: profile.name,
+        role: 'user',
+        text
+      });
+    } catch (e) {
+      toast('Помилка відправки', 'error');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user || !profile) return;
+    const pass = deletePassRef.current?.value;
+    if (!pass) return setEditError("Введіть пароль");
+    setSaving(true);
+    try {
+      await deleteAccount(user, profile, pass);
+      toast('Акаунт видалено', 'info');
+      router.push('/login');
+    } catch (e: any) {
+      setSaving(false);
+      setEditError(e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential' ? 'Невірний пароль' : (e.message || 'Помилка'));
+    }
+  };
+
   if (loading || user === undefined || !profile) {
     return (
       <div className="wrap">
-        <div className="profile-header">
-          <div className="skeleton-line" style={{width:'160px', height:'28px'}}></div>
-          <div className="skeleton-circle" style={{width:'36px', height:'36px'}}></div>
-        </div>
-
-        <div className="profile-card" style={{display:'flex', alignItems:'center', gap:'20px', padding:'24px', marginBottom:'24px'}}>
-          <div className="skeleton-circle" style={{width:'72px', height:'72px'}}></div>
-          <div style={{flex:1}}>
-            <div className="skeleton-line w-1-2" style={{height:'18px', marginBottom:'10px'}}></div>
-            <div className="skeleton-line w-1-3" style={{height:'14px'}}></div>
+        <div className="profile-hero">
+          <div className="profile-hero-inner">
+            <div className="skeleton-circle" style={{width:'100px',height:'100px',flexShrink:0}}></div>
+            <div style={{flex:1}}>
+              <div className="skeleton-line w-1-2" style={{marginBottom:'10px',height:'22px'}}></div>
+              <div className="skeleton-line w-1-4" style={{height:'14px'}}></div>
+            </div>
           </div>
         </div>
-
-        <div className="profile-menu" style={{marginBottom:'24px'}}>
-          {[1,2,3].map(i => (
-            <div key={i} className="skeleton-card" style={{height:'52px', border:'none', borderBottom:'1px solid var(--border)', borderRadius:0, display:'flex', alignItems:'center', padding:'0 20px', gap:'16px'}}>
-              <div className="skeleton-circle" style={{width:'24px', height:'24px'}}></div>
-              <div className="skeleton-line w-1-3" style={{height:'14px'}}></div>
-            </div>
-          ))}
-        </div>
-
-        <div className="skeleton-card" style={{height:'140px', borderRadius:'12px'}}></div>
       </div>
     );
   }
 
+  const memberSince = profile.createdAt && !isNaN(new Date(profile.createdAt).getTime())
+      ? new Date(profile.createdAt).toLocaleDateString('uk-UA', { year: 'numeric', month: 'long' })
+      : '—';
+
   return (
-    <div className="wrap">
-      <div className="profile-header">
-        <h1 className="profile-title">Мій профіль</h1>
-        <button className="btn-icon" onClick={handleLogout} title="Вийти">
-          <Icon name="sign-out" size={20}/>
-        </button>
+    <div className="wrap" style={{paddingBottom: '80px'}}>
+      
+      {/* Hero */}
+      <div className="profile-hero">
+        <div className="profile-hero-star">✦</div>
+        <div className="profile-hero-inner">
+          <div className="profile-avatar-wrap">
+            <div className="profile-avatar-ring">
+              <div className="avatar avatar-xl">
+                {profile.avatar ? <img src={profile.avatar} alt=""/> : profile.name?.charAt(0).toUpperCase()}
+              </div>
+            </div>
+            <label className="profile-avatar-edit" title="Змінити аватар">
+              <Icon name="camera" size={14}/>
+            </label>
+          </div>
+          <div className="profile-hero-info">
+            <div className="profile-hero-name">{profile.name}</div>
+            <div className="profile-hero-meta">
+              {profile.role === 'founder' && <span className="role-badge founder">Founder</span>}
+              <span className="profile-id">{profile.uniqueId}</span>
+            </div>
+            <div className="profile-hero-login">
+              <Icon name="user" size={11}/> @{profile.login}
+              <span style={{opacity:.4, margin:'0 2px'}}>·</span>
+              <Icon name="calendar" size={11}/> з {memberSince}
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="profile-card">
-        <div className="profile-avatar-wrap">
-          <div className="profile-avatar">
-            {profile.avatar ? <img src={profile.avatar} alt=""/> : profile.name?.charAt(0).toUpperCase()}
-          </div>
-          <button className="profile-avatar-edit"><Icon name="camera" size={16}/></button>
+      {/* Stats */}
+      <div className="profile-stats">
+        <div className="profile-stat-card">
+          <div className="profile-stat-num">{stats?.totalInvites ?? '—'}</div>
+          <div className="profile-stat-label">Запрошень</div>
         </div>
-        <div className="profile-info">
-          <div className="profile-name">{profile.name}</div>
-          <div className="profile-id-badge" onClick={() => navigator.clipboard.writeText(profile.uniqueId || '')}>
-            {profile.uniqueId} <Icon name="copy" size={12}/>
+        <div className="profile-stat-card">
+          <div className="profile-stat-num" style={{background:'linear-gradient(135deg,#4a90d9,#6eb3f0)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', filter:'drop-shadow(0 2px 6px rgba(74,144,217,.25))'}}>{stats?.totalFriends ?? '—'}</div>
+          <div className="profile-stat-label">Друзів</div>
+        </div>
+        <div className="profile-stat-card">
+          <div className="profile-stat-num" style={{background:'linear-gradient(135deg,var(--green),#56c68a)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', filter:'drop-shadow(0 2px 6px rgba(45,122,79,.25))'}}>{stats?.acceptedCount ?? '—'}</div>
+          <div className="profile-stat-label">Прийнято</div>
+        </div>
+        <div className="profile-stat-card">
+          <div className="profile-stat-num" style={{background:'linear-gradient(135deg,#a08878,#c4b0a0)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent'}}>{stats?.pendingCount ?? '—'}</div>
+          <div className="profile-stat-label">Очікує</div>
+        </div>
+      </div>
+
+      {/* Personal Info */}
+      <div className="profile-section">
+        <div className="profile-section-header">
+          <div className="profile-section-icon"><Icon name="user" size={16}/></div>
+          <div className="profile-section-title">Особисті дані</div>
+        </div>
+        <div className="profile-section-content">
+          <div className="profile-field">
+            <div>
+              <div className="profile-field-label">Ім'я</div>
+              <div className="profile-field-value">{profile.name}</div>
+            </div>
+            <button className="btn-outline btn-sm" onClick={() => setEditMode('name')}>Змінити</button>
+          </div>
+          <div className="profile-field">
+            <div>
+              <div className="profile-field-label">Логін</div>
+              <div className="profile-field-value">@{profile.login}</div>
+            </div>
+            <button className="btn-outline btn-sm" onClick={() => setEditMode('login')}>Змінити</button>
+          </div>
+          <div className="profile-field">
+            <div>
+              <div className="profile-field-label">Унікальний ID</div>
+              <div className="profile-field-value" style={{fontFamily:'monospace', fontSize:'.88rem'}}>{profile.uniqueId}</div>
+            </div>
+            <button className="btn-outline btn-sm" onClick={handleCopyId}>Копіювати</button>
           </div>
         </div>
       </div>
 
-      <div className="profile-menu">
-        <Link href="/friends" className="profile-menu-item">
-          <div className="profile-menu-icon"><Icon name="users" size={20}/></div>
-          <div className="profile-menu-text">Друзі</div>
-          <Icon name="caret-right" size={16} color="var(--muted)"/>
-        </Link>
-        <Link href="/notifications" className="profile-menu-item">
-          <div className="profile-menu-icon"><Icon name="bell" size={20}/></div>
-          <div className="profile-menu-text">Сповіщення</div>
-          <Icon name="caret-right" size={16} color="var(--muted)"/>
-        </Link>
-        <div className="profile-menu-item" onClick={() => {}}>
-          <div className="profile-menu-icon"><Icon name="palette" size={20}/></div>
-          <div className="profile-menu-text">Оформлення (Тема)</div>
-          <Icon name="caret-right" size={16} color="var(--muted)"/>
+      {/* Security */}
+      <div className="profile-section">
+        <div className="profile-section-header">
+          <div className="profile-section-icon"><Icon name="shield-check" size={16}/></div>
+          <div className="profile-section-title">Безпека</div>
+        </div>
+        <div className="profile-section-content">
+          <div className="profile-field">
+            <div>
+              <div className="profile-field-label">Пароль</div>
+              <div className="profile-field-value" style={{letterSpacing:'.15em', fontSize:'1.1rem'}}>••••••••</div>
+            </div>
+            <button className="btn-outline btn-sm" onClick={() => setEditMode('password')}>Змінити</button>
+          </div>
+        </div>
+      </div>
+
+      {/* Admin Panel */}
+      {(profile.role === 'founder' || profile.role === 'tech-admin' || profile.role === 'moderator') && (
+        <div className="profile-section" style={{ border: '1px solid var(--gold)', background: 'rgba(212, 175, 55, 0.05)' }}>
+          <div className="profile-section-header">
+            <div className="profile-section-icon" style={{ color: 'var(--gold)' }}><Icon name="crown" size={16}/></div>
+            <div className="profile-section-title" style={{ color: 'var(--gold)' }}>Панель адміністратора</div>
+          </div>
+          <div className="profile-section-content" style={{ padding: '16px' }}>
+            <p style={{ fontSize: '.85rem', color: 'var(--muted)', marginBottom: '12px' }}>
+              Керування користувачами, перегляд скарг, модерація запрошень та відповіді на тикети підтримки.
+            </p>
+            <Link href="/admin" className="btn btn-dark" style={{ width: '100%', justifyContent: 'center' }}>
+              <Icon name="wrench" size={16} /> Відкрити дашборд
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Support & Ideas */}
+      <div className="profile-section">
+        <div className="profile-section-header">
+          <div className="profile-section-icon"><Icon name="lifebuoy" size={16}/></div>
+          <div className="profile-section-title">Допомога та підтримка</div>
+        </div>
+        <div className="support-action-grid">
+          <button className="support-action-btn" onClick={() => { setTicketType('bug'); setNewTicketOpen(true); }}>
+            <span className="sa-icon">🐛</span>Знайшов баг
+          </button>
+          <button className="support-action-btn" onClick={() => { setTicketType('idea'); setNewTicketOpen(true); }}>
+            <span className="sa-icon">💡</span>Є ідея
+          </button>
+          <button className="support-action-btn" onClick={() => { setTicketType('question'); setNewTicketOpen(true); }}>
+            <span className="sa-icon">❓</span>Питання
+          </button>
+        </div>
+
+        {tickets.length > 0 && (
+          <>
+            <div className="my-tickets-header">
+              <span>Мої звернення</span>
+              <span style={{fontSize:'.7rem', fontWeight:500}}>{tickets.length}</span>
+            </div>
+            {tickets.map(t => (
+              <div key={t.id} className="ticket-item" onClick={() => openChat(t.id)}>
+                <div className={`ticket-item-icon ${t.type || 'other'}`}>
+                  {t.type === 'bug' ? '🐛' : t.type === 'idea' ? '💡' : t.type === 'question' ? '❓' : '💬'}
+                </div>
+                <div className="ticket-item-body">
+                  <div className="ticket-item-subject">{t.subject || t.type}</div>
+                  <div className="ticket-item-preview">{(t.lastMessageText || '').slice(0, 50)}</div>
+                </div>
+                <div className="ticket-item-meta">
+                  <span className={`ticket-status ${t.status || 'open'}`}>
+                    {t.status === 'resolved' ? 'Вирішено' : t.status === 'dismissed' ? 'Закрито' : 'Відкрито'}
+                  </span>
+                  {t.unreadByUser && <div className="ticket-unread-dot"></div>}
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+
+      {/* Donation Block */}
+      <div className="donation-block">
+        <div className="donation-header">
+          <div className="donation-header-icon">✦</div>
+          <div className="donation-header-title">Підтримати проєкт</div>
+        </div>
+        <div className="donation-body">
+          <div className="donation-text">
+            Запрошення ✦ — це безкоштовний незалежний проєкт. Якщо він приносить вам радість — ви можете підтримати його розвиток.
+          </div>
+          <a href="https://send.monobank.ua/jar/5se11GGQ5i" target="_blank" rel="noreferrer" className="donation-btn">
+            <Icon name="heart" size={18}/> Підтримати через Monobank
+          </a>
         </div>
       </div>
 
@@ -111,7 +429,7 @@ export default function ProfilePage() {
           <p style={{fontSize:'.88rem', color:'var(--muted)', marginBottom:'16px', lineHeight:'1.6'}}>
             Видалення акаунту є незворотнім. Усі ваші дані, запрошення та список друзів будуть безповоротно видалені.
           </p>
-          <button className="btn btn-red btn-sm" onClick={() => {}} style={{width: 'auto', display: 'inline-flex', alignItems: 'center', gap: '8px'}}>
+          <button className="btn btn-red btn-sm" onClick={() => { setEditError(''); setDeleteModalOpen(true); }}>
             <Icon name="trash" size={14}/> Видалити акаунт
           </button>
         </div>
@@ -123,6 +441,202 @@ export default function ProfilePage() {
           <Icon name="sign-out" size={16}/> Вийти з акаунту
         </button>
       </div>
+
+      {/* ─── MODALS ─── */}
+      
+      {/* Edit Modal */}
+      {editMode && (
+        <div className="overlay" onClick={() => setEditMode(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'18px'}}>
+              <h3 className="modal-title" style={{marginBottom:0}}>
+                {editMode === 'name' ? "Змінити ім'я" : editMode === 'login' ? "Змінити логін" : "Змінити пароль"}
+              </h3>
+              <button className="modal-close" onClick={() => setEditMode(null)}>×</button>
+            </div>
+            
+            {editMode === 'name' && (
+              <div className="form-group">
+                <label className="lbl">Нове ім'я</label>
+                <input ref={nameRef} defaultValue={profile.name} placeholder="Ваше ім'я" maxLength={15} />
+              </div>
+            )}
+            {editMode === 'login' && (
+              <>
+                <div className="form-group">
+                  <label className="lbl">Новий логін</label>
+                  <input ref={loginRef} defaultValue={profile.login} placeholder="Логін (латиниця, цифри, _)" maxLength={10} />
+                </div>
+                <p style={{fontSize:'.8rem', color:'var(--muted)', marginBottom:'12px'}}>
+                  <Icon name="warning" size={14}/> Після зміни логіну потрібно буде входити з новим логіном
+                </p>
+              </>
+            )}
+            {editMode === 'password' && (
+              <>
+                <div className="form-group">
+                  <label className="lbl">Поточний пароль</label>
+                  <input ref={oldPassRef} type="password" placeholder="Ваш поточний пароль" />
+                </div>
+                <div className="form-group">
+                  <label className="lbl">Новий пароль</label>
+                  <input ref={newPassRef} type="password" placeholder="Мінімум 6 символів" />
+                </div>
+                <div className="form-group">
+                  <label className="lbl">Підтвердити новий пароль</label>
+                  <input ref={newPass2Ref} type="password" placeholder="Повторіть новий пароль" />
+                </div>
+              </>
+            )}
+
+            {editError && <div className="form-error show">{editError}</div>}
+            <button className="btn btn-dark btn-full" disabled={saving} onClick={handleSaveEdit}>
+              {saving ? 'Збереження...' : 'Зберегти'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* New Ticket Modal */}
+      {newTicketOpen && (
+        <div className="overlay" onClick={() => setNewTicketOpen(false)}>
+          <div className="modal new-ticket-modal" onClick={e => e.stopPropagation()} style={{maxWidth:'480px'}}>
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px'}}>
+              <h3 className="modal-title" style={{marginBottom:0}}>Нове звернення</h3>
+              <button className="modal-close" onClick={() => setNewTicketOpen(false)}>×</button>
+            </div>
+            <div className="ticket-type-grid">
+              {[
+                { v: 'bug', i: '🐛', l: 'Знайшов баг', d: 'Помилка у роботі' },
+                { v: 'idea', i: '💡', l: 'Є ідея', d: 'Пропозиція' },
+                { v: 'question', i: '❓', l: 'Питання', d: 'Потрібна відповідь' },
+                { v: 'other', i: '💬', l: 'Інше', d: 'Загальне' },
+              ].map(t => (
+                <button key={t.v} className={`ticket-type-option ${ticketType === t.v ? 'selected' : ''}`} onClick={() => setTicketType(t.v)}>
+                  <span className="tt-icon">{t.i}</span>
+                  <span>{t.l}</span>
+                  <span style={{fontSize:'.7rem', color:'var(--muted)', fontWeight:400}}>{t.d}</span>
+                </button>
+              ))}
+            </div>
+            <div className="form-group">
+              <label className="lbl">Тема</label>
+              <input ref={ticketSubjectRef} placeholder="Коротко опишіть проблему або ідею..." maxLength={100} />
+            </div>
+            <div className="form-group">
+              <label className="lbl">Повідомлення</label>
+              <textarea ref={ticketMsgRef} rows={5} maxLength={300} placeholder="Детально опишіть... (до 300 символів)" 
+                style={{width:'100%', padding:'12px', borderRadius:'10px', border:'1px solid var(--border)', background:'var(--input-bg, var(--paper))', color:'var(--ink)', resize:'vertical', fontFamily:'var(--font-body)', fontSize:'.88rem', lineHeight:1.5}}></textarea>
+            </div>
+            {editError && <div className="form-error show">{editError}</div>}
+            <button className="btn btn-dark btn-full" disabled={saving} onClick={handleCreateTicket}>
+              {saving ? 'Надсилання...' : <><Icon name="paper-plane-tilt" size={16}/> Надіслати</>}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Chat Modal */}
+      {chatTicketId && (
+        <div className="support-chat-overlay" onClick={() => setChatTicketId(null)}>
+          <div className="support-chat-modal" onClick={e => e.stopPropagation()}>
+            <div className="chat-modal-header">
+              <button className="chat-modal-back" onClick={() => setChatTicketId(null)}>
+                <Icon name="arrow-left" size={16}/>
+              </button>
+              <div className="chat-modal-info">
+                <div className="chat-modal-title">
+                  {chatTicket?.type === 'bug' ? '🐛' : chatTicket?.type === 'idea' ? '💡' : chatTicket?.type === 'question' ? '❓' : '💬'} 
+                  {' · '}
+                  {chatTicket?.subject || 'Звернення'}
+                </div>
+                <div className="chat-modal-subtitle">
+                  {chatTicket?.status === 'resolved' ? 'Вирішено' : chatTicket?.status === 'dismissed' ? 'Закрито' : 'Відкрито'}
+                </div>
+              </div>
+              <button className="chat-modal-close" onClick={() => setChatTicketId(null)}>×</button>
+            </div>
+            
+            <div className="chat-messages-area">
+              {chatMessages.length === 0 ? (
+                <div className="chat-loading-spinner"><Icon name="circle-notch" size={24}/></div>
+              ) : (
+                chatMessages.map((msg, i) => {
+                  const isUser = msg.uid === user?.uid;
+                  const time = new Date(msg.createdAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+                  return (
+                    <div key={msg.id || i} className={`chat-msg ${isUser ? 'user' : 'support'}`}>
+                      <div className="chat-msg-avatar">{(msg.name || '?').charAt(0).toUpperCase()}</div>
+                      <div className="chat-msg-content">
+                        {msg.text && <div className="chat-bubble">{msg.text}</div>}
+                        <div className="chat-msg-time">{!isUser && 'Підтримка · '} {time}</div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            <div id="chat-input-container">
+              {chatTicket?.status === 'resolved' || chatTicket?.status === 'dismissed' ? (
+                <div className="chat-resolved-banner">
+                  <div className="chat-resolved-text"><Icon name="check-circle" size={16}/> Звернення закрито</div>
+                </div>
+              ) : (
+                <div className="chat-input-area">
+                  <div className="chat-input-row">
+                    <textarea 
+                      ref={chatInputRef}
+                      className="chat-text-input" 
+                      maxLength={300}
+                      placeholder="Написати повідомлення..."
+                      rows={1}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendChat();
+                        }
+                      }}
+                    />
+                    <button className="chat-send-btn" onClick={handleSendChat}>
+                      <Icon name="paper-plane-tilt" size={18}/>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Modal */}
+      {deleteModalOpen && (
+        <div className="overlay" onClick={() => setDeleteModalOpen(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div style={{textAlign:'center', marginBottom:'20px'}}>
+              <div style={{width:'56px', height:'56px', borderRadius:'50%', background:'var(--red-bg)', border:'2px solid rgba(192,57,43,.2)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 14px', fontSize:'1.4rem', color:'var(--red)'}}>
+                <Icon name="trash" size={24}/>
+              </div>
+              <h3 className="modal-title" style={{color:'var(--red)', marginBottom:0}}>Видалити акаунт?</h3>
+            </div>
+            <p style={{color:'var(--muted)', fontSize:'.9rem', marginBottom:'20px', textAlign:'center', lineHeight:1.6}}>
+              Ця дія незворотня. Всі ваші дані, запрошення та друзі будуть видалені назавжди.
+            </p>
+            <div className="form-group">
+              <label className="lbl">Введіть пароль для підтвердження</label>
+              <input ref={deletePassRef} type="password" placeholder="Ваш пароль"/>
+            </div>
+            {editError && <div className="form-error show">{editError}</div>}
+            <div style={{display:'flex', gap:'10px'}}>
+              <button className="btn btn-red btn-full" disabled={saving} onClick={handleDeleteAccount}>
+                {saving ? '...' : 'Так, видалити'}
+              </button>
+              <button className="btn btn-outline btn-full" disabled={saving} onClick={() => setDeleteModalOpen(false)}>Скасувати</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

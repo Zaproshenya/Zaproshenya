@@ -178,7 +178,24 @@ export default function ClientGroupInvitePage({ id }: { id: string }) {
             )}
           </div>
 
-          {!answered && !isCreator && (
+          {answered ? (
+            <div className="result-screen" style={{animation:'pop .5s cubic-bezier(.34,1.56,.64,1) both', marginTop:'24px'}}>
+              {answerStatus === 'accepted' && (
+                <>
+                  <span className="result-icon"><Icon name="confetti" size={32}/></span>
+                  <div className="result-title" style={{color:'var(--green)'}}>Ура! Так! <Icon name="star" size={14}/></div>
+                  <div className="result-sub">Ви погодились! Відправник дізнається автоматично <Icon name="check" size={14}/></div>
+                </>
+              )}
+              {answerStatus === 'declined' && (
+                <>
+                  <span className="result-icon"><Icon name="heart-crack" size={32}/></span>
+                  <div className="result-title" style={{color:'var(--red)'}}>Відмовлено</div>
+                  <div className="result-sub">Ви відмовились. Відправник дізнається автоматично.</div>
+                </>
+              )}
+            </div>
+          ) : !isCreator && (
             <div className="action-section-wrap" style={{background:'var(--card)', border:'1px solid var(--gold-border)'}}>
               {!user && (
                 <div style={{marginBottom:'16px'}}>

@@ -2,7 +2,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { getNotifications, markNotifRead, markAllNotifsRead, deleteNotification } from '@/lib/firebase/db';
+import { timeAgo } from '@/lib/utils';
 import { Icon } from '@/components/Icon';
+import { toast } from '@/components/Toast';
+import Link from 'next/link';
 
 export default function NotificationsPage() {
   const router = useRouter();
@@ -10,16 +14,58 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const loadData = async () => {
+    if (!user) return;
+    try {
+      const notifs = await getNotifications(user.uid);
+      setNotifications(notifs);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (user === undefined) return;
     if (user === null) {
       router.push('/login');
       return;
     }
-    
-    // For now we just mock an empty list
-    setLoading(false);
+    loadData();
   }, [user, router]);
+
+  const handleMarkAllRead = async () => {
+    if (!user) return;
+    try {
+      await markAllNotifsRead(user.uid);
+      toast('Всі сповіщення прочитано', 'success');
+      loadData();
+    } catch (e) {
+      toast('Помилка', 'error');
+    }
+  };
+
+  const handleMarkRead = async (notifId: string) => {
+    if (!user) return;
+    try {
+      await markNotifRead(user.uid, notifId);
+      loadData();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, notifId: string) => {
+    e.stopPropagation();
+    if (!user) return;
+    try {
+      await deleteNotification(user.uid, notifId);
+      loadData();
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   if (loading || user === undefined) {
     return (
@@ -48,18 +94,28 @@ export default function NotificationsPage() {
     );
   }
 
+  const renderIcon = (type: string) => {
+    switch (type) {
+      case 'friend-request': return <Icon name="user-plus" size={20}/>;
+      case 'friend-accepted': return <Icon name="user-check" size={20}/>;
+      case 'friend-removed': return <Icon name="user-minus" size={20}/>;
+      case 'invite': return <Icon name="envelope-open" size={20}/>;
+      case 'group-invite': return <Icon name="users" size={20}/>;
+      case 'support-reply': return <Icon name="headset" size={20}/>;
+      case 'system': return <Icon name="info" size={20}/>;
+      default: return <Icon name="bell" size={20}/>;
+    }
+  };
+
   return (
-    <div className="wrap">
+    <div className="wrap" style={{paddingBottom:'80px'}}>
       <div className="notif-page-header">
         <div className="notif-page-header-left">
           <h1 className="notif-page-title">Сповіщення</h1>
           <p className="notif-page-subtitle">Тут з'являтимуться відповіді на ваші запрошення та запити в друзі</p>
         </div>
         <div style={{display:'flex', gap:'8px'}}>
-          <button className="btn-icon" title="Налаштування" onClick={() => {}}>
-            <Icon name="gear" size={20}/>
-          </button>
-          <button className="btn-icon" title="Прочитати всі" onClick={() => {}}>
+          <button className="btn-icon" title="Прочитати всі" onClick={handleMarkAllRead}>
             <Icon name="check-circle" size={20}/>
           </button>
         </div>
@@ -73,9 +129,44 @@ export default function NotificationsPage() {
             <p className="notif-empty-sub">Нові сповіщення з'являться тут</p>
           </div>
         ) : (
-          notifications.map(n => (
-            <div key={n.id}>Сповіщення</div>
-          ))
+          notifications.map(n => {
+            const isInvite = n.type === 'invite' || n.type === 'group-invite';
+            const isRequest = n.type === 'friend-request';
+            
+            const Wrapper = (isInvite && n.inviteId) ? Link : 'div';
+            const wrapperProps: any = {};
+            if (isInvite && n.inviteId) {
+              wrapperProps.href = `/${n.type === 'group-invite' ? 'g' : 'i'}/${n.inviteId}`;
+              wrapperProps.className = `notif-card ${!n.read ? 'unread' : ''}`;
+            } else {
+              wrapperProps.className = `notif-card ${!n.read ? 'unread' : ''}`;
+              wrapperProps.onClick = () => !n.read && !isRequest && handleMarkRead(n.id);
+            }
+
+            return (
+              <Wrapper key={n.id} {...wrapperProps} style={isInvite ? {textDecoration:'none', color:'inherit', display:'flex'} : {}}>
+                <div className={`notif-icon-circle ${n.type || 'system'}`}>
+                  {renderIcon(n.type)}
+                </div>
+                <div className="notif-body">
+                  <div className="notif-item-title">{n.title}</div>
+                  <div className="notif-item-text">{n.body}</div>
+                  <div className="notif-item-time">{timeAgo(n.createdAt)}</div>
+                </div>
+                <div className="notif-actions">
+                  {!n.read && <div className="notif-unread-dot"></div>}
+                  {isRequest && (
+                    <button className="btn btn-dark btn-sm" onClick={(e) => { e.stopPropagation(); router.push('/friends'); }}>
+                      Переглянути
+                    </button>
+                  )}
+                  <button className="notif-delete-btn" onClick={(e) => handleDelete(e, n.id)}>
+                    <Icon name="x" size={16}/>
+                  </button>
+                </div>
+              </Wrapper>
+            );
+          })
         )}
       </div>
     </div>
