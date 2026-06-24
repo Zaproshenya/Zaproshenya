@@ -197,6 +197,45 @@
 
 
 
+    <!-- Support & Ideas -->
+    <div class="profile-section">
+      <div class="profile-section-header">
+        <div class="profile-section-icon">${icon('lifebuoy', 16)}</div>
+        <div class="profile-section-title">Допомога та підтримка</div>
+      </div>
+      <div class="profile-section-content">
+        <div class="profile-field" style="flex-direction:column;align-items:flex-start;gap:12px">
+          <div>
+            <div class="profile-field-label">Зворотній зв'язок</div>
+            <div class="profile-field-value" style="font-size:.9rem;white-space:normal;line-height:1.5">
+              Знайшли баг або маєте ідею як покращити Запрошення? Напишіть нам!
+            </div>
+          </div>
+          <button class="btn btn-outline" style="width:100%;justify-content:center" onclick="ZAP.pages.profile.openSupportModal()">
+            ${icon('chat-teardrop-text', 16)} Написати в підтримку
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Donation -->
+    <div class="profile-section" style="border:1px solid var(--gold);background:rgba(212,175,55,0.03)">
+      <div class="profile-section-header">
+        <div class="profile-section-icon" style="color:var(--gold);background:rgba(212,175,55,0.1)">☕</div>
+        <div class="profile-section-title" style="color:var(--gold)">Підтримати проєкт</div>
+      </div>
+      <div class="profile-section-content">
+        <div class="profile-field" style="flex-direction:column;align-items:flex-start;gap:12px;border:none">
+          <div style="font-size:.9rem;color:var(--muted);line-height:1.5">
+            Цей проєкт є безкоштовним та розробляється з любов'ю. Ви можете допомогти йому розвиватися, пригостивши автора кавою.
+          </div>
+          <a href="https://send.monobank.ua/jar/5se11GGQ5i" target="_blank" class="btn btn-dark" style="width:100%;justify-content:center;background:var(--gold);color:#000">
+            ☕ Підтримати (Monobank)
+          </a>
+        </div>
+      </div>
+    </div>
+
     <!-- Danger Zone -->
     <div class="profile-danger">
       <div class="profile-danger-header">
@@ -451,11 +490,75 @@
     ZAP.router.go('login');
   }
 
+  function openSupportModal() {
+    const { icon } = ZAP.utils;
+    const modal = document.createElement('div');
+    modal.className = 'overlay';
+    modal.id = 'support-modal';
+    modal.onclick = e => { if (e.target === modal) modal.remove(); };
+    modal.innerHTML = `
+      <div class="modal" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+          <h3 class="modal-title" style="margin-bottom:0">${icon('lifebuoy', 20)} Написати в підтримку</h3>
+          <button onclick="document.getElementById('support-modal').remove()" class="modal-close">×</button>
+        </div>
+        <div class="form-group">
+          <label class="lbl">Тип звернення</label>
+          <select id="support-type" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--ink)">
+            <option value="bug">Повідомити про баг / помилку</option>
+            <option value="idea">Запропонувати ідею</option>
+            <option value="question">Задати питання</option>
+            <option value="other">Інше</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="lbl">Повідомлення</label>
+          <textarea id="support-msg" rows="4" placeholder="Опишіть детально ваше запитання або пропозицію..." style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--ink);resize:vertical"></textarea>
+        </div>
+        <div class="form-error" id="support-error"></div>
+        <button class="btn btn-dark btn-full" id="btn-submit-support" onclick="ZAP.pages.profile.submitSupportTicket()">
+          Надіслати
+        </button>
+      </div>`;
+    document.body.appendChild(modal);
+  }
+
+  async function submitSupportTicket() {
+    const type = document.getElementById('support-type').value;
+    const msg = document.getElementById('support-msg').value.trim();
+    if (!msg) {
+      const el = document.getElementById('support-error');
+      if (el) { el.textContent = 'Будь ласка, введіть повідомлення'; el.classList.add('show'); }
+      return;
+    }
+    
+    const btn = document.getElementById('btn-submit-support');
+    if (btn) { btn.disabled = true; btn.textContent = 'Надсилання...'; }
+
+    try {
+      const profile = ZAP.auth.getProfile();
+      const user = ZAP.auth.getUser();
+      await ZAP.db.createSupportTicket({
+        authorUid: user.uid,
+        authorName: profile.name,
+        type: type,
+        message: msg,
+      });
+      document.getElementById('support-modal')?.remove();
+      ZAP.utils.toast('Ваше повідомлення надіслано!', 'success');
+    } catch (e) {
+      const el = document.getElementById('support-error');
+      if (el) { el.textContent = 'Помилка надсилання'; el.classList.add('show'); }
+      if (btn) { btn.disabled = false; btn.textContent = 'Надіслати'; }
+    }
+  }
+
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.profile = {
     _loaded: false,
     render, load, startEdit, cancelEdit,
     saveName, saveLogin, savePassword,
     uploadAvatar, confirmDelete, doDelete, doLogout,
+    openSupportModal, submitSupportTicket
   };
 })();

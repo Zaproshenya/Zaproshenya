@@ -322,6 +322,39 @@
   }
 
   // ═══════════════════════════════════════════════════════
+  // Support Tickets
+  // ═══════════════════════════════════════════════════════
+
+  async function createSupportTicket(ticket) {
+    if (!db()) return;
+    const ref = db().ref('support_tickets').push();
+    await ref.set({
+      id: ref.key,
+      ...ticket,
+      status: 'pending', // pending, resolved, dismissed
+      createdAt: Date.now(),
+    });
+  }
+
+  async function getSupportTickets() {
+    if (!db()) return [];
+    const snap = await db().ref('support_tickets').orderByChild('createdAt').get();
+    if (!snap.exists()) return [];
+    const list = [];
+    snap.forEach(c => { list.push(c.val()); });
+    return list.reverse();
+  }
+
+  async function resolveSupportTicket(ticketId, action, moderatorUid) {
+    if (!db()) return;
+    await db().ref('support_tickets/' + ticketId).update({
+      status: action, // 'resolved' or 'dismissed'
+      resolvedBy: moderatorUid,
+      resolvedAt: Date.now(),
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════
   // Stats (for dashboard)
   // ═══════════════════════════════════════════════════════
 
@@ -329,15 +362,16 @@
     if (!db()) return {};
 
     let usersSnap = null, invitesSnap = null, groupSnap = null, reportsSnap = null;
-    let statusesSnap = null, friendsSnap = null;
+    let statusesSnap = null, friendsSnap = null, supportSnap = null;
 
     console.log('[DASH] getStats start', Date.now());
-    try { usersSnap = await db().ref('users').get(); console.log('[DASH] 1/6 users OK', Date.now()); } catch (e) { console.warn('[DASH] 1/6 users FAIL:', e); }
-    try { invitesSnap = await db().ref('invites').get(); console.log('[DASH] 2/6 invites OK', Date.now()); } catch (e) { console.warn('[DASH] 2/6 invites FAIL:', e); }
-    try { groupSnap = await db().ref('group-invites').get(); console.log('[DASH] 3/6 group-invites OK', Date.now()); } catch (e) { console.warn('[DASH] 3/6 group-invites FAIL:', e); }
-    try { reportsSnap = await db().ref('reports').get(); console.log('[DASH] 4/6 reports OK', Date.now()); } catch (e) { console.warn('[DASH] 4/6 reports FAIL:', e); }
-    try { statusesSnap = await db().ref('statuses').get(); console.log('[DASH] 5/6 statuses OK', Date.now()); } catch (e) { console.warn('[DASH] 5/6 statuses FAIL:', e); }
-    try { friendsSnap = await db().ref('friends').get(); console.log('[DASH] 6/6 friends OK', Date.now()); } catch (e) { console.warn('[DASH] 6/6 friends FAIL:', e); }
+    try { usersSnap = await db().ref('users').get(); console.log('[DASH] 1/7 users OK', Date.now()); } catch (e) { console.warn('[DASH] 1/7 users FAIL:', e); }
+    try { invitesSnap = await db().ref('invites').get(); console.log('[DASH] 2/7 invites OK', Date.now()); } catch (e) { console.warn('[DASH] 2/7 invites FAIL:', e); }
+    try { groupSnap = await db().ref('group-invites').get(); console.log('[DASH] 3/7 group-invites OK', Date.now()); } catch (e) { console.warn('[DASH] 3/7 group-invites FAIL:', e); }
+    try { reportsSnap = await db().ref('reports').get(); console.log('[DASH] 4/7 reports OK', Date.now()); } catch (e) { console.warn('[DASH] 4/7 reports FAIL:', e); }
+    try { supportSnap = await db().ref('support_tickets').get(); console.log('[DASH] 5/7 support OK', Date.now()); } catch (e) { console.warn('[DASH] 5/7 support FAIL:', e); }
+    try { statusesSnap = await db().ref('statuses').get(); console.log('[DASH] 6/7 statuses OK', Date.now()); } catch (e) { console.warn('[DASH] 6/7 statuses FAIL:', e); }
+    try { friendsSnap = await db().ref('friends').get(); console.log('[DASH] 7/7 friends OK', Date.now()); } catch (e) { console.warn('[DASH] 7/7 friends FAIL:', e); }
 
     const users = [];
     if (usersSnap && usersSnap.exists()) usersSnap.forEach(c => { users.push(c.val()); });
@@ -420,6 +454,19 @@
       });
     }
 
+    // Support Tickets breakdown
+    let pendingSupport = 0;
+    let resolvedSupport = 0;
+    let dismissedSupport = 0;
+    if (supportSnap && supportSnap.exists()) {
+      supportSnap.forEach(c => {
+        const val = c.val();
+        if (val.status === 'pending') pendingSupport++;
+        else if (val.status === 'resolved') resolvedSupport++;
+        else if (val.status === 'dismissed') dismissedSupport++;
+      });
+    }
+
     // Friend connections
     let totalFriendsConnections = 0;
     if (friendsSnap && friendsSnap.exists()) {
@@ -453,6 +500,12 @@
         dismissed: dismissedReports,
         total: pendingReports + resolvedReports + dismissedReports
       },
+      supportCount: {
+        pending: pendingSupport,
+        resolved: resolvedSupport,
+        dismissed: dismissedSupport,
+        total: pendingSupport + resolvedSupport + dismissedSupport
+      },
       totalFriendsConnections,
       users,
       personalInvitesCount,
@@ -480,6 +533,34 @@
       const list = [];
       if (snap.exists()) snap.forEach(c => { list.push(c.val()); });
       callback(list.sort((a, b) => (b.created || 0) - (a.created || 0)));
+    });
+  }
+
+  function listenAdminQueue(callback) {
+    if (!db()) return;
+    const reportsRef = db().ref('reports');
+    const supportRef = db().ref('support_tickets');
+    let pendingReportsCount = 0;
+    let pendingSupportCount = 0;
+
+    function emit() { callback(pendingReportsCount + pendingSupportCount); }
+
+    reportsRef.on('value', snap => {
+      let count = 0;
+      if (snap.exists()) {
+        snap.forEach(c => { if (c.val().status === 'pending') count++; });
+      }
+      pendingReportsCount = count;
+      emit();
+    });
+
+    supportRef.on('value', snap => {
+      let count = 0;
+      if (snap.exists()) {
+        snap.forEach(c => { if (c.val().status === 'pending') count++; });
+      }
+      pendingSupportCount = count;
+      emit();
     });
   }
 
@@ -521,10 +602,11 @@
     removeFriend, getFriends, getFriendRequests,
     // Reports
     createReport, getReports, resolveReport,
+    createSupportTicket, getSupportTickets, resolveSupportTicket,
     // Stats
     getStats,
     // Real-time
-    listenStatuses, listenUserInvites, stopListening,
+    listenStatuses, listenUserInvites, listenAdminQueue, stopListening,
     // Direct invite
     sendInviteToFriend,
   };

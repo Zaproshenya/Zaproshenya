@@ -93,6 +93,11 @@
       ".read": "root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'",
       ".write": "true",
       ".indexOn": ["createdAt", "status"]
+    },
+    "support_tickets": {
+      ".read": "root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'",
+      ".write": "auth != null",
+      ".indexOn": ["createdAt", "status"]
     }
   }
 }

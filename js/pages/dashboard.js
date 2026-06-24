@@ -6,9 +6,10 @@
   let stats = null;
   let users = [];
   let reports = [];
+  let supportTickets = [];
   let invites = [];
   let loading = true;
-  let dashTab = 'overview'; // 'overview' | 'users' | 'reports' | 'moderation'
+  let dashTab = 'overview'; // 'overview' | 'users' | 'reports' | 'support' | 'moderation'
   let userSearch = '';
   let userPage = 0;
   let inviteSearch = '';
@@ -46,7 +47,8 @@
       stats = data;
       users = data.users || [];
       reports = await ZAP.db.getReports();
-      console.log('[DASH] reports done:', reports.length);
+      supportTickets = await ZAP.db.getSupportTickets();
+      console.log('[DASH] reports & support done:', reports.length, supportTickets.length);
       invites = (data.personalInvites || []).concat(data.groupInvites || [])
         .sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
       _loaded = true;
@@ -91,6 +93,7 @@
     const { icon } = ZAP.utils;
     const profile = ZAP.auth.getProfile();
     const pendingReports = reports.filter(r => r.status === 'pending').length;
+    const pendingSupport = supportTickets.filter(t => t.status === 'pending').length;
     const isModeOnly = ZAP.auth.isModerator() && !ZAP.auth.isAdmin();
 
     return `
@@ -116,6 +119,11 @@
         onclick="ZAP.pages.dashboard.setTab('reports')">
         <span class="sidebar-item-icon">${icon('warning', 20)}</span> Скарги
         ${pendingReports > 0 ? `<span class="notif-badge" style="position:static;margin-left:auto">${pendingReports}</span>` : ''}
+      </button>
+      <button class="sidebar-item ${dashTab === 'support' ? 'active' : ''}"
+        onclick="ZAP.pages.dashboard.setTab('support')">
+        <span class="sidebar-item-icon">${icon('lifebuoy', 20)}</span> Підтримка
+        ${pendingSupport > 0 ? `<span class="notif-badge" style="position:static;margin-left:auto">${pendingSupport}</span>` : ''}
       </button>
 
       <div class="sidebar-section">Навігація</div>
@@ -195,6 +203,7 @@
   function renderDashContent() {
     if (dashTab === 'users') return renderUsers();
     if (dashTab === 'reports') return renderReports();
+    if (dashTab === 'support') return renderSupport();
     if (dashTab === 'moderation') return renderModeration();
     return renderOverview();
   }
@@ -722,6 +731,83 @@
   }
 
   // ═══════════════════════════════════════════════════════
+  // Support Tickets
+  // ═══════════════════════════════════════════════════════
+  function renderSupport() {
+    const { icon } = ZAP.utils;
+    const pending = supportTickets.filter(t => t.status === 'pending');
+    const resolved = supportTickets.filter(t => t.status !== 'pending');
+
+    return `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+      <h1 class="page-title" style="margin-bottom:0">Підтримка</h1>
+      <button class="hamburger" onclick="ZAP.pages.dashboard.toggleSidebar()">${icon('list', 20)}</button>
+    </div>
+
+    ${pending.length > 0 ? `
+      <div class="dash-section">
+        <div class="dash-section-title">Очікують розгляду (${pending.length})</div>
+        ${pending.map(t => renderSupportTicketCard(t)).join('')}
+      </div>
+    ` : `
+      <div style="background:var(--green-bg);border-radius:12px;padding:18px;margin-bottom:24px;text-align:center">
+        <p style="color:var(--green);font-size:.95rem">${icon('check-circle',16)} Немає нових звернень</p>
+      </div>
+    `}
+
+    ${resolved.length > 0 ? `
+      <div class="dash-section">
+        <div class="dash-section-title">Розглянуті (${resolved.length})</div>
+        ${resolved.slice(0, 20).map(t => renderSupportTicketCard(t, true)).join('')}
+      </div>
+    ` : ''}`;
+  }
+
+  function renderSupportTicketCard(t, isResolved) {
+    const { icon } = ZAP.utils;
+
+    const authorProfile = users.find(u => u.uid === t.authorUid);
+    const authorIdText = authorProfile 
+      ? ` (<strong>${ZAP.utils.esc(authorProfile.uniqueId)}</strong>, @${ZAP.utils.esc(authorProfile.login)})`
+      : (t.authorUid ? ` (ID: ${ZAP.utils.esc(t.authorUid)})` : '');
+
+    let typeText = 'Інше';
+    if (t.type === 'bug') typeText = 'Баг / Помилка';
+    if (t.type === 'idea') typeText = 'Ідея / Пропозиція';
+    if (t.type === 'question') typeText = 'Питання';
+
+    return `
+    <div class="complaint-card ${isResolved ? 'resolved' : ''}">
+      <div class="complaint-icon" style="color:var(--gold);background:rgba(212,175,55,0.1);border-color:rgba(212,175,55,0.2)">${icon('lifebuoy', 20)}</div>
+      <div class="complaint-body">
+        <div class="complaint-reason" style="white-space:pre-wrap;font-family:inherit;font-size:.9rem">${ZAP.utils.esc(t.message)}</div>
+        <div class="complaint-meta" style="margin-top:12px">
+          Від: <strong>${ZAP.utils.esc(t.authorName || 'Анонім')}</strong>${authorIdText} ·
+          Тип: ${typeText} ·
+          ${ZAP.utils.timeAgo(t.createdAt)}
+        </div>
+        ${!isResolved ? `
+          <div class="complaint-actions" style="margin-top:12px">
+            <button class="btn btn-sm btn-dark" style="background:var(--green);color:#fff"
+              onclick="ZAP.pages.dashboard.resolveSupportTicket('${t.id}','resolved')">
+              ${icon('check',14)} Вирішено
+            </button>
+            <button class="btn btn-sm btn-outline"
+              onclick="ZAP.pages.dashboard.resolveSupportTicket('${t.id}','dismissed')">
+              Відхилити
+            </button>
+          </div>
+        ` : `
+          <div style="margin-top:8px;font-size:.78rem;color:var(--muted)">
+            ${t.status === 'resolved' ? `${icon('check',14)} Вирішено` : `${icon('x',14)} Відхилено`}
+            ${t.resolvedAt ? ' · ' + ZAP.utils.timeAgo(t.resolvedAt) : ''}
+          </div>
+        `}
+      </div>
+    </div>`;
+  }
+
+  // ═══════════════════════════════════════════════════════
   // Moderation — all invites
   // ═══════════════════════════════════════════════════════
 
@@ -1236,6 +1322,18 @@
     }
   }
 
+  async function resolveSupportTicket(ticketId, action) {
+    try {
+      await ZAP.db.resolveSupportTicket(ticketId, action, ZAP.auth.getUser()?.uid);
+      const t = supportTickets.find(t => t.id === ticketId);
+      if (t) t.status = action;
+      ZAP.utils.toast(action === 'resolved' ? 'Звернення вирішено' : 'Звернення відхилено', 'success');
+      ZAP.render();
+    } catch (e) {
+      ZAP.utils.toast('Не вдалося обробити звернення. Спробуйте пізніше', 'error');
+    }
+  }
+
   async function deleteReportedInvite(targetId, targetType, reportId) {
     if (!await ZAP.utils.confirm('Видалити це запрошення та вирішити скаргу?')) return;
     try {
@@ -1266,7 +1364,7 @@
     render, load, setTab, toggleSidebar, drawCharts,
     searchUsers, setUserPage,
     changeRole, toggleBan,
-    resolveReport, deleteReportedInvite,
+    resolveReport, resolveSupportTicket, deleteReportedInvite,
     searchInvites, setInvitePage, modDeleteInvite, retryLoad,
   };
 })();

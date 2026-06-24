@@ -345,10 +345,14 @@
     if (user && (ZAP.auth.isAdmin() || ZAP.auth.isModerator())) {
       if (window.ZAP_ADMIN) {
         window.ZAP_ADMIN.addControls(route.page);
+        if (window.ZAP_ADMIN.updateBadge) window.ZAP_ADMIN.updateBadge(window.ZAP_ADMIN_UNREAD || 0);
       } else {
         const s = document.createElement('script');
         s.src = '/js/admin.js?v=2.0.0';
-        s.onload = function () { window.ZAP_ADMIN.addControls(route.page); };
+        s.onload = function () { 
+          window.ZAP_ADMIN.addControls(route.page); 
+          if (window.ZAP_ADMIN.updateBadge) window.ZAP_ADMIN.updateBadge(window.ZAP_ADMIN_UNREAD || 0);
+        };
         document.body.appendChild(s);
       }
     }
@@ -783,6 +787,16 @@
             profile.banned = false;
             profile.bannedUntil = null;
             ZAP.render();
+          }
+        });
+      }
+
+      // ── Admin Queue Listener ──
+      if (ZAP.auth.isAdmin() || ZAP.auth.isModerator()) {
+        ZAP.db.listenAdminQueue((count) => {
+          window.ZAP_ADMIN_UNREAD = count;
+          if (window.ZAP_ADMIN && window.ZAP_ADMIN.updateBadge) {
+            window.ZAP_ADMIN.updateBadge(count);
           }
         });
       }

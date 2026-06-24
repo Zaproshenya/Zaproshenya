@@ -423,6 +423,17 @@
           ${icon('house', 14)} До списку
         </button>
       </div>
+
+      <div style="margin-top:32px;padding:20px;border-radius:16px;background:rgba(212,175,55,0.05);border:1px solid rgba(212,175,55,0.2);text-align:center">
+        <div style="font-size:24px;margin-bottom:8px">☕</div>
+        <div style="font-weight:600;margin-bottom:4px;color:var(--ink)">Запрошення готове!</div>
+        <div style="font-size:.85rem;color:var(--muted);margin-bottom:16px;line-height:1.5">
+          Якщо вам подобається Запрошення ✦, ви можете підтримати розвиток проєкту.
+        </div>
+        <a href="https://send.monobank.ua/jar/5se11GGQ5i" target="_blank" class="btn btn-dark btn-full" style="background:var(--gold);color:#000;border:none">
+          Підтримати (Monobank)
+        </a>
+      </div>
     </div>`;
   }
 
