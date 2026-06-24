@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "pages:build": "npx @cloudflare/next-on-pages"
+    "pages:build": "npx @cloudflare/next-on-pages && mkdir -p .vercel/output/static/_next && cp -r .next/static .vercel/output/static/_next/"
   },
   "dependencies": {
     "firebase": "^12.15.0",
