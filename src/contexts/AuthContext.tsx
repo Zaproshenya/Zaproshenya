@@ -9,12 +9,14 @@ interface AuthContextType {
   user: User | null | undefined;
   profile: UserProfile | null;
   loading: boolean;
+  updateProfile: (updates: Partial<UserProfile>) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: undefined,
   profile: null,
   loading: true,
+  updateProfile: () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -41,8 +43,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
+  const updateProfile = (updates: Partial<UserProfile>) => {
+    setProfile(prev => prev ? { ...prev, ...updates } : null);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading }}>
+    <AuthContext.Provider value={{ user, profile, loading, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

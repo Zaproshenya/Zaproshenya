@@ -10,7 +10,7 @@ import Link from 'next/link';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, profile } = useAuth();
+  const { user, profile, updateProfile } = useAuth();
   
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
@@ -245,6 +245,7 @@ export default function ProfilePage() {
           const base64Url = canvas.toDataURL('image/jpeg', 0.85);
           
           await updateProfileData(user.uid, { avatar: base64Url });
+          updateProfile?.({ avatar: base64Url });
           toast('Аватар оновлено!', 'success');
           setSaving(false);
         };

@@ -32,7 +32,7 @@ export default function AdminReports({ reports, reload }: { reports: any[], relo
         </div>
 
         {r.comment && (
-          <div style={{background:'var(--warm)',padding:'12px',borderRadius:'8px',fontSize:'.9rem',marginBottom:'12px',borderLeft:'3px solid var(--red)'}}>
+          <div style={{background:'var(--warm)',padding:'12px',borderRadius:'8px',fontSize:'.9rem',marginBottom:'12px',borderLeft:'3px solid var(--red)',wordBreak:'break-all'}}>
             "{r.comment}"
           </div>
         )}

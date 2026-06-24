@@ -276,7 +276,7 @@ export default function FriendsPage() {
                   <div className="friend-row-info">
                     <div className="friend-row-name">
                       {f.name}
-                      {f.login && <span style={{fontSize:'.8rem', color:'var(--muted)', marginLeft:'6px', fontWeight:400}}>@{f.login}</span>}
+                      {f.uniqueId && <span style={{fontSize:'.8rem', color:'var(--muted)', marginLeft:'6px', fontWeight:400}}>{f.uniqueId}</span>}
                     </div>
                     {statusText && <div className={`friend-row-status ${online ? 'online' : ''}`}>{statusText}</div>}
                   </div>
@@ -285,8 +285,11 @@ export default function FriendsPage() {
                       <Icon name="dots-three-vertical" size={20}/>
                     </button>
                     {openMenuId === f.uid && (
-                      <div className="context-menu show" onClick={e => e.stopPropagation()} style={{top:'30px', right:'0', width:'180px'}}>
-                        <button className="context-menu-item text-red" onClick={() => { setOpenMenuId(null); handleRemoveFriend(f.uid); }}>
+                      <div className="friend-menu" onClick={e => e.stopPropagation()} style={{position:'absolute', top:'100%', right:'0', minWidth:'180px', marginTop:'4px'}}>
+                        <Link href={`/u/${f.uid}`} className="friend-menu-item" style={{textDecoration: 'none'}}>
+                          <Icon name="user" size={16}/> Перейти до профілю
+                        </Link>
+                        <button className="friend-menu-item danger" onClick={() => { setOpenMenuId(null); handleRemoveFriend(f.uid); }}>
                           <Icon name="user-minus" size={16}/> Видалити з друзів
                         </button>
                       </div>

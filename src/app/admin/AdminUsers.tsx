@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Icon } from '@/components/Icon';
 import { timeAgo } from '@/lib/utils';
 import { updateUserRole, banUser } from '@/lib/firebase/db';
@@ -97,15 +98,16 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
                 <tr><td colSpan={6} style={{textAlign:'center',padding:'24px',color:'var(--muted)'}}>Нікого не знайдено</td></tr>
               ) : paged.map(u => {
                 const uRank = getRank(u.role);
-                const canEditRole = myRank > uRank || myRank === 100; // founders can edit founders
-                const canBan = myRank > uRank; // cannot ban equal or higher unless... wait, let's just use myRank > uRank so tech-admin can't ban tech-admin
+                const isSuperAdmin = myRank >= 90; // Tech-admin or Founder
+                const canEditRole = myRank > uRank || isSuperAdmin; // SuperAdmins can edit anyone's role
+                const canBan = myRank > uRank; // cannot ban equal or higher rank
                 
                 const roleOptions = [
                   {v:'user', l:'Користувач'},
                   {v:'moderator', l:'Модератор'},
                   {v:'tech-admin', l:'Тех-адмін'}
                 ];
-                if (profile?.role === 'founder' || u.role === 'founder') {
+                if (isSuperAdmin || u.role === 'founder') {
                   roleOptions.push({v:'founder', l:'Засновник'});
                 }
 
@@ -169,12 +171,14 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
       )}
 
       {/* Ban Modal */}
-      {banModalOpen && banTarget && (
+      {banModalOpen && banTarget && typeof window !== 'undefined' && createPortal(
         <div className="overlay" onClick={() => setBanModalOpen(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{maxWidth:'400px'}}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{maxWidth:'400px', width: '100%', margin: '0 20px'}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>
               <h3 className="modal-title" style={{marginBottom:0}}>Блокування</h3>
-              <button className="modal-close" onClick={() => setBanModalOpen(false)}>×</button>
+              <button className="modal-close" onClick={() => setBanModalOpen(false)}>
+                <Icon name="x" size={24} />
+              </button>
             </div>
             <p style={{fontSize:'.9rem',color:'var(--muted)',marginBottom:'20px'}}>
               Оберіть термін блокування для користувача <strong style={{color:'var(--ink)'}}>{banTarget.name}</strong> (@{banTarget.login}).
@@ -189,7 +193,8 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
             </div>
             <button className="btn btn-ghost btn-full" onClick={() => setBanModalOpen(false)}>Скасувати</button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

@@ -320,6 +320,7 @@
     0 0 24px rgba(201,146,42,.3),
     0 12px 40px rgba(0,0,0,.35);
   position: relative;
+  isolation: isolate;
 }
 .profile-avatar-ring::before {
   content: '';
@@ -329,7 +330,7 @@
   background: conic-gradient(from 0deg, transparent 0%, rgba(201,146,42,.6) 25%, transparent 50%, rgba(245,217,139,.8) 75%, transparent 100%);
   animation: avatarRingRotate 3s linear infinite;
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
 }
 @keyframes avatarRingRotate {
   from { transform: rotate(0deg); }
@@ -800,25 +801,6 @@
   animation: fadeUp .3s var(--ease) both;
   position: relative;
   overflow: hidden;
-}
-.avatar {
-  background: var(--surface);
-  border-radius: 50%;
-  color: var(--gold);
-  font-weight: 600;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-heading);
-  flex-shrink: 0;
-  border: 1px solid rgba(201,146,42,0.15);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1) inset;
-  position: relative;
-  overflow: hidden;
-}
-.avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
 }
 .notif-item::before {
   content: '';
