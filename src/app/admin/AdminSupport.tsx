@@ -106,7 +106,7 @@ export default function AdminSupport({
                 return (
                   <div key={m.id} className={`chat-msg ${isSupport ? 'support' : 'user'}`}>
                     <div className="chat-msg-avatar">
-                      {isSupport ? 'A' : (m.name || '?').charAt(0).toUpperCase()}
+                      {isSupport ? <Icon name="headset" size={16}/> : (m.name || '?').charAt(0).toUpperCase()}
                     </div>
                     <div className="chat-msg-content">
                       <div className="chat-bubble">

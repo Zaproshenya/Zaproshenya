@@ -97,6 +97,18 @@ export default function ProfilePage() {
     }
   }, [chatMessages]);
 
+  useEffect(() => {
+    const isModalOpen = !!(editMode || newTicketOpen || chatTicketId || deleteModalOpen);
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [editMode, newTicketOpen, chatTicketId, deleteModalOpen]);
+
   const handleLogout = async () => {
     try {
       await logoutUser();
@@ -279,9 +291,10 @@ export default function ProfilePage() {
       : '—';
 
   return (
-    <div className="wrap" style={{paddingBottom: '80px'}}>
-      
-      {/* Hero */}
+    <>
+      <div className="wrap" style={{paddingBottom: '80px'}}>
+        
+        {/* Hero */}
       <div className="profile-hero">
         <div className="profile-hero-star">✦</div>
         <div className="profile-hero-inner">
@@ -463,6 +476,7 @@ export default function ProfilePage() {
           <Icon name="sign-out" size={16}/> Вийти з акаунту
         </button>
       </div>
+      </div>
 
       {/* ─── MODALS ─── */}
       
@@ -588,7 +602,7 @@ export default function ProfilePage() {
                   const time = new Date(msg.createdAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
                   return (
                     <div key={msg.id || i} className={`chat-msg ${isUser ? 'user' : 'support'}`}>
-                      <div className="chat-msg-avatar">{isUser ? (msg.name || '?').charAt(0).toUpperCase() : 'A'}</div>
+                      <div className="chat-msg-avatar">{isUser ? (msg.name || '?').charAt(0).toUpperCase() : <Icon name="headset" size={16}/>}</div>
                       <div className="chat-msg-content">
                         {msg.text && <div className="chat-bubble">{msg.text}</div>}
                         <div className="chat-msg-time">{!isUser && 'Підтримка · '} {time}</div>
@@ -659,6 +673,6 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

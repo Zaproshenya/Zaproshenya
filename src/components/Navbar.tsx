@@ -12,7 +12,7 @@ export function Navbar() {
   const isHiddenPage = pathname === '/login' || pathname === '/register' || pathname?.startsWith('/i/') || pathname?.startsWith('/g/');
   if (isHiddenPage) return null;
 
-  if (pathname === '/' && !user) return null; // Landing uses its own navbar
+  if (pathname === '/') return null; // Landing uses its own structure
 
   const isActive = (path: string) => pathname === path ? 'on' : '';
 

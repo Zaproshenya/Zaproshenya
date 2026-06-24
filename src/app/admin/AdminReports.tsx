@@ -1,10 +1,12 @@
 'use client';
+import { useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { timeAgo } from '@/lib/utils';
 import { resolveReport } from '@/lib/firebase/db';
 import Link from 'next/link';
 
 export default function AdminReports({ reports, reload }: { reports: any[], reload: () => void }) {
+  const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
   const pending = reports.filter(r => r.status === 'pending');
   const other = reports.filter(r => r.status !== 'pending');
 
@@ -31,11 +33,27 @@ export default function AdminReports({ reports, reload }: { reports: any[], relo
           <div style={{fontSize:'.8rem',color:'var(--muted)'}}>{timeAgo(r.createdAt)}</div>
         </div>
 
-        {r.comment && (
-          <div style={{background:'var(--warm)',padding:'12px',borderRadius:'8px',fontSize:'.9rem',marginBottom:'12px',borderLeft:'3px solid var(--red)',wordBreak:'break-all'}}>
-            "{r.comment}"
-          </div>
-        )}
+        {r.comment && (() => {
+          const isExpanded = !!expandedComments[r.id];
+          const needsTruncation = r.comment.length > 150;
+          const commentText = needsTruncation && !isExpanded ? `${r.comment.slice(0, 150)}...` : r.comment;
+          
+          return (
+            <div style={{background:'var(--warm)',padding:'12px',borderRadius:'8px',fontSize:'.9rem',marginBottom:'12px',borderLeft:'3px solid var(--red)',wordBreak:'break-all'}}>
+              <div>"{commentText}"</div>
+              {needsTruncation && (
+                <button 
+                  onClick={() => setExpandedComments(prev => ({ ...prev, [r.id]: !prev[r.id] }))}
+                  className="btn-ghost" 
+                  style={{padding: 0, marginTop: '8px', fontSize: '.8rem', color: 'var(--gold)', fontWeight: 600, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px'}}
+                >
+                  <Icon name={isExpanded ? "caret-up" : "caret-down"} size={14}/>
+                  {isExpanded ? 'Згорнути' : 'Переглянути більше'}
+                </button>
+              )}
+            </div>
+          );
+        })()}
 
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'16px',fontSize:'.85rem',background:'rgba(0,0,0,0.02)',padding:'12px',borderRadius:'8px',marginBottom:'16px'}}>
           <div>

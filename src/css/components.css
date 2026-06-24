@@ -329,10 +329,11 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 
 /* ── Modal / Overlay ── */
 .overlay {
-  position: fixed; inset: 0; background: rgba(18,12,6,.5);
+  position: fixed; inset: 0; width: 100vw; height: 100vh;
+  background: rgba(18,12,6,.4);
   z-index: var(--z-overlay); display: flex; align-items: center; justify-content: center;
-  padding: 20px;   animation: fadeIn .2s var(--ease);
-  backdrop-filter: blur(4px);
+  padding: 20px; animation: fadeIn .2s var(--ease);
+  backdrop-filter: blur(6px);
 }
 .modal {
   background: var(--paper); border-radius: var(--radius-lg);
