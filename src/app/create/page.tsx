@@ -231,9 +231,9 @@ export default function CreatePage() {
                           <div className="avatar avatar-md" style={{flexShrink:0}}>
                             {f.avatar ? <img src={f.avatar} alt=""/> : f.name?.charAt(0).toUpperCase()}
                           </div>
-                          <div style={{display:'flex', flexDirection:'column', alignItems:'center', minWidth:0, textAlign:'center'}}>
+                           <div style={{display:'flex', flexDirection:'column', alignItems:'center', minWidth:0, textAlign:'center'}}>
                             <span className="friend-chip-name" style={{fontSize:'.9rem', fontWeight:500, color:'var(--ink)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'80px'}}>{f.name}</span>
-                            {f.uniqueId && <span style={{fontSize:'.75rem', color:'var(--muted)'}}>{f.uniqueId}</span>}
+                            {f.uniqueId && <span className="friend-chip-id" style={{whiteSpace:'nowrap'}}>{f.uniqueId}</span>}
                           </div>
                         </button>
                       ))}
