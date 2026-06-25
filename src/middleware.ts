@@ -83,17 +83,15 @@ export async function middleware(request: NextRequest) {
   <meta name="twitter:title" content="${title}">
   <meta name="twitter:description" content="${desc}">
   <meta name="twitter:image" content="${ogImageUrl}">
-</head>
-<body style="background-color: #000; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden;">
-  <img src="${ogImageUrl}" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt="Запрошення" />
+  <style>body { background-color: #141414; }</style>
   <script>
-    // Записуємо невидиму мітку "я людина" на 5 хвилин
     document.cookie = "is_human=1; path=/; max-age=300";
-    // Якщо мітка успішно записалась (у браузері увімкнені кукі) — моментально перезавантажуємо сторінку!
     if (document.cookie.indexOf("is_human=1") !== -1) {
-      window.location.reload();
+      window.location.replace(window.location.href);
     }
   </script>
+</head>
+<body>
 </body>
 </html>
     `.trim();
