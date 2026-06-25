@@ -18,12 +18,17 @@ const TYPE_MAP: Record<string, { l: string; e: string }> = {
 };
 
 export async function middleware(request: NextRequest) {
-  const userAgent = request.headers.get('user-agent') || '';
-  const isBot = /bot|telegram|viber|whatsapp|facebook|twitter|discord|skype|vkShare/i.test(userAgent);
   const pathname = request.nextUrl.pathname;
 
-  if (isBot && (pathname.startsWith('/i/') || pathname.startsWith('/g/')) && !pathname.includes('opengraph-image')) {
+  // Обробляємо лише маршрути запрошень (і не картинки)
+  if ((pathname.startsWith('/i/') || pathname.startsWith('/g/')) && !pathname.includes('opengraph-image')) {
     
+    // Якщо це реальна людина (вже має куку) АБО це внутрішній перехід Next.js (RSC)
+    if (request.cookies.has('is_human') || request.headers.has('rsc') || request.headers.has('next-router-prefetch')) {
+      return NextResponse.next();
+    }
+
+    // Інакше (Бот АБО перший мілісекундний захід людини)
     const isGroup = pathname.startsWith('/g/');
     const id = pathname.split('/')[2];
     
@@ -79,8 +84,16 @@ export async function middleware(request: NextRequest) {
   <meta name="twitter:description" content="${desc}">
   <meta name="twitter:image" content="${ogImageUrl}">
 </head>
-<body>
-  <!-- Bot preview HTML from Middleware -->
+<body style="background-color: #000; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden;">
+  <img src="${ogImageUrl}" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt="Запрошення" />
+  <script>
+    // Записуємо невидиму мітку "я людина" на 5 хвилин
+    document.cookie = "is_human=1; path=/; max-age=300";
+    // Якщо мітка успішно записалась (у браузері увімкнені кукі) — моментально перезавантажуємо сторінку!
+    if (document.cookie.indexOf("is_human=1") !== -1) {
+      window.location.reload();
+    }
+  </script>
 </body>
 </html>
     `.trim();
@@ -88,7 +101,7 @@ export async function middleware(request: NextRequest) {
     return new NextResponse(html, {
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
-        'Cache-Control': 'public, max-age=60',
+        'Cache-Control': 'no-store, max-age=0',
       },
     });
   }
