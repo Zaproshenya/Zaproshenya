@@ -127,7 +127,7 @@ export default function CreatePage() {
 
   if (done && createdInv) {
     const link = typeof window !== 'undefined'
-      ? `${window.location.origin}/${createdInv.isGroup ? 'g' : 'i'}/${createdInv.id}/p`
+      ? `${window.location.origin}/${createdInv.isGroup ? 'g' : 'i'}/${createdInv.id}`
       : '';
     return (
       <div className="wrap">
