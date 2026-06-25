@@ -838,7 +838,7 @@
       .hero-desc  { max-width: 100%; }
       .hero-ctas  { justify-content: center; }
       .hero-trust { justify-content: center; }
-      .card-scene { width: 100%; max-width: 320px; margin: 0 auto; }
+      .hero-visual { display: none; }
 
       .section-wrap { padding-top: 4rem; padding-bottom: 4rem; }
       .features-grid { grid-template-columns: 1fr; }
