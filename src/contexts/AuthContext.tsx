@@ -1,10 +1,11 @@
 'use client';
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase/config';
 import { loadProfile, UserProfile } from '@/lib/firebase/auth';
-import { ref, set } from 'firebase/database';
+import { ref, set, query, orderByChild, limitToLast, onValue } from 'firebase/database';
+import { toast } from '@/components/Toast';
 
 interface AuthContextType {
   user: User | null | undefined;
@@ -84,6 +85,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       performUnban();
     }
   }, [user, profile]);
+
+  const shownNotifs = useRef<Set<string>>(new Set());
+
+  // Listen to new notifications in real-time and show Toast alerts
+  useEffect(() => {
+    if (!user) return;
+
+    const notifQuery = query(
+      ref(db, 'notifications/' + user.uid),
+      orderByChild('createdAt'),
+      limitToLast(5)
+    );
+
+    let isInitial = true;
+
+    const unsubscribe = onValue(notifQuery, (snap) => {
+      if (snap.exists()) {
+        const notifs: any[] = [];
+        snap.forEach((c) => {
+          notifs.push({ ...c.val(), id: c.key });
+        });
+
+        // If it's the initial load, populate shownNotifs to prevent showing old notifications
+        if (isInitial) {
+          notifs.forEach(n => {
+            shownNotifs.current.add(n.id);
+          });
+          isInitial = false;
+          return;
+        }
+
+        // Show toast alerts for any new, unread notification
+        notifs.forEach(n => {
+          if (!n.read && !shownNotifs.current.has(n.id) && Date.now() - (n.createdAt || 0) < 30000) {
+            shownNotifs.current.add(n.id);
+            toast(`🔔 ${n.title}: ${n.body}`, 'info');
+          }
+        });
+      } else {
+        isInitial = false;
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [user]);
 
   const updateProfile = (updates: Partial<UserProfile>) => {
     setProfile(prev => prev ? { ...prev, ...updates } : null);

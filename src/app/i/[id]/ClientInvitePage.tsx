@@ -1,45 +1,55 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getInvite, updateInviteStatus } from '@/lib/firebase/db';
+import { getInvite, updateInviteStatus, createReport, listenToInvite, listenToInviteStatus } from '@/lib/firebase/db';
 import { TYPE_MAP, boom } from '@/lib/utils';
 import { Icon } from '@/components/Icon';
+import { toast } from '@/components/Toast';
 import Link from 'next/link';
 
 export default function ClientInvitePage({ id }: { id: string }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [invData, setInvData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [answered, setAnswered] = useState(false);
   const [answerStatus, setAnswerStatus] = useState<string | null>(null);
 
+  // States for reporting
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reason, setReason] = useState('Спам або шахрайство');
+  const [comment, setComment] = useState('');
+  const [submittingReport, setSubmittingReport] = useState(false);
+
   useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await getInvite(id);
-        if (data) {
-          // Check access
-          if (data.recipientUid && user?.uid !== data.recipientUid && user?.uid !== data.creatorUid) {
-            setInvData(null);
-          } else {
-            setInvData(data);
-          }
-          // In a real implementation we would fetch the status from statuses/id
-          // For now let's just use data.status if it was populated or fetch
-          const res = await fetch(`https://zaproshenya-82751-default-rtdb.europe-west1.firebasedatabase.app/statuses/${id}.json`);
-          const st = await res.json();
-          if (st === 'accepted' || st === 'declined' || st === 'reschedule') {
-            setAnswered(true);
-            setAnswerStatus(st);
-          }
+    if (user === undefined) return;
+
+    const unsubInvite = listenToInvite(id, (data) => {
+      if (data) {
+        if (data.recipientUid && user?.uid !== data.recipientUid && user?.uid !== data.creatorUid) {
+          setInvData(null);
+        } else {
+          setInvData(data);
         }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
+      } else {
+        setInvData(null);
       }
+      setLoading(false);
+    });
+
+    const unsubStatus = listenToInviteStatus(id, (st) => {
+      if (st === 'accepted' || st === 'declined' || st === 'reschedule') {
+        setAnswered(true);
+        setAnswerStatus(st);
+      } else {
+        setAnswered(false);
+        setAnswerStatus(null);
+      }
+    });
+
+    return () => {
+      unsubInvite();
+      unsubStatus();
     };
-    load();
   }, [id, user]);
 
   const handleAnswer = async (status: string) => {
@@ -106,6 +116,46 @@ export default function ClientInvitePage({ id }: { id: string }) {
 
   const t = TYPE_MAP[invData.type] || TYPE_MAP.other;
   const isCreator = user && user.uid === invData.creatorUid;
+
+  const submitReport = async () => {
+    if (!reason) {
+      toast('Оберіть причину скарги', 'error');
+      return;
+    }
+    setSubmittingReport(true);
+    const targetContent = {
+      to: invData?.to || '',
+      msg: invData?.msg || '',
+      date: invData?.date || '',
+      time: invData?.time || '',
+      place: invData?.place || '',
+      type: invData?.type || '',
+      creatorName: invData?.senderName || '',
+      creatorUid: invData?.creatorUid || '',
+      recipientUid: user?.uid || null
+    };
+
+    try {
+      await createReport({
+        targetType: 'invite',
+        targetId: id,
+        reason,
+        comment: comment.trim(),
+        reporterUid: user?.uid || null,
+        reporterName: profile?.name || 'Анонім',
+        targetContent,
+      });
+
+      setShowReportModal(false);
+      setComment('');
+      toast('Скаргу надіслано. Дякуємо!', 'success');
+    } catch (err) {
+      console.error('Failed to send report:', err);
+      toast('Не вдалося надіслати скаргу. Спробуйте пізніше.', 'error');
+    } finally {
+      setSubmittingReport(false);
+    }
+  };
 
   return (
     <div className="invite-bg">
@@ -188,13 +238,74 @@ export default function ClientInvitePage({ id }: { id: string }) {
             )
           )}
 
-          <div className="envelope-footer">
-            {user && (
+          <div className="envelope-footer" style={{display:'flex', justifyContent:'space-between', alignItems:'center', width:'100%'}}>
+            {user ? (
               <Link href="/home">← Меню</Link>
+            ) : (
+              <div />
+            )}
+            {!answered && (
+              <button 
+                onClick={() => setShowReportModal(true)} 
+                style={{background:'none', border:'none', color:'var(--red)', cursor:'pointer', fontSize:'.85rem', display:'flex', alignItems:'center', gap:'4px'}}
+              >
+                <Icon name="warning" size={14}/> Поскаржитися
+              </button>
             )}
           </div>
         </div>
       </div>
+
+      {showReportModal && (
+        <div className="overlay" onClick={() => setShowReportModal(false)} style={{zIndex: 9999}}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h3 className="modal-title" style={{display:'flex', alignItems:'center', gap:'8px'}}>
+              <Icon name="warning" size={20}/> Поскаржитися
+            </h3>
+            <p style={{color:'var(--muted)', fontSize:'.9rem', marginBottom:'16px'}}>Оберіть причину скарги:</p>
+            <div className="report-reasons">
+              {['Спам або шахрайство', 'Образливий вміст', 'Небажане запрошення', 'Інше'].map((reasonOption) => (
+                <div
+                  key={reasonOption}
+                  className={`report-reason ${reason === reasonOption ? 'selected' : ''}`}
+                  onClick={() => setReason(reasonOption)}
+                >
+                  <div className="report-reason-radio"></div>
+                  <span>{reasonOption}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{marginTop:'12px'}}>
+              <label className="lbl">Додатковий коментар (необов'язково)</label>
+              <textarea
+                placeholder="Опишіть проблему..."
+                style={{minHeight:'60px', width:'100%', padding:'10px', borderRadius:'8px', border:'1px solid var(--border)', background:'var(--paper)', color:'var(--ink)'}}
+                maxLength={100}
+                value={comment}
+                onChange={e => setComment(e.target.value)}
+              />
+            </div>
+            <div style={{display:'flex', gap:'10px', marginTop:'18px'}}>
+              <button
+                className="btn btn-red"
+                style={{flex: 1}}
+                onClick={submitReport}
+                disabled={submittingReport}
+              >
+                {submittingReport ? 'Надсилання...' : 'Надіслати скаргу'}
+              </button>
+              <button
+                className="btn btn-outline"
+                style={{flex: 1}}
+                onClick={() => setShowReportModal(false)}
+                disabled={submittingReport}
+              >
+                Скасувати
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

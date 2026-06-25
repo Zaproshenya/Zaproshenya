@@ -1,9 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getGroupInvite, joinGroupInvite } from '@/lib/firebase/db';
+import { getGroupInvite, joinGroupInvite, createReport, listenToGroupInvite } from '@/lib/firebase/db';
 import { TYPE_MAP, boom } from '@/lib/utils';
 import { Icon } from '@/components/Icon';
+import { toast } from '@/components/Toast';
 import Link from 'next/link';
 
 export default function ClientGroupInvitePage({ id }: { id: string }) {
@@ -14,28 +15,35 @@ export default function ClientGroupInvitePage({ id }: { id: string }) {
   const [answerStatus, setAnswerStatus] = useState<string | null>(null);
   const [guestName, setGuestName] = useState('');
 
+  // States for reporting
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reason, setReason] = useState('Спам або шахрайство');
+  const [comment, setComment] = useState('');
+  const [submittingReport, setSubmittingReport] = useState(false);
+
   useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await getGroupInvite(id);
-        if (data) {
-          setGroupData(data);
-          
-          if (user && data.members) {
-            const memberEntry = Object.values(data.members as Record<string, any>).find(m => m.uid === user.uid);
-            if (memberEntry) {
-              setAnswered(true);
-              setAnswerStatus(memberEntry.status);
-            }
+    if (user === undefined) return;
+
+    const unsub = listenToGroupInvite(id, (data) => {
+      if (data) {
+        setGroupData(data);
+        if (user && data.members) {
+          const memberEntry = Object.values(data.members as Record<string, any>).find(m => m.uid === user.uid);
+          if (memberEntry) {
+            setAnswered(true);
+            setAnswerStatus(memberEntry.status);
+          } else {
+            setAnswered(false);
+            setAnswerStatus(null);
           }
         }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
+      } else {
+        setGroupData(null);
       }
-    };
-    load();
+      setLoading(false);
+    });
+
+    return () => unsub();
   }, [id, user]);
 
   const handleAnswer = async (status: string) => {
@@ -112,6 +120,44 @@ export default function ClientGroupInvitePage({ id }: { id: string }) {
   const otherMembers = membersList.filter(m => m.status !== 'accepted');
   const isCreator = user && user.uid === groupData.creatorUid;
 
+  const submitReport = async () => {
+    if (!reason) {
+      toast('Оберіть причину скарги', 'error');
+      return;
+    }
+    setSubmittingReport(true);
+    const targetContent = {
+      title: groupData?.title || '',
+      msg: groupData?.msg || '',
+      date: groupData?.date || '',
+      time: groupData?.time || '',
+      place: groupData?.place || '',
+      creatorName: groupData?.senderName || '',
+      creatorUid: groupData?.creatorUid || ''
+    };
+
+    try {
+      await createReport({
+        targetType: 'group-invite',
+        targetId: id,
+        reason,
+        comment: comment.trim(),
+        reporterUid: user?.uid || null,
+        reporterName: profile?.name || 'Анонім',
+        targetContent,
+      });
+
+      setShowReportModal(false);
+      setComment('');
+      toast('Скаргу надіслано. Дякуємо!', 'success');
+    } catch (err) {
+      console.error('Failed to send report:', err);
+      toast('Не вдалося надіслати скаргу. Спробуйте пізніше.', 'error');
+    } finally {
+      setSubmittingReport(false);
+    }
+  };
+
   return (
     <div className="invite-bg">
       <div className="invite-envelope" style={{animation: 'none', transform: 'none', maxWidth: '440px'}}>
@@ -120,18 +166,18 @@ export default function ClientGroupInvitePage({ id }: { id: string }) {
             <Icon name="users" size={12}/> Групове запрошення
           </div>
           <span className="envelope-emoji">{t.e}</span>
-          <div className="envelope-to" style={{fontSize:'1.6rem'}}>{groupData.title || 'Зустріч'}</div>
-          {groupData.showSender !== false && <div className="envelope-from" style={{marginTop:'8px'}}>організатор <strong>{groupData.senderName || 'Невідомий'}</strong></div>}
+          <h1 className="envelope-to" style={{fontSize:'1.8rem', fontFamily:'var(--font-heading)'}}>{groupData.title || 'Зустріч'}</h1>
+          {groupData.showSender !== false && <div className="envelope-from">від <strong>{groupData.senderName || 'Невідомий'}</strong></div>}
         </div>
 
-        <div className="envelope-body">
+        <div className="envelope-body" style={{paddingBottom:'20px'}}>
           {groupData.msg && (
-            <div className="msg-block">
+            <div className="msg-block" style={{marginTop:'12px'}}>
               <p className="msg-text">{groupData.msg}</p>
             </div>
           )}
 
-          <div className="detail-chips">
+          <div className="detail-chips" style={{marginTop:'16px'}}>
             <div className="detail-chip">
               <span className="detail-chip-icon"><Icon name="calendar-blank" size={16}/></span>
               <div><div className="detail-chip-label">Дата</div><div className="detail-chip-value">{groupData.date}</div></div>
@@ -214,13 +260,74 @@ export default function ClientGroupInvitePage({ id }: { id: string }) {
             </div>
           )}
 
-          <div className="envelope-footer">
-            {user && (
+          <div className="envelope-footer" style={{display:'flex', justifyContent:'space-between', alignItems:'center', width:'100%', marginTop:'24px'}}>
+            {user ? (
               <Link href="/home">← Меню</Link>
+            ) : (
+              <div />
+            )}
+            {!answered && (
+              <button 
+                onClick={() => setShowReportModal(true)} 
+                style={{background:'none', border:'none', color:'var(--red)', cursor:'pointer', fontSize:'.85rem', display:'flex', alignItems:'center', gap:'4px'}}
+              >
+                <Icon name="warning" size={14}/> Поскаржитися
+              </button>
             )}
           </div>
         </div>
       </div>
+
+      {showReportModal && (
+        <div className="overlay" onClick={() => setShowReportModal(false)} style={{zIndex: 9999}}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h3 className="modal-title" style={{display:'flex', alignItems:'center', gap:'8px'}}>
+              <Icon name="warning" size={20}/> Поскаржитися
+            </h3>
+            <p style={{color:'var(--muted)', fontSize:'.9rem', marginBottom:'16px'}}>Оберіть причину скарги:</p>
+            <div className="report-reasons">
+              {['Спам або шахрайство', 'Образливий вміст', 'Небажане запрошення', 'Інше'].map((reasonOption) => (
+                <div
+                  key={reasonOption}
+                  className={`report-reason ${reason === reasonOption ? 'selected' : ''}`}
+                  onClick={() => setReason(reasonOption)}
+                >
+                  <div className="report-reason-radio"></div>
+                  <span>{reasonOption}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{marginTop:'12px'}}>
+              <label className="lbl">Додатковий коментар (необов'язково)</label>
+              <textarea
+                placeholder="Опишіть проблему..."
+                style={{minHeight:'60px', width:'100%', padding:'10px', borderRadius:'8px', border:'1px solid var(--border)', background:'var(--paper)', color:'var(--ink)'}}
+                maxLength={100}
+                value={comment}
+                onChange={e => setComment(e.target.value)}
+              />
+            </div>
+            <div style={{display:'flex', gap:'10px', marginTop:'18px'}}>
+              <button
+                className="btn btn-red"
+                style={{flex: 1}}
+                onClick={submitReport}
+                disabled={submittingReport}
+              >
+                {submittingReport ? 'Надсилання...' : 'Надіслати скаргу'}
+              </button>
+              <button
+                className="btn btn-outline"
+                style={{flex: 1}}
+                onClick={() => setShowReportModal(false)}
+                disabled={submittingReport}
+              >
+                Скасувати
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

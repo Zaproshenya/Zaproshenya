@@ -513,3 +513,154 @@ export async function getStats() {
     groupInvites,
   };
 }
+
+// ── Real-time Database Listeners & Reporting ──
+
+export async function createReport(report: any) {
+  const refObj = push(ref(db, 'reports'));
+  await set(refObj, {
+    id: refObj.key,
+    ...report,
+    status: 'pending',
+    createdAt: Date.now(),
+  });
+  return refObj.key;
+}
+
+export function listenToInvite(invId: string, callback: (data: any) => void) {
+  const inviteRef = ref(db, 'invites/' + invId);
+  onValue(inviteRef, (snap) => {
+    callback(snap.exists() ? snap.val() : null);
+  });
+  return () => off(inviteRef);
+}
+
+export function listenToInviteStatus(invId: string, callback: (status: string | null) => void) {
+  const statusRef = ref(db, 'statuses/' + invId);
+  onValue(statusRef, (snap) => {
+    callback(snap.exists() ? snap.val() : null);
+  });
+  return () => off(statusRef);
+}
+
+export function listenToGroupInvite(invId: string, callback: (data: any) => void) {
+  const groupRef = ref(db, 'group-invites/' + invId);
+  onValue(groupRef, (snap) => {
+    callback(snap.exists() ? snap.val() : null);
+  });
+  return () => off(groupRef);
+}
+
+export function listenUserInvites(uid: string, callback: (list: any[]) => void) {
+  const invitesRef = ref(db, 'user-invites/' + uid);
+  onValue(invitesRef, (snap) => {
+    const list: any[] = [];
+    if (snap.exists()) {
+      snap.forEach(c => { list.push(c.val()); });
+    }
+    callback(list.sort((a, b) => (b.created || 0) - (a.created || 0)));
+  });
+  return () => off(invitesRef);
+}
+
+export function listenNotifications(uid: string, callback: (list: any[]) => void) {
+  const q = query(ref(db, 'notifications/' + uid), orderByChild('createdAt'), limitToLast(50));
+  onValue(q, (snap) => {
+    const list: any[] = [];
+    if (snap.exists()) {
+      snap.forEach(c => {
+        const val = c.val();
+        if (val.title) val.title = val.title.replace(/<[^>]*>/g, '');
+        if (val.body) val.body = val.body.replace(/<[^>]*>/g, '');
+        list.push(val);
+      });
+    }
+    callback(list.reverse());
+  });
+  return () => off(ref(db, 'notifications/' + uid));
+}
+
+export function listenAdminUsers(callback: (users: any[]) => void) {
+  const usersRef = ref(db, 'users');
+  onValue(usersRef, (snap) => {
+    const list: any[] = [];
+    if (snap.exists()) {
+      snap.forEach(c => { list.push(c.val()); });
+    }
+    callback(list);
+  });
+  return () => off(usersRef);
+}
+
+export function listenAdminInvites(callback: (invites: any[]) => void) {
+  const invitesRef = ref(db, 'invites');
+  onValue(invitesRef, (snap) => {
+    const list: any[] = [];
+    if (snap.exists()) {
+      snap.forEach(c => {
+        const val = c.val();
+        val.id = c.key;
+        list.push(val);
+      });
+    }
+    callback(list);
+  });
+  return () => off(invitesRef);
+}
+
+export function listenAdminGroupInvites(callback: (groupInvites: any[]) => void) {
+  const groupRef = ref(db, 'group-invites');
+  onValue(groupRef, (snap) => {
+    const list: any[] = [];
+    if (snap.exists()) {
+      snap.forEach(c => {
+        const val = c.val();
+        val.id = c.key;
+        val.isGroup = true;
+        list.push(val);
+      });
+    }
+    callback(list);
+  });
+  return () => off(groupRef);
+}
+
+export function listenAdminReports(callback: (reports: any[]) => void) {
+  const reportsRef = ref(db, 'reports');
+  onValue(reportsRef, (snap) => {
+    const list: any[] = [];
+    if (snap.exists()) {
+      snap.forEach(c => { list.push({ ...c.val(), id: c.key }); });
+    }
+    callback(list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
+  });
+  return () => off(reportsRef);
+}
+
+export function listenAdminSupportTickets(callback: (tickets: any[]) => void) {
+  const supportRef = ref(db, 'support_tickets');
+  onValue(supportRef, (snap) => {
+    const list: any[] = [];
+    if (snap.exists()) {
+      snap.forEach(c => { list.push(c.val()); });
+    }
+    callback(list.sort((a, b) => b.createdAt - a.createdAt));
+  });
+  return () => off(supportRef);
+}
+
+export function listenAdminStatuses(callback: (statuses: Record<string, string>) => void) {
+  const statusesRef = ref(db, 'statuses');
+  onValue(statusesRef, (snap) => {
+    callback(snap.exists() ? snap.val() : {});
+  });
+  return () => off(statusesRef);
+}
+
+export function listenAdminFriends(callback: (friends: Record<string, any>) => void) {
+  const friendsRef = ref(db, 'friends');
+  onValue(friendsRef, (snap) => {
+    callback(snap.exists() ? snap.val() : {});
+  });
+  return () => off(friendsRef);
+}

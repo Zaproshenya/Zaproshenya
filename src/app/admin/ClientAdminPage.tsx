@@ -1,8 +1,24 @@
 'use client';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { getStats, getReports, getSupportTickets, updateUserRole, banUser, resolveReport, resolveSupportTicket, getAllUsers, sendTicketMessage, listenTicketMessages, stopListeningTicket, markTicketReadBySupport } from '@/lib/firebase/db';
+import { 
+  updateUserRole, 
+  banUser, 
+  resolveReport, 
+  resolveSupportTicket, 
+  sendTicketMessage, 
+  listenTicketMessages, 
+  stopListeningTicket, 
+  markTicketReadBySupport,
+  listenAdminUsers,
+  listenAdminInvites,
+  listenAdminGroupInvites,
+  listenAdminReports,
+  listenAdminSupportTickets,
+  listenAdminStatuses,
+  listenAdminFriends
+} from '@/lib/firebase/db';
 import { Icon } from '@/components/Icon';
 import Link from 'next/link';
 import { TYPE_MAP, timeAgo } from '@/lib/utils';
@@ -22,11 +38,14 @@ export default function ClientAdminPage() {
   const [dashTab, setDashTab] = useState('overview'); // 'overview' | 'users' | 'reports' | 'support' | 'moderation'
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
-  const [stats, setStats] = useState<any>(null);
-  const [users, setUsers] = useState<any[]>([]);
-  const [reports, setReports] = useState<any[]>([]);
-  const [supportTickets, setSupportTickets] = useState<any[]>([]);
-  const [invites, setInvites] = useState<any[]>([]);
+  // Real-time Database States
+  const [dbUsers, setDbUsers] = useState<any[]>([]);
+  const [dbInvites, setDbInvites] = useState<any[]>([]);
+  const [dbGroupInvites, setDbGroupInvites] = useState<any[]>([]);
+  const [dbReports, setDbReports] = useState<any[]>([]);
+  const [dbSupportTickets, setDbSupportTickets] = useState<any[]>([]);
+  const [dbStatuses, setDbStatuses] = useState<Record<string, string>>({});
+  const [dbFriends, setDbFriends] = useState<Record<string, any>>({});
   
   // Tab states
   const [userSearch, setUserSearch] = useState('');
@@ -41,28 +60,7 @@ export default function ClientAdminPage() {
   const [ticketMessages, setTicketMessages] = useState<any[]>([]);
   const [ticketReply, setTicketReply] = useState('');
 
-  const loadData = async () => {
-    setLoading(true);
-    setError(false);
-    try {
-      const statsData = await getStats();
-      setStats(statsData);
-      setUsers(statsData.users || []);
-      setInvites((statsData.personalInvites || []).concat(statsData.groupInvites || []).sort((a: any, b: any) => (b.created || 0) - (a.created || 0)));
-      
-      const rpts = await getReports();
-      setReports(rpts);
-      
-      const tkts = await getSupportTickets();
-      setSupportTickets(tkts);
-    } catch (e) {
-      console.error(e);
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Listen to all admin statistics and records in real-time
   useEffect(() => {
     if (!user || !profile) return;
     if (profile.role !== 'founder' && profile.role !== 'tech-admin' && profile.role !== 'moderator') {
@@ -74,8 +72,125 @@ export default function ClientAdminPage() {
       setDashTab('users');
     }
 
-    loadData();
+    const unsubUsers = listenAdminUsers(setDbUsers);
+    const unsubInvites = listenAdminInvites(setDbInvites);
+    const unsubGroupInvites = listenAdminGroupInvites(setDbGroupInvites);
+    const unsubReports = listenAdminReports(setDbReports);
+    const unsubSupport = listenAdminSupportTickets(setDbSupportTickets);
+    const unsubStatuses = listenAdminStatuses(setDbStatuses);
+    const unsubFriends = listenAdminFriends(setDbFriends);
+
+    setLoading(false);
+
+    return () => {
+      unsubUsers();
+      unsubInvites();
+      unsubGroupInvites();
+      unsubReports();
+      unsubSupport();
+      unsubStatuses();
+      unsubFriends();
+    };
   }, [user, profile, router]);
+
+  // Derived state mapping
+  const users = dbUsers;
+  const reports = dbReports;
+  const supportTickets = dbSupportTickets;
+  
+  const invites = useMemo(() => {
+    return [...dbInvites, ...dbGroupInvites].sort((a: any, b: any) => (b.created || 0) - (a.created || 0));
+  }, [dbInvites, dbGroupInvites]);
+
+  const stats = useMemo(() => {
+    const totalInvites = dbInvites.length + dbGroupInvites.length;
+    const personalInvitesCount = dbInvites.length;
+    const groupInvitesCount = dbGroupInvites.length;
+    
+    const typeCounts: Record<string, number> = {};
+    dbInvites.forEach(inv => {
+      if (inv && inv.type) {
+        typeCounts[inv.type] = (typeCounts[inv.type] || 0) + 1;
+      }
+    });
+    dbGroupInvites.forEach(inv => {
+      if (inv && inv.type) {
+        typeCounts[inv.type] = (typeCounts[inv.type] || 0) + 1;
+      }
+    });
+
+    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const activeUsers = dbUsers.filter(u => u.lastSeen > weekAgo).length;
+
+    let acceptedInvites = 0;
+    let declinedInvites = 0;
+    let rescheduleInvites = 0;
+    Object.values(dbStatuses).forEach(val => {
+      if (val === 'accepted') acceptedInvites++;
+      else if (val === 'declined') declinedInvites++;
+      else if (val === 'reschedule' || val === 'rescheduled') rescheduleInvites++;
+    });
+
+    let founderCount = 0;
+    let techAdminCount = 0;
+    let moderatorCount = 0;
+    let regularUserCount = 0;
+    let bannedCount = 0;
+
+    dbUsers.forEach(u => {
+      if (u.banned) bannedCount++;
+      if (u.role === 'founder') founderCount++;
+      else if (u.role === 'tech-admin') techAdminCount++;
+      else if (u.role === 'moderator') moderatorCount++;
+      else regularUserCount++;
+    });
+
+    let pendingReports = 0, resolvedReports = 0, dismissedReports = 0;
+    dbReports.forEach(r => {
+      if (r.status === 'pending') pendingReports++;
+      else if (r.status === 'resolved') resolvedReports++;
+      else if (r.status === 'dismissed') dismissedReports++;
+    });
+
+    let pendingSupport = 0, resolvedSupport = 0, dismissedSupport = 0;
+    dbSupportTickets.forEach(t => {
+      if (t.status === 'pending') pendingSupport++;
+      else if (t.status === 'resolved') resolvedSupport++;
+      else if (t.status === 'dismissed') dismissedSupport++;
+    });
+
+    let totalFriendsConnections = 0;
+    Object.values(dbFriends).forEach(val => {
+      if (val) {
+        totalFriendsConnections += Object.keys(val).length;
+      }
+    });
+    totalFriendsConnections = Math.floor(totalFriendsConnections / 2);
+
+    return {
+      totalUsers: dbUsers.length,
+      totalInvites,
+      acceptedInvites,
+      declinedInvites,
+      rescheduleInvites,
+      activeUsers,
+      bannedCount,
+      roleCounts: { founder: founderCount, techAdmin: techAdminCount, moderator: moderatorCount, user: regularUserCount },
+      reportsCount: { pending: pendingReports, resolved: resolvedReports, dismissed: dismissedReports, total: pendingReports + resolvedReports + dismissedReports },
+      supportCount: { pending: pendingSupport, resolved: resolvedSupport, dismissed: dismissedSupport, total: pendingSupport + resolvedSupport + dismissedSupport },
+      totalFriendsConnections,
+      users: dbUsers,
+      personalInvitesCount,
+      groupInvitesCount,
+      typeCounts,
+      personalInvites: dbInvites,
+      groupInvites: dbGroupInvites,
+    };
+  }, [dbUsers, dbInvites, dbGroupInvites, dbReports, dbSupportTickets, dbStatuses, dbFriends]);
+
+  const loadData = () => {
+    // Keep as dummy function since data updates reactively in real time
+  };
 
   // Handle support ticket click
   useEffect(() => {

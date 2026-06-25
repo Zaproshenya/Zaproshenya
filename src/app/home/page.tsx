@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserInvites, getNotifications } from '@/lib/firebase/db';
+import { listenUserInvites, listenNotifications } from '@/lib/firebase/db';
 import { TYPE_MAP } from '@/lib/utils';
 import { Icon } from '@/components/Icon';
 import { toast } from '@/components/Toast';
@@ -24,29 +24,25 @@ export default function HomePage() {
       return;
     }
 
-    const loadData = async () => {
-      try {
-        const [data, notifs] = await Promise.all([
-          getUserInvites(user.uid),
-          getNotifications(user.uid)
-        ]);
-        data.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-        setInvites(data);
+    const unsubInvites = listenUserInvites(user.uid, (data) => {
+      setInvites(data);
+      setLoading(false);
+    });
 
-        const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
-        const now = Date.now();
-        const incoming = notifs.filter(n =>
-          (n.type === 'invite' || n.type === 'group-invite') && n.inviteId &&
-          (!n.read || (now - n.createdAt < SEVEN_DAYS))
-        );
-        setIncomingInvites(incoming);
-      } catch (err) {
-        console.error('Error fetching invites', err);
-      } finally {
-        setLoading(false);
-      }
+    const unsubNotifs = listenNotifications(user.uid, (notifs) => {
+      const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+      const now = Date.now();
+      const incoming = notifs.filter(n =>
+        (n.type === 'invite' || n.type === 'group-invite') && n.inviteId &&
+        (!n.read || (now - n.createdAt < SEVEN_DAYS))
+      );
+      setIncomingInvites(incoming);
+    });
+
+    return () => {
+      unsubInvites();
+      unsubNotifs();
     };
-    loadData();
   }, [user, router]);
 
   const getStatusBadge = (status: string) => {

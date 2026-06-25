@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { getNotifications, markNotifRead, markAllNotifsRead, deleteNotification } from '@/lib/firebase/db';
+import { listenNotifications, markNotifRead, markAllNotifsRead, deleteNotification } from '@/lib/firebase/db';
 import { timeAgo } from '@/lib/utils';
 import { Icon } from '@/components/Icon';
 import { toast } from '@/components/Toast';
@@ -14,25 +14,19 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadData = async () => {
-    if (!user) return;
-    try {
-      const notifs = await getNotifications(user.uid);
-      setNotifications(notifs);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     if (user === undefined) return;
     if (user === null) {
       router.push('/login');
       return;
     }
-    loadData();
+
+    const unsub = listenNotifications(user.uid, (notifs) => {
+      setNotifications(notifs);
+      setLoading(false);
+    });
+
+    return () => unsub();
   }, [user, router]);
 
   const handleMarkAllRead = async () => {
@@ -40,7 +34,6 @@ export default function NotificationsPage() {
     try {
       await markAllNotifsRead(user.uid);
       toast('Всі сповіщення прочитано', 'success');
-      loadData();
     } catch (e) {
       toast('Помилка', 'error');
     }
@@ -50,7 +43,6 @@ export default function NotificationsPage() {
     if (!user) return;
     try {
       await markNotifRead(user.uid, notifId);
-      loadData();
     } catch (e) {
       console.error(e);
     }
@@ -61,7 +53,6 @@ export default function NotificationsPage() {
     if (!user) return;
     try {
       await deleteNotification(user.uid, notifId);
-      loadData();
     } catch (e) {
       console.error(e);
     }

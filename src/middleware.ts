@@ -49,7 +49,9 @@ export async function middleware(request: NextRequest) {
     const ogImageUrl = `${baseUrl}/${isGroup ? 'g' : 'i'}/${id}/opengraph-image`;
     
     let title = isGroup ? 'Групове запрошення' : 'Запрошення';
-    let desc = 'Вам надіслано приватне запрошення 💌 Натисніть, щоб відкрити та дізнатися деталі!';
+    let desc = isGroup
+      ? 'Вам надіслано групове запрошення 🌟 Натисніть, щоб відкрити та дізнатися деталі!'
+      : 'Вам надіслано приватне запрошення 💌 Натисніть, щоб відкрити та дізнатися деталі!';
 
     if (inv) {
       const t = TYPE_MAP[inv.type] || TYPE_MAP.other;

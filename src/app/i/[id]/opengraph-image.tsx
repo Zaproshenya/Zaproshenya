@@ -1,8 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { TYPE_MAP } from '@/lib/utils';
 
-
-
 // Standard OG image size
 export const alt = 'Запрошення';
 export const size = { width: 1200, height: 630 };
@@ -24,7 +22,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   if (!inv) {
     return new ImageResponse(
       (
-        <div style={{ background: '#0d0b0a', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+        <div style={{ background: '#0a0604', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
           <h1>Запрошення не знайдено</h1>
         </div>
       ),
@@ -34,89 +32,85 @@ export default async function Image({ params }: { params: Promise<{ id: string }
 
   const t = TYPE_MAP[inv.type] || TYPE_MAP.other;
 
-    return new ImageResponse(
-      (
+  return new ImageResponse(
+    (
+      <div style={{
+        background: 'linear-gradient(to bottom, #161109, #0a0604)',
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '50px 60px',
+        boxSizing: 'border-box',
+        fontFamily: 'sans-serif',
+        position: 'relative',
+      }}>
+        {/* Top Gold Stripe */}
         <div style={{
-          background: 'linear-gradient(to bottom right, #1f1115, #0a0507)',
-          width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: 'sans-serif'
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '8px',
+          background: 'linear-gradient(to right, transparent, #c9922a, #f5d98b, #c9922a, transparent)',
+        }} />
+
+        {/* Category / Type Header */}
+        <span style={{
+          fontSize: '22px',
+          color: '#c9922a',
+          textTransform: 'uppercase',
+          letterSpacing: '8px',
+          fontWeight: 'bold',
+          marginBottom: '20px',
         }}>
-          {/* Card / Envelope */}
-          <div style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            background: 'linear-gradient(to bottom, #2a161c, #150a0d)',
-            border: '2px solid #5a2e3b',
-            borderRadius: '40px',
-            padding: '40px 60px',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.8)',
-            width: '1050px',
-            height: '550px',
-            textAlign: 'center',
-            position: 'relative'
-          }}>
-            {/* Envelope Top Flap Illusion */}
-            <div style={{
-              position: 'absolute', top: 0, left: 0, right: 0, height: '6px',
-              background: '#e8a0ba',
-              opacity: 0.8, borderTopLeftRadius: '40px', borderTopRightRadius: '40px'
-            }} />
+          ✦ ПРИВАТНЕ ЗАПРОШЕННЯ ✦
+        </span>
 
-            {/* Top row: Emoji & Type */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
-              <span style={{ fontSize: '70px' }}>{t.e}</span>
-              <span style={{ fontSize: '32px', color: '#d496a7', textTransform: 'uppercase', letterSpacing: '4px', fontWeight: 'bold' }}>
-                ПРИВАТНЕ ЗАПРОШЕННЯ
-              </span>
-            </div>
+        {/* Main Emoji */}
+        <span style={{ fontSize: '90px', marginBottom: '15px' }}>{t.e}</span>
 
-            {/* To */}
-            <div style={{ fontSize: '75px', fontWeight: 'bold', color: '#fff', marginBottom: '30px', lineHeight: 1.1, display: 'flex' }}>
-              Для {inv.to}
-            </div>
+        {/* Main Name / Invitee */}
+        <span style={{
+          fontSize: '76px',
+          color: '#ffffff',
+          fontFamily: 'Georgia, serif',
+          fontStyle: 'italic',
+          textAlign: 'center',
+          lineHeight: '1.2',
+          marginBottom: '15px',
+        }}>
+          {inv.to}
+        </span>
 
-            {/* Details Row */}
-            <div style={{ display: 'flex', gap: '60px', borderTop: '1px solid rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '30px 0', marginBottom: '40px', width: '80%', justifyContent: 'center' }}>
-              {inv.date && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span style={{ fontSize: '24px', color: '#d496a7', marginBottom: '8px', textTransform: 'uppercase' }}>Коли</span>
-                  <span style={{ fontSize: '32px', color: '#fff', fontWeight: 'bold' }}>{inv.date} {inv.time || ''}</span>
-                </div>
-              )}
-              
-              {inv.place && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span style={{ fontSize: '24px', color: '#d496a7', marginBottom: '8px', textTransform: 'uppercase' }}>Де</span>
-                  <span style={{ fontSize: '32px', color: '#fff', fontWeight: 'bold', maxWidth: '350px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {inv.place}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* CTA Button Illusion */}
-            <div style={{
-              display: 'flex',
-              background: '#d6406b',
-              padding: '15px 40px',
-              borderRadius: '50px',
-              color: '#fff',
-              fontSize: '32px',
-              fontWeight: 'bold',
-              border: '1px solid #f2688f',
-              letterSpacing: '1px'
-            }}>
-              ✨ Натисніть, щоб дізнатися деталі
-            </div>
-
-            {/* From */}
-            {inv.showSender !== false && inv.senderName && (
-              <div style={{ position: 'absolute', bottom: '25px', right: '45px', fontSize: '26px', color: '#916371', display: 'flex', fontStyle: 'italic' }}>
-                від: {inv.senderName}
-              </div>
-            )}
+        {/* Sender Name */}
+        {inv.showSender !== false && inv.senderName && (
+          <div style={{ display: 'flex', alignItems: 'center', fontSize: '24px', color: '#a38a70', marginBottom: '35px' }}>
+            <span style={{ marginRight: '8px' }}>від</span>
+            <span style={{ color: '#fff', fontWeight: 'bold' }}>{inv.senderName}</span>
           </div>
+        )}
+
+        {/* CTA Button */}
+        <div style={{
+          display: 'flex',
+          background: 'linear-gradient(to right, #9e7f4f, #c5a880)',
+          padding: '16px 50px',
+          borderRadius: '50px',
+          color: '#1a0f07',
+          fontSize: '26px',
+          fontWeight: 'bold',
+          border: '1px solid #d4b88d',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+          letterSpacing: '1px',
+          marginTop: '10px',
+        }}>
+          ✨ Натисніть, щоб побачити більше
         </div>
-      ),
+      </div>
+    ),
     { ...size }
   );
 }
