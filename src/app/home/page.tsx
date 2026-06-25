@@ -179,7 +179,7 @@ export default function HomePage() {
           shown.map((inv, i) => {
             const t = TYPE_MAP[inv.type] || TYPE_MAP.other;
             const link = typeof window !== 'undefined'
-              ? `${window.location.origin}/${inv.isGroup ? 'g' : 'i'}/${inv.id}`
+              ? `${window.location.origin}/${inv.isGroup ? 'g' : 'i'}/${inv.id}/p`
               : '';
             return (
               <Link
