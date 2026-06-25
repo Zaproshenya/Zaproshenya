@@ -550,6 +550,7 @@
 .uprofile-wrap {
   max-width: 480px;
   margin: 0 auto;
+  padding-top: 40px;
   padding-bottom: 32px;
 }
 .uprofile-back-btn {
