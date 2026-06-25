@@ -94,6 +94,15 @@ export default function LandingPage() {
                   <div><div className="detail-chip-label">Місце</div><div className="detail-chip-value">Kyiv Coffee, Хрещатик</div></div>
                 </div>
               </div>
+
+              <div className="action-section-wrap" style={{paddingBottom: '0', paddingTop: '16px'}}>
+                <div className="answer-wrap" style={{pointerEvents: 'none'}}>
+                  <button className="btn-yes" tabIndex={-1}><Icon name="check" size={14}/> Так, я приду!</button>
+                  <button className="btn-reschedule" tabIndex={-1}><Icon name="calendar-blank" size={14}/> Перенести</button>
+                  <button className="btn-no" tabIndex={-1}><Icon name="x" size={14}/> Ні</button>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
