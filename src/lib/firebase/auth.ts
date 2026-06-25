@@ -7,7 +7,13 @@ import {
   verifyBeforeUpdateEmail,
   EmailAuthProvider,
   reauthenticateWithCredential,
-  User 
+  User,
+  signInWithPopup,
+  GoogleAuthProvider,
+  FacebookAuthProvider,
+  OAuthProvider,
+  sendPasswordResetEmail,
+  sendEmailVerification
 } from "firebase/auth";
 import { ref, set, get, update, remove } from "firebase/database";
 import { auth, db } from "./config";
@@ -24,22 +30,26 @@ export interface UserProfile {
   lastSeen: number;
   banned?: boolean;
   bannedUntil?: number | null;
+  email?: string;
+  twoFactorEnabled?: boolean;
 }
 
-export async function register(name: string, login: string, password: string): Promise<UserProfile> {
+export async function register(name: string, login: string, password: string, email?: string): Promise<UserProfile> {
   const cleanLogin = login.trim().toLowerCase();
   const cleanName = name.trim();
+  const cleanEmail = email?.trim().toLowerCase();
 
   if (cleanName.length < 2) throw new Error('Ім\'я має бути не менше 2 символів');
   if (cleanLogin.length < 3) throw new Error('Логін має бути не менше 3 символів');
   if (!/^[a-z0-9_]+$/.test(cleanLogin)) throw new Error('Логін: тільки латиниця, цифри, _');
   if (password.length < 6) throw new Error('Пароль має бути не менше 6 символів');
+  if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) throw new Error('Некоректний формат пошти');
 
   const existing = await get(ref(db, 'logins/' + cleanLogin));
   if (existing.exists()) throw new Error('Цей логін вже зайнятий');
 
-  const email = cleanLogin + '@zap.app';
-  const cred = await createUserWithEmailAndPassword(auth, email, password);
+  const authEmail = cleanEmail || (cleanLogin + '@zap.app');
+  const cred = await createUserWithEmailAndPassword(auth, authEmail, password);
   const uid = cred.user.uid;
 
   let uniqueId = genUserId();
@@ -59,6 +69,11 @@ export async function register(name: string, login: string, password: string): P
     createdAt: Date.now(),
     lastSeen: Date.now(),
   };
+
+  if (cleanEmail) {
+    profile.email = cleanEmail;
+    profile.twoFactorEnabled = false;
+  }
 
   await set(ref(db, 'users/' + uid), profile);
   await set(ref(db, 'logins/' + cleanLogin), uid);
@@ -111,7 +126,7 @@ export async function changeLogin(user: User, currentProfile: UserProfile, newLo
 export async function changePassword(user: User, currentProfile: UserProfile, oldPassword: string, newPassword: string) {
   if (newPassword.length < 6) throw new Error('Пароль має бути не менше 6 символів');
 
-  const email = currentProfile.login + '@zap.app';
+  const email = user.email || (currentProfile.login + '@zap.app');
   const cred = EmailAuthProvider.credential(email, oldPassword);
   await reauthenticateWithCredential(user, cred);
 
@@ -119,7 +134,7 @@ export async function changePassword(user: User, currentProfile: UserProfile, ol
 }
 
 export async function deleteAccount(user: User, currentProfile: UserProfile, password: string) {
-  const email = currentProfile.login + '@zap.app';
+  const email = user.email || (currentProfile.login + '@zap.app');
   const cred = EmailAuthProvider.credential(email, password);
   await reauthenticateWithCredential(user, cred);
 
@@ -135,4 +150,83 @@ export async function deleteAccount(user: User, currentProfile: UserProfile, pas
   await remove(ref(db, 'friend-requests/' + uid));
 
   await user.delete();
+}
+
+export async function sendPasswordReset(email: string) {
+  await sendPasswordResetEmail(auth, email);
+}
+
+export async function sendVerification(user: User) {
+  await sendEmailVerification(user);
+}
+
+export async function verifyAndChangeEmail(user: User, newEmail: string) {
+  await verifyBeforeUpdateEmail(user, newEmail);
+}
+
+export async function signInWithSocial(providerName: 'google' | 'facebook' | 'apple'): Promise<UserProfile> {
+  let provider;
+  if (providerName === 'google') {
+    provider = new GoogleAuthProvider();
+  } else if (providerName === 'facebook') {
+    provider = new FacebookAuthProvider();
+  } else {
+    provider = new OAuthProvider('apple.com');
+  }
+
+  const result = await signInWithPopup(auth, provider);
+  const user = result.user;
+  const uid = user.uid;
+
+  const snap = await get(ref(db, 'users/' + uid));
+  if (!snap.exists()) {
+    let uniqueId = genUserId();
+    let idCheck = await get(ref(db, 'ids/' + uniqueId));
+    while (idCheck.exists()) {
+      uniqueId = genUserId();
+      idCheck = await get(ref(db, 'ids/' + uniqueId));
+    }
+
+    let baseLogin = 'user';
+    if (user.email) {
+      baseLogin = user.email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '');
+    } else if (user.displayName) {
+      baseLogin = user.displayName.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '');
+    }
+    baseLogin = baseLogin.slice(0, 10);
+    if (baseLogin.length < 3) baseLogin = 'u_' + baseLogin;
+
+    let cleanLogin = baseLogin;
+    let loginCheck = await get(ref(db, 'logins/' + cleanLogin));
+    let counter = 1;
+    while (loginCheck.exists()) {
+      cleanLogin = `${baseLogin.slice(0, 7)}${counter}`;
+      loginCheck = await get(ref(db, 'logins/' + cleanLogin));
+      counter++;
+    }
+
+    const profile: UserProfile = {
+      uid,
+      name: user.displayName || 'Користувач',
+      login: cleanLogin,
+      uniqueId,
+      role: 'user',
+      avatar: user.photoURL || null,
+      createdAt: Date.now(),
+      lastSeen: Date.now(),
+    };
+
+    if (user.email) {
+      profile.email = user.email;
+      profile.twoFactorEnabled = false;
+    }
+
+    await set(ref(db, 'users/' + uid), profile);
+    await set(ref(db, 'logins/' + cleanLogin), uid);
+    await set(ref(db, 'ids/' + uniqueId), uid);
+
+    return profile;
+  }
+
+  return snap.val();
 }

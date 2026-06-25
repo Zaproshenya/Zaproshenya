@@ -2,7 +2,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { logoutUser, updateProfileData, changeLogin, changePassword, deleteAccount } from '@/lib/firebase/auth';
+import { logoutUser, updateProfileData, changeLogin, changePassword, deleteAccount, verifyAndChangeEmail } from '@/lib/firebase/auth';
+import { auth } from '@/lib/firebase/config';
 import { getUserInvites, getFriends, getUserTickets, createSupportTicket, listenTicketMessages, stopListeningTicket, listenTicket, stopListeningTicketMeta, sendTicketMessage, markTicketReadByUser } from '@/lib/firebase/db';
 import { Icon } from '@/components/Icon';
 import { toast } from '@/components/Toast';
@@ -17,9 +18,33 @@ export default function ProfilePage() {
   const [tickets, setTickets] = useState<any[]>([]);
 
   // Modals state
-  const [editMode, setEditMode] = useState<'name'|'login'|'password'|null>(null);
+  const [editMode, setEditMode] = useState<'name'|'login'|'password'|'email'|'disable2fa'|null>(null);
   const [saving, setSaving] = useState(false);
   const [editError, setEditError] = useState('');
+  
+  const [targetEmail, setTargetEmail] = useState('');
+  const [showEmailSent, setShowEmailSent] = useState(false);
+  const [disablePass, setDisablePass] = useState('');
+
+  useEffect(() => {
+    if (editMode !== 'email' || !showEmailSent || !targetEmail) return;
+    const interval = setInterval(async () => {
+      if (auth.currentUser) {
+        await auth.currentUser.reload();
+        if (auth.currentUser.emailVerified && auth.currentUser.email === targetEmail) {
+          clearInterval(interval);
+          const { updateProfileData } = await import('@/lib/firebase/auth');
+          await updateProfileData(auth.currentUser.uid, { email: targetEmail, twoFactorEnabled: true });
+          updateProfile({ email: targetEmail, twoFactorEnabled: true });
+          toast('Електронну пошту підтверджено! 2FA активовано. ✦', 'success');
+          setEditMode(null);
+          setShowEmailSent(false);
+          setTargetEmail('');
+        }
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [editMode, showEmailSent, targetEmail, updateProfile]);
   
   const [newTicketOpen, setNewTicketOpen] = useState(false);
   const [ticketType, setTicketType] = useState('bug');
@@ -124,6 +149,14 @@ export default function ProfilePage() {
     toast('ID скопійовано', 'success');
   };
 
+  const closeEditModal = () => {
+    setEditMode(null);
+    setEditError('');
+    setShowEmailSent(false);
+    setTargetEmail('');
+    setDisablePass('');
+  };
+
   const handleSaveEdit = async () => {
     if (!user || !profile) return;
     setEditError('');
@@ -134,11 +167,13 @@ export default function ProfilePage() {
         if (!val || val.length < 2) throw new Error("Ім'я має бути не менше 2 символів");
         await updateProfileData(user.uid, { name: val });
         toast("Ім'я змінено", 'success');
+        setEditMode(null);
       } else if (editMode === 'login') {
         const val = loginRef.current?.value.trim();
         if (!val) throw new Error("Введіть логін");
         await changeLogin(user, profile, val);
         toast("Логін змінено", 'success');
+        setEditMode(null);
       } else if (editMode === 'password') {
         const oldP = oldPassRef.current?.value;
         const newP = newPassRef.current?.value;
@@ -147,13 +182,64 @@ export default function ProfilePage() {
         if (newP !== newP2) throw new Error("Паролі не співпадають");
         await changePassword(user, profile, oldP, newP);
         toast("Пароль змінено", 'success');
+        setEditMode(null);
+      } else if (editMode === 'email') {
+        if (showEmailSent) {
+          await auth.currentUser?.reload();
+          if (auth.currentUser?.emailVerified && auth.currentUser.email === targetEmail) {
+            const { updateProfileData } = await import('@/lib/firebase/auth');
+            await updateProfileData(auth.currentUser.uid, { email: targetEmail, twoFactorEnabled: true });
+            updateProfile({ email: targetEmail, twoFactorEnabled: true });
+            toast('Пошту успішно підтверджено! 2FA активовано. ✦', 'success');
+            setEditMode(null);
+            setShowEmailSent(false);
+            setTargetEmail('');
+          } else {
+            throw new Error("Електронна пошта ще не підтверджена. Перевірте свій лист.");
+          }
+          return;
+        }
+
+        const emailVal = targetEmail.trim().toLowerCase();
+        if (!emailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+          throw new Error("Некоректний формат пошти");
+        }
+        await verifyAndChangeEmail(user, emailVal);
+        setShowEmailSent(true);
+        toast("Лист-підтвердження надіслано!", 'success');
+      } else if (editMode === 'disable2fa') {
+        if (!disablePass) throw new Error("Введіть пароль");
+        const { EmailAuthProvider, reauthenticateWithCredential } = await import('firebase/auth');
+        const email = user.email || (profile.login + '@zap.app');
+        const cred = EmailAuthProvider.credential(email, disablePass);
+        await reauthenticateWithCredential(user, cred);
+
+        const { updateProfileData } = await import('@/lib/firebase/auth');
+        await updateProfileData(user.uid, { twoFactorEnabled: false });
+        updateProfile({ twoFactorEnabled: false });
+
+        toast('Двофакторну автентифікацію вимкнено', 'info');
+        setDisablePass('');
+        setEditMode(null);
       }
-      setEditMode(null);
     } catch (e: any) {
       let msg = e.message || 'Помилка';
       if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') msg = 'Невірний поточний пароль';
       if (e.code === 'auth/requires-recent-login') msg = 'Для зміни логіну увійдіть знову';
       setEditError(msg);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!user || !targetEmail) return;
+    setSaving(true);
+    try {
+      await verifyAndChangeEmail(user, targetEmail);
+      toast('Лист надіслано повторно!', 'success');
+    } catch (e: any) {
+      toast(e.message || 'Помилка відправлення', 'error');
     } finally {
       setSaving(false);
     }
@@ -389,6 +475,25 @@ export default function ProfilePage() {
             </div>
             <button className="btn-outline btn-sm" onClick={() => setEditMode('password')}>Змінити</button>
           </div>
+          <div className="profile-field">
+            <div>
+              <div className="profile-field-label">Двофакторна автентифікація (2FA)</div>
+              <div className="profile-field-value" style={{fontSize:'.93rem', fontWeight:600}}>
+                {profile.twoFactorEnabled 
+                  ? `Увімкнено (${profile.email || 'пошта не вказана'})` 
+                  : 'Вимкнено'}
+              </div>
+            </div>
+            {profile.twoFactorEnabled ? (
+              <button className="btn-outline btn-sm" style={{color:'var(--red)', borderColor:'rgba(192,57,43,.3)'}} onClick={() => setEditMode('disable2fa')}>
+                Вимкнути
+              </button>
+            ) : (
+              <button className="btn-outline btn-sm" onClick={() => setEditMode('email')}>
+                Налаштувати
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -482,13 +587,13 @@ export default function ProfilePage() {
       
       {/* Edit Modal */}
       {editMode && (
-        <div className="overlay" onClick={() => setEditMode(null)}>
+        <div className="overlay" onClick={closeEditModal}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'18px'}}>
               <h3 className="modal-title" style={{marginBottom:0}}>
-                {editMode === 'name' ? "Змінити ім'я" : editMode === 'login' ? "Змінити логін" : "Змінити пароль"}
+                {editMode === 'name' ? "Змінити ім'я" : editMode === 'login' ? "Змінити логін" : editMode === 'password' ? "Змінити пароль" : editMode === 'email' ? "Налаштувати 2FA" : "Вимкнути 2FA"}
               </h3>
-              <button className="modal-close" onClick={() => setEditMode(null)}>×</button>
+              <button className="modal-close" onClick={closeEditModal}>×</button>
             </div>
             
             {editMode === 'name' && (
@@ -524,10 +629,55 @@ export default function ProfilePage() {
                 </div>
               </>
             )}
+            {editMode === 'email' && (
+              <>
+                {!showEmailSent ? (
+                  <div className="form-group">
+                    <label className="lbl">Електронна пошта для 2FA</label>
+                    <input 
+                      type="email" 
+                      placeholder="example@domain.com" 
+                      value={targetEmail} 
+                      onChange={e => setTargetEmail(e.target.value)} 
+                    />
+                    <p style={{fontSize:'.75rem', color:'var(--muted)', marginTop:'8px'}}>
+                      <Icon name="info" size={13}/> Ми надішлемо вам лист-підтвердження для перевірки та увімкнення двофакторної автентифікації.
+                    </p>
+                  </div>
+                ) : (
+                  <div style={{textAlign:'center', padding:'10px 0'}}>
+                    <div style={{width:'48px', height:'48px', borderRadius:'50%', background:'rgba(var(--gold-rgb), 0.1)', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--gold)', margin:'0 auto 16px'}}>
+                      <Icon name="envelope-simple" size={24}/>
+                    </div>
+                    <p style={{fontSize:'.88rem', color:'var(--muted)', lineHeight:1.6, marginBottom:'16px'}}>
+                      Лист для підтвердження надіслано на <strong style={{color:'var(--ink)'}}>{targetEmail}</strong>. 
+                      Будь ласка, перейдіть за посиланням у листі для завершення.
+                    </p>
+                    <button type="button" className="btn btn-outline btn-full btn-sm" onClick={handleResendVerification} style={{marginBottom:'8px'}}>
+                      Надіслати лист ще раз
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+            {editMode === 'disable2fa' && (
+              <div className="form-group">
+                <label className="lbl">Введіть пароль для підтвердження</label>
+                <input 
+                  type="password" 
+                  placeholder="Ваш поточний пароль" 
+                  value={disablePass} 
+                  onChange={e => setDisablePass(e.target.value)} 
+                />
+                <p style={{fontSize:'.78rem', color:'var(--muted)', marginTop:'8px'}}>
+                  <Icon name="warning" size={13}/> Двофакторна автентифікація буде вимкнена.
+                </p>
+              </div>
+            )}
 
             {editError && <div className="form-error show">{editError}</div>}
             <button className="btn btn-dark btn-full" disabled={saving} onClick={handleSaveEdit}>
-              {saving ? 'Збереження...' : 'Зберегти'}
+              {saving ? 'Збереження...' : (editMode === 'email' && showEmailSent ? 'Я підтвердив(ла)' : 'Зберегти')}
             </button>
           </div>
         </div>
