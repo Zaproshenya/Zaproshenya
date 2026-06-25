@@ -45,6 +45,14 @@ export default function CreatePage() {
       setFriends(f);
       setLoading(false);
     });
+
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const toParam = params.get('to');
+      if (toParam) {
+        setForm(prev => ({ ...prev, to: toParam }));
+      }
+    }
   }, [user, router]);
 
   const toggleFriend = (uid: string) => {

@@ -298,6 +298,9 @@ export default function FriendsPage() {
                         <Link href={`/u/${f.uid}`} className="friend-menu-item" style={{textDecoration: 'none'}}>
                           <Icon name="user" size={16}/> Перейти до профілю
                         </Link>
+                        <Link href={`/create?to=${encodeURIComponent(f.name)}`} className="friend-menu-item" style={{textDecoration: 'none'}}>
+                          <Icon name="paper-plane-tilt" size={16}/> Запросити
+                        </Link>
                         <button className="friend-menu-item danger" onClick={() => { setOpenMenuId(null); handleRemoveFriend(f.uid); }}>
                           <Icon name="user-minus" size={16}/> Видалити з друзів
                         </button>

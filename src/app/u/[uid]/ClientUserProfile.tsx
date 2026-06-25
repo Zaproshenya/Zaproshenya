@@ -109,70 +109,78 @@ export default function ClientUserProfile({ uid }: { uid: string }) {
       </Link>
 
       {/* Hero card */}
-      <div className="uprofile-hero">
-        {/* Avatar with online ring */}
-        <div className="uprofile-avatar-wrap">
-          <div className={`uprofile-avatar-ring ${isOnline ? 'online' : ''}`}>
-            <div className="avatar avatar-xl">
-              {userData.avatar ? <img src={userData.avatar} alt="Avatar"/> : (userData.name||'?').charAt(0).toUpperCase()}
+      <div className="profile-hero" style={{marginBottom:'20px'}}>
+        <div className="profile-hero-star">✦</div>
+        <div className="profile-hero-inner">
+          {/* Avatar with online ring */}
+          <div className="profile-avatar-wrap">
+            <div className={`profile-avatar-ring ${isOnline ? 'online' : ''}`} style={isOnline ? {borderColor:'var(--green)'} : {}}>
+              <div className="avatar avatar-xl">
+                {userData.avatar ? <img src={userData.avatar} alt="Avatar"/> : (userData.name||'?').charAt(0).toUpperCase()}
+              </div>
+            </div>
+            {isOnline && <div className="uprofile-online-badge">В мережі</div>}
+          </div>
+          
+          {/* Name + badges */}
+          <div className="profile-hero-info">
+            <div className="profile-hero-name" style={{color:'#fff'}}>{userData.name}</div>
+            <div className="profile-hero-meta">
+              {userData.role === 'founder' && <span className="role-badge founder">Засновник</span>}
+              {userData.role === 'tech-admin' && <span className="role-badge founder" style={{background:'var(--ink)',color:'#fff'}}>Тех-адмін</span>}
+              {userData.role === 'moderator' && <span className="role-badge founder" style={{background:'var(--blue)',color:'#fff'}}>Модератор</span>}
+              {userData.role === 'support' && <span className="role-badge founder" style={{background:'var(--purple)',color:'#fff'}}>Підтримка</span>}
+              <span className="profile-id">{userData.uniqueId}</span>
+            </div>
+            
+            <div className="profile-hero-login">
+              <span className="phl-item" style={{color:'var(--muted)'}}><Icon name="user" size={11}/> @{userData.login}</span>
+              {memberSince && (
+                <span className="phl-item date" style={{color:'var(--muted)'}}>
+                  <Icon name="calendar-blank" size={11}/> з {memberSince}
+                </span>
+              )}
             </div>
           </div>
-          {isOnline && <div className="uprofile-online-badge">В мережі</div>}
         </div>
-        
-        {/* Name + badges */}
-        <div className="uprofile-name">{userData.name}</div>
-        <div className="uprofile-badges">
-          {userData.role === 'founder' && <span className="role-badge founder">Засновник</span>}
-          {userData.role === 'tech-admin' && <span className="role-badge founder" style={{background:'var(--ink)',color:'#fff'}}>Тех-адмін</span>}
-          {userData.role === 'moderator' && <span className="role-badge founder" style={{background:'var(--blue)',color:'#fff'}}>Модератор</span>}
-          {userData.role === 'support' && <span className="role-badge founder" style={{background:'var(--purple)',color:'#fff'}}>Підтримка</span>}
-          <span className="uprofile-id">{userData.uniqueId}</span>
-        </div>
-        
-        {memberSince && (
-          <div className="uprofile-since">
-            <Icon name="calendar-blank" size={13}/> З {memberSince}
-          </div>
-        )}
-
-        {/* Actions */}
-        {!isMe && me && (
-          <div className="uprofile-actions">
-            {friendStatus === 'friend' && (
-              <button className="btn btn-sm" disabled style={{background:'var(--green-bg)',color:'var(--green)',border:'1.5px solid rgba(45,122,79,.25)',borderRadius:'12px',padding:'12px 22px'}}>
-                <Icon name="check-circle" size={15}/> У друзях
-              </button>
-            )}
-            {friendStatus === 'pending-sent' && (
-              <button className="btn btn-outline btn-sm" disabled style={{padding:'12px 22px'}}>
-                <Icon name="clock" size={15}/> Запит надіслано
-              </button>
-            )}
-            {friendStatus === 'pending-received' && (
-              <button className="btn btn-gold btn-sm" onClick={handleAcceptRequest} style={{padding:'12px 22px'}}>
-                <Icon name="check" size={15}/> Прийняти запит
-              </button>
-            )}
-            {friendStatus === 'none' && (
-              <button className="btn btn-dark btn-sm" onClick={handleAddFriend} style={{padding:'12px 22px'}}>
-                <Icon name="hand-waving" size={15}/> Додати в друзі
-              </button>
-            )}
-            <Link href="/create" className="btn btn-gold btn-sm" style={{padding:'12px 22px',textDecoration:'none'}}>
-              <Icon name="paper-plane-tilt" size={15}/> Запросити
-            </Link>
-          </div>
-        )}
-
-        {isMe && (
-          <div className="uprofile-actions">
-            <Link href="/profile" className="btn btn-outline btn-sm" style={{padding:'12px 22px',textDecoration:'none'}}>
-              <Icon name="gear" size={15}/> Налаштування
-            </Link>
-          </div>
-        )}
       </div>
+
+      {/* Action buttons row below hero */}
+      {!isMe && me && (
+        <div className="uprofile-actions" style={{display:'flex', gap:'10px', justifyContent:'center', marginBottom:'20px'}}>
+          {friendStatus === 'friend' && (
+            <button className="btn btn-sm" disabled style={{background:'var(--green-bg)',color:'var(--green)',border:'1.5px solid rgba(45,122,79,.25)',borderRadius:'12px',padding:'12px 22px', display:'flex', alignItems:'center', gap:'6px'}}>
+              <Icon name="check-circle" size={15}/> У друзях
+            </button>
+          )}
+          {friendStatus === 'pending-sent' && (
+            <button className="btn btn-outline btn-sm" disabled style={{padding:'12px 22px', display:'flex', alignItems:'center', gap:'6px'}}>
+              <Icon name="clock" size={15}/> Запит надіслано
+            </button>
+          )}
+          {friendStatus === 'pending-received' && (
+            <button className="btn btn-gold btn-sm" onClick={handleAcceptRequest} style={{padding:'12px 22px', display:'flex', alignItems:'center', gap:'6px'}}>
+              <Icon name="check" size={15}/> Прийняти запит
+            </button>
+          )}
+          {friendStatus === 'none' && (
+            <button className="btn btn-dark btn-sm" onClick={handleAddFriend} style={{padding:'12px 22px', display:'flex', alignItems:'center', gap:'6px'}}>
+              <Icon name="hand-waving" size={15}/> Додати в друзі
+            </button>
+          )}
+          <Link href={`/create?to=${encodeURIComponent(userData.name)}`} className="btn btn-gold btn-sm" style={{padding:'12px 22px',textDecoration:'none', display:'flex', alignItems:'center', gap:'6px'}}>
+            <Icon name="paper-plane-tilt" size={15}/> Запросити
+          </Link>
+        </div>
+      )}
+
+      {isMe && (
+        <div className="uprofile-actions" style={{display:'flex', gap:'10px', justifyContent:'center', marginBottom:'20px'}}>
+          <Link href="/profile" className="btn btn-outline btn-sm" style={{padding:'12px 22px',textDecoration:'none', display:'flex', alignItems:'center', gap:'6px'}}>
+            <Icon name="gear" size={15}/> Налаштування
+          </Link>
+        </div>
+      )}
 
       {/* Info card (if not me) */}
       {!isMe && (
