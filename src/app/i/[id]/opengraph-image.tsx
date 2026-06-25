@@ -37,18 +37,18 @@ export default async function Image({ params }: { params: Promise<{ id: string }
     return new ImageResponse(
       (
         <div style={{
-          background: 'linear-gradient(135deg, #1f1115 0%, #0a0507 100%)',
+          background: 'linear-gradient(to bottom right, #1f1115, #0a0507)',
           width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontFamily: 'sans-serif'
         }}>
           {/* Card / Envelope */}
           <div style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center',
-            background: 'linear-gradient(180deg, #2a161c 0%, #150a0d 100%)',
+            background: 'linear-gradient(to bottom, #2a161c, #150a0d)',
             border: '2px solid #5a2e3b',
             borderRadius: '40px',
             padding: '70px 100px',
-            boxShadow: '0 30px 60px rgba(0,0,0,0.8), inset 0 2px 10px rgba(255,255,255,0.1)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.8)',
             maxWidth: '1000px',
             textAlign: 'center',
             position: 'relative'
@@ -56,12 +56,12 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             {/* Envelope Top Flap Illusion */}
             <div style={{
               position: 'absolute', top: 0, left: 0, right: 0, height: '6px',
-              background: 'linear-gradient(90deg, transparent, #e8a0ba, transparent)',
+              background: '#e8a0ba',
               opacity: 0.8, borderTopLeftRadius: '40px', borderTopRightRadius: '40px'
             }} />
 
             {/* Emoji */}
-            <div style={{ fontSize: '90px', marginBottom: '30px', display: 'flex', textShadow: '0 10px 20px rgba(0,0,0,0.5)' }}>
+            <div style={{ fontSize: '90px', marginBottom: '30px', display: 'flex' }}>
               {t.e}
             </div>
 
@@ -71,20 +71,19 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             </div>
 
             {/* To */}
-            <div style={{ fontSize: '85px', fontWeight: 'bold', color: '#fff', marginBottom: '50px', lineHeight: 1.1, display: 'flex', textShadow: '0 4px 10px rgba(0,0,0,0.5)' }}>
+            <div style={{ fontSize: '85px', fontWeight: 'bold', color: '#fff', marginBottom: '50px', lineHeight: 1.1, display: 'flex' }}>
               Для {inv.to}
             </div>
 
             {/* CTA Button Illusion */}
             <div style={{
               display: 'flex',
-              background: 'linear-gradient(90deg, #d6406b, #b32d54)',
+              background: '#d6406b',
               padding: '20px 50px',
               borderRadius: '50px',
               color: '#fff',
               fontSize: '36px',
               fontWeight: 'bold',
-              boxShadow: '0 10px 30px rgba(214, 64, 107, 0.4)',
               border: '1px solid #f2688f',
               letterSpacing: '1px'
             }}>

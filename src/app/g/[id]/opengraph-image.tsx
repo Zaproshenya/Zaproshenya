@@ -38,18 +38,18 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   return new ImageResponse(
     (
       <div style={{
-        background: 'linear-gradient(135deg, #11151f 0%, #05070a 100%)',
+        background: 'linear-gradient(to bottom right, #11151f, #05070a)',
         width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontFamily: 'sans-serif'
       }}>
         {/* Card / Envelope */}
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
-          background: 'linear-gradient(180deg, #161c2a 0%, #0a0d15 100%)',
+          background: 'linear-gradient(to bottom, #161c2a, #0a0d15)',
           border: '2px solid #2e3b5a',
           borderRadius: '40px',
           padding: '70px 100px',
-          boxShadow: '0 30px 60px rgba(0,0,0,0.8), inset 0 2px 10px rgba(255,255,255,0.1)',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.8)',
           maxWidth: '1000px',
           textAlign: 'center',
           position: 'relative'
@@ -57,12 +57,12 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           {/* Envelope Top Flap Illusion */}
           <div style={{
             position: 'absolute', top: 0, left: 0, right: 0, height: '6px',
-            background: 'linear-gradient(90deg, transparent, #a0bae8, transparent)',
+            background: '#a0bae8',
             opacity: 0.8, borderTopLeftRadius: '40px', borderTopRightRadius: '40px'
           }} />
 
           {/* Emoji */}
-          <div style={{ fontSize: '90px', marginBottom: '30px', display: 'flex', textShadow: '0 10px 20px rgba(0,0,0,0.5)' }}>
+          <div style={{ fontSize: '90px', marginBottom: '30px', display: 'flex' }}>
             {t.e}
           </div>
 
@@ -72,20 +72,19 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           </div>
 
           {/* Title */}
-          <div style={{ fontSize: '85px', fontWeight: 'bold', color: '#fff', marginBottom: '50px', lineHeight: 1.1, display: 'flex', textShadow: '0 4px 10px rgba(0,0,0,0.5)' }}>
+          <div style={{ fontSize: '85px', fontWeight: 'bold', color: '#fff', marginBottom: '50px', lineHeight: 1.1, display: 'flex' }}>
             {inv.title || 'Зустріч'}
           </div>
 
           {/* CTA Button Illusion */}
           <div style={{
             display: 'flex',
-            background: 'linear-gradient(90deg, #406bd6, #2d54b3)',
+            background: '#406bd6',
             padding: '20px 50px',
             borderRadius: '50px',
             color: '#fff',
             fontSize: '36px',
             fontWeight: 'bold',
-            boxShadow: '0 10px 30px rgba(64, 107, 214, 0.4)',
             border: '1px solid #688ff2',
             letterSpacing: '1px'
           }}>
