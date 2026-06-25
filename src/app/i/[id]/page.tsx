@@ -4,10 +4,19 @@ import ClientInvitePage from './ClientInvitePage';
 
 
 
+import { headers } from 'next/headers';
+
 const dbUrl = "https://zaproshenya-82751-default-rtdb.europe-west1.firebasedatabase.app";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
+  
+  const headersList = await headers();
+  const host = headersList.get('x-forwarded-host') || headersList.get('host') || 'zaproshenya.pages.dev';
+  const protocol = host.includes('localhost') ? 'http' : 'https';
+  const baseUrl = `${protocol}://${host}`;
+  const ogImageUrl = `${baseUrl}/i/${id}/opengraph-image`;
+
   try {
     const res = await fetch(`${dbUrl}/invites/${id}.json`, { next: { revalidate: 30 } });
     const inv = await res.json();
@@ -25,6 +34,20 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       openGraph: {
         title,
         description: desc,
+        images: [
+          {
+            url: ogImageUrl,
+            width: 1200,
+            height: 630,
+            alt: 'Запрошення',
+          }
+        ]
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description: desc,
+        images: [ogImageUrl],
       }
     };
   } catch (e) {
