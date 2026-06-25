@@ -606,7 +606,7 @@ export default function ProfilePage() {
                         {isUser ? (
                           profile.avatar ? <img src={profile.avatar} alt=""/> : (msg.name || '?').charAt(0).toUpperCase()
                         ) : (
-                          msg.avatar ? <img src={msg.avatar} alt=""/> : <Icon name="headset" size={16}/>
+                          <Icon name="headset" size={16}/>
                         )}
                       </div>
                       <div className="chat-msg-content">

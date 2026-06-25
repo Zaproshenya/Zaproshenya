@@ -1,5 +1,7 @@
 'use client';
 import { Icon } from './Icon';
+import { createPortal } from 'react-dom';
+import { useState, useEffect } from 'react';
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -22,9 +24,16 @@ export function ConfirmModal({
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
-  if (!isOpen) return null;
+  const [mounted, setMounted] = useState(false);
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
+
+  return createPortal(
     <div className="overlay" onClick={onCancel} style={{ zIndex: 9999 }}>
       <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
         <h3 className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: isDanger ? 'var(--red)' : 'var(--gold)', margin: 0 }}>
@@ -50,6 +59,7 @@ export function ConfirmModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

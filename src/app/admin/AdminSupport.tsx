@@ -308,7 +308,11 @@ export default function AdminSupport({
                 return (
                   <div key={m.id} className={`chat-msg ${isSupport ? 'support' : 'user'}`}>
                     <div className="chat-msg-avatar" style={{width:'40px',height:'40px',borderRadius:'12px',boxShadow:'var(--shadow-sm)',overflow:'hidden'}}>
-                      {avatarUrl ? <img src={avatarUrl} alt="" style={{width:'100%',height:'100%',borderRadius:'12px',objectFit:'cover'}} /> : (isSupport ? <Icon name="headset" size={20}/> : (m.name || '?').charAt(0).toUpperCase())}
+                      {isSupport ? (
+                        <Icon name="headset" size={20}/>
+                      ) : (
+                        avatarUrl ? <img src={avatarUrl} alt="" style={{width:'100%',height:'100%',borderRadius:'12px',objectFit:'cover'}} /> : (m.name || '?').charAt(0).toUpperCase()
+                      )}
                     </div>
                     <div className="chat-msg-content" style={{maxWidth: '85%'}}>
                       <div className="chat-bubble" style={{padding: '12px 16px', borderRadius: '16px', fontSize: '.95rem', lineHeight: '1.5', boxShadow: '0 2px 8px rgba(0,0,0,0.04)'}}>
