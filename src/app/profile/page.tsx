@@ -317,9 +317,8 @@ export default function ProfilePage() {
               <span className="profile-id">{profile.uniqueId}</span>
             </div>
             <div className="profile-hero-login">
-              <Icon name="user" size={11}/> @{profile.login}
-              <span style={{opacity:.4, margin:'0 2px'}}>·</span>
-              <Icon name="calendar" size={11}/> з {memberSince}
+              <span className="phl-item"><Icon name="user" size={11}/> @{profile.login}</span>
+              {profile.createdAt && <span className="phl-item date"><Icon name="calendar-blank" size={11}/> з {memberSince}</span>}
             </div>
           </div>
         </div>
