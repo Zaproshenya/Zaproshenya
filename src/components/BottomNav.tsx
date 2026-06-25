@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Icon } from './Icon';
 
 export function BottomNav() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const pathname = usePathname();
   const unreadCount = 0; // TODO: fetch from notifications
 
@@ -15,6 +15,7 @@ export function BottomNav() {
   if (isHiddenPage) return null;
 
   const isActive = (path: string) => pathname === path ? 'on' : '';
+  const isAdmin = profile && (profile.role === 'founder' || profile.role === 'tech-admin' || profile.role === 'moderator');
 
   return (
     <nav className="bottom-nav">
@@ -37,10 +38,18 @@ export function BottomNav() {
         <span>Сповіщення</span>
         {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
       </Link>
-      <Link href="/profile" className={`bn-item ${isActive('/profile')}`}>
-        <div style={{ fontSize: '1.25rem' }}><Icon name="user" size={22} /></div>
-        <span>Профіль</span>
-      </Link>
+      
+      {isAdmin ? (
+        <Link href="/admin" className={`bn-item ${isActive('/admin')}`}>
+          <div style={{ fontSize: '1.25rem' }}><Icon name="chart-bar" size={22} /></div>
+          <span>Панель</span>
+        </Link>
+      ) : (
+        <Link href="/profile" className={`bn-item ${isActive('/profile')}`}>
+          <div style={{ fontSize: '1.25rem' }}><Icon name="user" size={22} /></div>
+          <span>Профіль</span>
+        </Link>
+      )}
     </nav>
   );
 }

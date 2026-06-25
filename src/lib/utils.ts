@@ -52,3 +52,23 @@ export const TYPES = [
 ];
 
 export const TYPE_MAP = Object.fromEntries(TYPES.map(t => [t.v, t]));
+
+// ── Confetti effect ──
+export function boom() {
+  if (typeof window === 'undefined') return;
+  const colors = ['#c9922a', '#2d7a4f', '#e05c5c', '#5a8fd4', '#e8b84b', '#6db87a'];
+  for (let i = 0; i < 60; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = `
+      left:${Math.random() * 100}vw;top:-10px;
+      background:${colors[Math.floor(Math.random() * colors.length)]};
+      width:${6 + Math.random() * 8}px;height:${6 + Math.random() * 8}px;
+      border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+      animation-duration:${1.5 + Math.random() * 2}s;
+      animation-delay:${Math.random() * 0.6}s;
+    `;
+    document.body.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  }
+}

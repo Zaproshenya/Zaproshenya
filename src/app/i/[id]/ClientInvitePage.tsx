@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getInvite, updateInviteStatus } from '@/lib/firebase/db';
-import { TYPE_MAP } from '@/lib/utils';
+import { TYPE_MAP, boom } from '@/lib/utils';
 import { Icon } from '@/components/Icon';
 import Link from 'next/link';
 
@@ -47,6 +47,9 @@ export default function ClientInvitePage({ id }: { id: string }) {
       await updateInviteStatus(id, status, invData?.creatorUid);
       setAnswered(true);
       setAnswerStatus(status);
+      if (status === 'accepted') {
+        boom();
+      }
     } catch (e) {
       console.error(e);
     }

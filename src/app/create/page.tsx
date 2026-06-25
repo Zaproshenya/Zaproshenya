@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { getFriends, createInvite, createGroupInvite } from '@/lib/firebase/db';
-import { TYPES, genId } from '@/lib/utils';
+import { TYPES, genId, boom } from '@/lib/utils';
 import { Icon } from '@/components/Icon';
 import { toast } from '@/components/Toast';
 import Link from 'next/link';
@@ -90,6 +90,7 @@ export default function CreatePage() {
 
       setCreatedInv({ ...payload, sentToFriends: selectedFriends.length > 0 });
       setDone(true);
+      boom();
     } catch (e) {
       console.error(e);
       toast('Помилка при створенні запрошення', 'error');
