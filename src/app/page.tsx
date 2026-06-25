@@ -67,7 +67,7 @@ export default function LandingPage() {
       <div className="hero-visual" aria-hidden="true">
         <div className="card-scene" style={{ width: '320px', height: '480px', display: 'flex', justifyContent: 'center' }}>
           <div className="card-ghost" style={{ inset: '8px -12px -8px 12px' }}></div>
-          <div style={{ transform: 'scale(0.84)', transformOrigin: 'top center', width: '380px', position: 'relative', zIndex: 2 }}>
+          <div className="landing-demo-card" style={{ width: '100%', position: 'relative', zIndex: 2 }}>
             <div className="invite-envelope" style={{animation: 'float 4.5s ease-in-out infinite', margin: '0 auto', boxShadow: 'var(--shadow-lg)', width: '100%'}}>
               <div className="envelope-top">
                 <span className="envelope-emoji">☕</span>
@@ -96,11 +96,11 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <div className="action-section-wrap" style={{paddingBottom: '20px', paddingTop: '16px'}}>
-                  <div className="answer-wrap" style={{pointerEvents: 'none', justifyContent: 'center'}}>
+                <div className="action-section-wrap">
+                  <div className="answer-wrap" style={{justifyContent: 'center'}}>
                     <button className="btn-yes" tabIndex={-1}><Icon name="check" size={14}/> Так, я приду!</button>
                     <button className="btn-reschedule" tabIndex={-1}><Icon name="calendar-blank" size={14}/> Перенести</button>
-                    <button className="btn-no" tabIndex={-1}><Icon name="x" size={14}/> Ні</button>
+                    <button className="btn-no" tabIndex={-1}><Icon name="x" size={14}/> Ні, не зможу</button>
                   </div>
                 </div>
 

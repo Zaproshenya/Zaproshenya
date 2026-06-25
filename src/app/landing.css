@@ -863,4 +863,44 @@
       .inv-card-demo   { animation: none !important; }
       [data-reveal]    { opacity: 1 !important; transform: none !important; transition: none !important; }
     }
-  
+
+    /* ── Demo Card Specific Scaling (to prevent blurriness and keep proportions) ── */
+    .landing-demo-card .invite-envelope {
+      min-height: auto;
+      width: 100%;
+    }
+    .landing-demo-card .envelope-top { padding: 18px 24px 24px; }
+    .landing-demo-card .envelope-emoji { font-size: 2.4rem; margin-bottom: 8px; }
+    .landing-demo-card .envelope-type { font-size: .65rem; margin-bottom: 8px; }
+    .landing-demo-card .envelope-to { font-size: 1.8rem; margin-bottom: 6px; }
+    .landing-demo-card .envelope-from { font-size: .75rem; padding-bottom: 16px; }
+
+    .landing-demo-card .envelope-body { padding: 12px 14px 16px; }
+
+    .landing-demo-card .msg-block { padding: 10px 14px; margin-bottom: 12px; }
+    .landing-demo-card .msg-block::before { font-size: 2.8rem; top: -6px; left: 10px; }
+    .landing-demo-card .msg-text { font-size: .9rem; padding-left: 8px; line-height: 1.4; }
+
+    .landing-demo-card .detail-chips { gap: 8px; margin-bottom: 12px; }
+    .landing-demo-card .detail-chip { padding: 8px 10px; gap: 8px; pointer-events: none; }
+    .landing-demo-card .detail-chip-icon i.ph,
+    .landing-demo-card .detail-chip-icon svg { font-size: 1.1rem !important; width: 16px; height: 16px; }
+    .landing-demo-card .detail-chip-label { font-size: .6rem; margin-bottom: 2px; }
+    .landing-demo-card .detail-chip-value { font-size: .8rem; }
+
+    .landing-demo-card .action-section-wrap { padding-top: 4px; padding-bottom: 8px; }
+    .landing-demo-card .answer-wrap { gap: 6px; flex-wrap: nowrap; }
+    .landing-demo-card .btn-yes, 
+    .landing-demo-card .btn-no, 
+    .landing-demo-card .btn-reschedule {
+      font-size: .6rem !important; 
+      padding: 8px 4px !important; 
+      gap: 3px !important; 
+      border-radius: 8px !important;
+    }
+    .landing-demo-card .btn-yes i.ph, .landing-demo-card .btn-yes svg,
+    .landing-demo-card .btn-no i.ph, .landing-demo-card .btn-no svg,
+    .landing-demo-card .btn-reschedule i.ph, .landing-demo-card .btn-reschedule svg {
+      font-size: .75rem !important;
+      width: 12px; height: 12px;
+    }
