@@ -69,29 +69,29 @@ export default function LandingPage() {
           <div className="card-ghost"></div>
           <div className="invite-envelope" style={{animation: 'float 4.5s ease-in-out infinite', transform: 'rotate(-2deg)', minHeight: 'auto', margin: 0, boxShadow: 'var(--shadow-lg)'}}>
             <div className="envelope-top">
-              <span className="envelope-emoji">🍃</span>
-              <div className="envelope-type">Прогулянка</div>
-              <div className="envelope-to">Гураєвський</div>
-              <div className="envelope-from">від <strong>Artem</strong></div>
+              <span className="envelope-emoji">☕</span>
+              <div className="envelope-type">Кава</div>
+              <div className="envelope-to">Олена</div>
+              <div className="envelope-from">від <strong>Максима</strong></div>
             </div>
 
             <div className="envelope-body">
               <div className="msg-block">
-                <p className="msg-text">Testuuuuuuuuuuu</p>
+                <p className="msg-text">Зустрінемось на каву? Давно не бачились, маю купу новин!</p>
               </div>
 
               <div className="detail-chips">
                 <div className="detail-chip">
                   <span className="detail-chip-icon"><Icon name="calendar-blank" size={16}/></span>
-                  <div><div className="detail-chip-label">Дата</div><div className="detail-chip-value">2026-06-28</div></div>
+                  <div><div className="detail-chip-label">Дата</div><div className="detail-chip-value">Субота, 21 червня</div></div>
                 </div>
                 <div className="detail-chip">
                   <span className="detail-chip-icon"><Icon name="clock" size={16}/></span>
-                  <div><div className="detail-chip-label">Час</div><div className="detail-chip-value">16:52</div></div>
+                  <div><div className="detail-chip-label">Час</div><div className="detail-chip-value">11:00</div></div>
                 </div>
                 <div className="detail-chip full">
                   <span className="detail-chip-icon"><Icon name="map-pin" size={16}/></span>
-                  <div><div className="detail-chip-label">Місце</div><div className="detail-chip-value">Планета Марс</div></div>
+                  <div><div className="detail-chip-label">Місце</div><div className="detail-chip-value">Kyiv Coffee, Хрещатик</div></div>
                 </div>
               </div>
             </div>
