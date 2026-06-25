@@ -67,29 +67,30 @@ export default function LandingPage() {
       <div className="hero-visual" aria-hidden="true">
         <div className="card-scene">
           <div className="card-ghost"></div>
-          <div className="inv-card-demo">
-            <div className="demo-envelope-top">
-              <span className="demo-envelope-emoji">☕</span>
-              <div className="demo-envelope-type">Кава</div>
-              <div className="demo-envelope-to">Зустрінемось за кавою?</div>
+          <div className="invite-envelope" style={{animation: 'float 4.5s ease-in-out infinite', transform: 'rotate(-2deg)', minHeight: 'auto', margin: 0, position: 'relative', overflow: 'hidden', boxShadow: 'var(--shadow-lg)'}}>
+            <div className="envelope-top">
+              <span className="envelope-emoji" style={{animation: 'none'}}>☕</span>
+              <div className="envelope-type">Кава</div>
+              <div className="envelope-to" style={{fontSize: '1.25rem', marginBottom: '10px'}}>Зустрінемось за кавою?</div>
             </div>
-            <div className="demo-envelope-body">
-              <div className="demo-details">
-                <div className="demo-row">
-                  <div className="demo-icon">📅</div>
-                  <span>Субота, 21 червня</span>
+            <div className="envelope-body" style={{padding: '16px', background: 'var(--card)'}}>
+              <div className="detail-chips" style={{display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px'}}>
+                <div className="detail-chip full" style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--warm)', borderRadius: '12px'}}>
+                  <span className="detail-chip-icon" style={{color: 'var(--gold)', display: 'flex'}}><Icon name="calendar-blank" size={18}/></span>
+                  <div style={{fontSize: '.9rem', fontWeight: 500, color: 'var(--ink)'}}>Субота, 21 червня</div>
                 </div>
-                <div className="demo-row">
-                  <div className="demo-icon">🕐</div>
-                  <span>11:00</span>
+                <div className="detail-chip full" style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--warm)', borderRadius: '12px'}}>
+                  <span className="detail-chip-icon" style={{color: 'var(--gold)', display: 'flex'}}><Icon name="clock" size={18}/></span>
+                  <div style={{fontSize: '.9rem', fontWeight: 500, color: 'var(--ink)'}}>11:00</div>
                 </div>
-                <div className="demo-row">
-                  <div className="demo-icon">📍</div>
-                  <span>Kyiv Coffee, Хрещатик</span>
+                <div className="detail-chip full" style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--warm)', borderRadius: '12px'}}>
+                  <span className="detail-chip-icon" style={{color: 'var(--gold)', display: 'flex'}}><Icon name="map-pin" size={18}/></span>
+                  <div style={{fontSize: '.9rem', fontWeight: 500, color: 'var(--ink)'}}>Kyiv Coffee, Хрещатик</div>
                 </div>
               </div>
-              <div className="demo-divider"></div>
-              <div className="demo-from">Від: <strong>Олексій Дем'яненко</strong></div>
+              <div className="envelope-from" style={{borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '12px', marginTop: '4px', fontSize: '.85rem', color: 'var(--muted)', textAlign: 'left', paddingBottom: '4px'}}>
+                Від: <strong style={{color: 'var(--ink)', fontWeight: 500}}>Олексій Дем'яненко</strong>
+              </div>
             </div>
           </div>
         </div>
