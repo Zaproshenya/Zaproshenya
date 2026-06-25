@@ -65,44 +65,46 @@ export default function LandingPage() {
 
       {/**/}
       <div className="hero-visual" aria-hidden="true">
-        <div className="card-scene">
-          <div className="card-ghost"></div>
-          <div className="invite-envelope" style={{animation: 'float 4.5s ease-in-out infinite', transform: 'rotate(-2deg)', minHeight: 'auto', margin: 0, boxShadow: 'var(--shadow-lg)'}}>
-            <div className="envelope-top">
-              <span className="envelope-emoji">☕</span>
-              <div className="envelope-type">Кава</div>
-              <div className="envelope-to">Олена</div>
-              <div className="envelope-from">від <strong>Максима</strong></div>
-            </div>
-
-            <div className="envelope-body">
-              <div className="msg-block">
-                <p className="msg-text">Зустрінемось на каву? Давно не бачились, маю купу новин!</p>
+        <div className="card-scene" style={{ width: '320px', height: '480px', display: 'flex', justifyContent: 'center' }}>
+          <div className="card-ghost" style={{ inset: '8px -12px -8px 12px' }}></div>
+          <div style={{ transform: 'scale(0.84)', transformOrigin: 'top center', width: '380px', position: 'relative', zIndex: 2 }}>
+            <div className="invite-envelope" style={{animation: 'float 4.5s ease-in-out infinite', margin: '0 auto', boxShadow: 'var(--shadow-lg)', width: '100%'}}>
+              <div className="envelope-top">
+                <span className="envelope-emoji">☕</span>
+                <div className="envelope-type">Кава</div>
+                <div className="envelope-to">Олена</div>
+                <div className="envelope-from">від <strong>Максима</strong></div>
               </div>
 
-              <div className="detail-chips">
-                <div className="detail-chip">
-                  <span className="detail-chip-icon"><Icon name="calendar-blank" size={16}/></span>
-                  <div><div className="detail-chip-label">Дата</div><div className="detail-chip-value">Субота, 21 червня</div></div>
+              <div className="envelope-body">
+                <div className="msg-block">
+                  <p className="msg-text">Зустрінемось на каву? Давно не бачились, маю купу новин!</p>
                 </div>
-                <div className="detail-chip">
-                  <span className="detail-chip-icon"><Icon name="clock" size={16}/></span>
-                  <div><div className="detail-chip-label">Час</div><div className="detail-chip-value">11:00</div></div>
-                </div>
-                <div className="detail-chip full">
-                  <span className="detail-chip-icon"><Icon name="map-pin" size={16}/></span>
-                  <div><div className="detail-chip-label">Місце</div><div className="detail-chip-value">Kyiv Coffee, Хрещатик</div></div>
-                </div>
-              </div>
 
-              <div className="action-section-wrap" style={{paddingBottom: '0', paddingTop: '16px'}}>
-                <div className="answer-wrap" style={{pointerEvents: 'none'}}>
-                  <button className="btn-yes" tabIndex={-1}><Icon name="check" size={14}/> Так, я приду!</button>
-                  <button className="btn-reschedule" tabIndex={-1}><Icon name="calendar-blank" size={14}/> Перенести</button>
-                  <button className="btn-no" tabIndex={-1}><Icon name="x" size={14}/> Ні</button>
+                <div className="detail-chips">
+                  <div className="detail-chip">
+                    <span className="detail-chip-icon"><Icon name="calendar-blank" size={16}/></span>
+                    <div><div className="detail-chip-label">Дата</div><div className="detail-chip-value">Субота, 21 червня</div></div>
+                  </div>
+                  <div className="detail-chip">
+                    <span className="detail-chip-icon"><Icon name="clock" size={16}/></span>
+                    <div><div className="detail-chip-label">Час</div><div className="detail-chip-value">11:00</div></div>
+                  </div>
+                  <div className="detail-chip full">
+                    <span className="detail-chip-icon"><Icon name="map-pin" size={16}/></span>
+                    <div><div className="detail-chip-label">Місце</div><div className="detail-chip-value">Kyiv Coffee, Хрещатик</div></div>
+                  </div>
                 </div>
-              </div>
 
+                <div className="action-section-wrap" style={{paddingBottom: '20px', paddingTop: '16px'}}>
+                  <div className="answer-wrap" style={{pointerEvents: 'none', justifyContent: 'center'}}>
+                    <button className="btn-yes" tabIndex={-1}><Icon name="check" size={14}/> Так, я приду!</button>
+                    <button className="btn-reschedule" tabIndex={-1}><Icon name="calendar-blank" size={14}/> Перенести</button>
+                    <button className="btn-no" tabIndex={-1}><Icon name="x" size={14}/> Ні</button>
+                  </div>
+                </div>
+
+              </div>
             </div>
           </div>
         </div>
