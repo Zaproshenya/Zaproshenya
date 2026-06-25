@@ -285,7 +285,7 @@ export default function FriendsPage() {
                   <div className="friend-row-info">
                     <div className="friend-row-name">
                       {f.name}
-                      {f.uniqueId && <span style={{fontSize:'.8rem', color:'var(--muted)', marginLeft:'6px', fontWeight:400}}>{f.uniqueId}</span>}
+                      {f.uniqueId && <span style={{fontSize:'.72rem', color:'var(--muted)', marginLeft:'6px', fontWeight:400, fontFamily:'monospace', letterSpacing:'-0.02em'}}>{f.uniqueId}</span>}
                     </div>
                     {statusText && <div className={`friend-row-status ${online ? 'online' : ''}`}>{statusText}</div>}
                   </div>
@@ -298,7 +298,7 @@ export default function FriendsPage() {
                         <Link href={`/u/${f.uid}`} className="friend-menu-item" style={{textDecoration: 'none'}}>
                           <Icon name="user" size={16}/> Перейти до профілю
                         </Link>
-                        <Link href={`/create?to=${encodeURIComponent(f.name)}`} className="friend-menu-item" style={{textDecoration: 'none'}}>
+                        <Link href={`/create?to=${encodeURIComponent(f.name)}&uid=${f.uid}`} className="friend-menu-item" style={{textDecoration: 'none'}}>
                           <Icon name="paper-plane-tilt" size={16}/> Запросити
                         </Link>
                         <button className="friend-menu-item danger" onClick={() => { setOpenMenuId(null); handleRemoveFriend(f.uid); }}>

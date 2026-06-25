@@ -44,21 +44,41 @@ export default function CreatePage() {
     getFriends(user.uid).then(f => {
       setFriends(f);
       setLoading(false);
-    });
 
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const toParam = params.get('to');
-      if (toParam) {
-        setForm(prev => ({ ...prev, to: toParam }));
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const toParam = params.get('to');
+        const uidParam = params.get('uid');
+        if (toParam) {
+          setForm(prev => ({ ...prev, to: toParam }));
+        }
+        if (uidParam) {
+          const exists = f.some(friend => friend.uid === uidParam);
+          if (exists) {
+            setSelectedFriends([uidParam]);
+          }
+        }
       }
-    }
+    });
   }, [user, router]);
 
   const toggleFriend = (uid: string) => {
-    setSelectedFriends(prev =>
-      prev.includes(uid) ? prev.filter(id => id !== uid) : [...prev, uid]
-    );
+    if (mode === 'personal') {
+      const friend = friends.find(f => f.uid === uid);
+      if (selectedFriends.includes(uid)) {
+        setSelectedFriends([]);
+        setForm(prev => ({ ...prev, to: '' }));
+      } else {
+        setSelectedFriends([uid]);
+        if (friend) {
+          setForm(prev => ({ ...prev, to: friend.name || '' }));
+        }
+      }
+    } else {
+      setSelectedFriends(prev =>
+        prev.includes(uid) ? prev.filter(id => id !== uid) : [...prev, uid]
+      );
+    }
   };
 
   const isFormValid = () => {
@@ -222,7 +242,16 @@ export default function CreatePage() {
                   placeholder="Ім'я отримувача"
                   value={form.to}
                   maxLength={25}
-                  onChange={e => setForm({...form, to: e.target.value})}
+                  onChange={e => {
+                    const val = e.target.value;
+                    setForm({...form, to: val});
+                    if (selectedFriends.length === 1) {
+                      const selFriend = friends.find(f => f.uid === selectedFriends[0]);
+                      if (selFriend && selFriend.name !== val) {
+                        setSelectedFriends([]);
+                      }
+                    }
+                  }}
                 />
 
                 {friends.length > 0 && (
@@ -390,19 +419,19 @@ export default function CreatePage() {
                     {filteredFriends.length === 0 ? (
                       <p style={{fontSize:'.85rem', color:'var(--muted)', fontStyle:'italic'}}>Нікого не знайдено</p>
                     ) : filteredFriends.map(f => (
-                      <button 
-                        key={f.uid} 
-                        type="button" 
-                        className={`friend-chip ${selectedFriends.includes(f.uid) ? 'on' : ''}`} 
+                      <button
+                        key={f.uid}
+                        type="button"
+                        className={`friend-chip ${selectedFriends.includes(f.uid) ? 'on' : ''}`}
                         onClick={() => toggleFriend(f.uid)}
-                        style={{display:'flex', alignItems:'center', gap:'10px', padding:'8px 12px'}}
+                        style={{width: '100px'}}
                       >
-                        <div className="avatar avatar-sm" style={{flexShrink:0}}>
+                        <div className="avatar avatar-md" style={{flexShrink:0}}>
                           {f.avatar ? <img src={f.avatar} alt=""/> : f.name?.charAt(0).toUpperCase()}
                         </div>
-                        <div style={{display:'flex', flexDirection:'column', alignItems:'flex-start', minWidth:0, textAlign:'left'}}>
-                          <span className="friend-chip-name" style={{fontSize:'.9rem', fontWeight:600, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'100px'}}>{f.name}</span>
-                          {f.login && <span style={{fontSize:'.75rem', color:'var(--muted)'}}>@{f.login}</span>}
+                         <div style={{display:'flex', flexDirection:'column', alignItems:'center', minWidth:0, textAlign:'center'}}>
+                          <span className="friend-chip-name" style={{fontSize:'.9rem', fontWeight:500, color:'var(--ink)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'80px'}}>{f.name}</span>
+                          {f.uniqueId && <span className="friend-chip-id" style={{whiteSpace:'nowrap'}}>{f.uniqueId}</span>}
                         </div>
                       </button>
                     ))}
