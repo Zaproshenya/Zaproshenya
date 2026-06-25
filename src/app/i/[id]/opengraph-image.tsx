@@ -43,13 +43,14 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         }}>
           {/* Card / Envelope */}
           <div style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             background: 'linear-gradient(to bottom, #2a161c, #150a0d)',
             border: '2px solid #5a2e3b',
             borderRadius: '40px',
-            padding: '70px 100px',
+            padding: '40px 60px',
             boxShadow: '0 20px 40px rgba(0,0,0,0.8)',
-            maxWidth: '1000px',
+            width: '1050px',
+            height: '550px',
             textAlign: 'center',
             position: 'relative'
           }}>
@@ -60,34 +61,51 @@ export default async function Image({ params }: { params: Promise<{ id: string }
               opacity: 0.8, borderTopLeftRadius: '40px', borderTopRightRadius: '40px'
             }} />
 
-            {/* Emoji */}
-            <div style={{ fontSize: '90px', marginBottom: '30px', display: 'flex' }}>
-              {t.e}
-            </div>
-
-            {/* Type */}
-            <div style={{ fontSize: '36px', color: '#d496a7', marginBottom: '15px', textTransform: 'uppercase', letterSpacing: '4px', display: 'flex', fontWeight: 'bold' }}>
-              ПРИВАТНЕ ЗАПРОШЕННЯ
+            {/* Top row: Emoji & Type */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
+              <span style={{ fontSize: '70px' }}>{t.e}</span>
+              <span style={{ fontSize: '32px', color: '#d496a7', textTransform: 'uppercase', letterSpacing: '4px', fontWeight: 'bold' }}>
+                ПРИВАТНЕ ЗАПРОШЕННЯ
+              </span>
             </div>
 
             {/* To */}
-            <div style={{ fontSize: '85px', fontWeight: 'bold', color: '#fff', marginBottom: '50px', lineHeight: 1.1, display: 'flex' }}>
+            <div style={{ fontSize: '75px', fontWeight: 'bold', color: '#fff', marginBottom: '30px', lineHeight: 1.1, display: 'flex' }}>
               Для {inv.to}
+            </div>
+
+            {/* Details Row */}
+            <div style={{ display: 'flex', gap: '60px', borderTop: '1px solid rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '30px 0', marginBottom: '40px', width: '80%', justifyContent: 'center' }}>
+              {inv.date && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <span style={{ fontSize: '24px', color: '#d496a7', marginBottom: '8px', textTransform: 'uppercase' }}>Коли</span>
+                  <span style={{ fontSize: '32px', color: '#fff', fontWeight: 'bold' }}>{inv.date} {inv.time || ''}</span>
+                </div>
+              )}
+              
+              {inv.place && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <span style={{ fontSize: '24px', color: '#d496a7', marginBottom: '8px', textTransform: 'uppercase' }}>Де</span>
+                  <span style={{ fontSize: '32px', color: '#fff', fontWeight: 'bold', maxWidth: '350px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {inv.place}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* CTA Button Illusion */}
             <div style={{
               display: 'flex',
               background: '#d6406b',
-              padding: '20px 50px',
+              padding: '15px 40px',
               borderRadius: '50px',
               color: '#fff',
-              fontSize: '36px',
+              fontSize: '32px',
               fontWeight: 'bold',
               border: '1px solid #f2688f',
               letterSpacing: '1px'
             }}>
-              ✨ Натисніть, щоб відкрити
+              ✨ Натисніть, щоб дізнатися деталі
             </div>
 
             {/* From */}
