@@ -12,6 +12,8 @@ interface AuthContextType {
   profile: UserProfile | null;
   loading: boolean;
   updateProfile: (updates: Partial<UserProfile>) => void;
+  unreadCount: number;
+  adminUnreadCount: number;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -19,12 +21,16 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   loading: true,
   updateProfile: () => {},
+  unreadCount: 0,
+  adminUnreadCount: 0,
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [adminUnreadCount, setAdminUnreadCount] = useState(0);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -133,6 +139,73 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [user]);
 
+  // Listen to user's unread notifications count
+  useEffect(() => {
+    if (!user) {
+      setUnreadCount(0);
+      return;
+    }
+
+    const notifsRef = ref(db, 'notifications/' + user.uid);
+    const unsub = onValue(notifsRef, (snap) => {
+      let count = 0;
+      if (snap.exists()) {
+        snap.forEach((c) => {
+          if (c.val().read === false) count++;
+        });
+      }
+      setUnreadCount(count);
+    });
+
+    return () => unsub();
+  }, [user]);
+
+  // Listen to admin panel unread counts (pending reports + support tickets unread by support)
+  useEffect(() => {
+    if (!user || !profile) {
+      setAdminUnreadCount(0);
+      return;
+    }
+    const isAdmin = profile.role === 'founder' || profile.role === 'tech-admin' || profile.role === 'moderator';
+    if (!isAdmin) {
+      setAdminUnreadCount(0);
+      return;
+    }
+
+    const reportsRef = ref(db, 'reports');
+    const supportRef = ref(db, 'support_tickets');
+
+    let pendingReportsCount = 0;
+    let unreadSupportCount = 0;
+
+    const unsubReports = onValue(reportsRef, (snap) => {
+      let count = 0;
+      if (snap.exists()) {
+        snap.forEach((c) => {
+          if (c.val().status === 'pending') count++;
+        });
+      }
+      pendingReportsCount = count;
+      setAdminUnreadCount(pendingReportsCount + unreadSupportCount);
+    });
+
+    const unsubSupport = onValue(supportRef, (snap) => {
+      let count = 0;
+      if (snap.exists()) {
+        snap.forEach((c) => {
+          if (c.val().unreadBySupport === true) count++;
+        });
+      }
+      unreadSupportCount = count;
+      setAdminUnreadCount(pendingReportsCount + unreadSupportCount);
+    });
+
+    return () => {
+      unsubReports();
+      unsubSupport();
+    };
+  }, [user, profile]);
+
   const updateProfile = (updates: Partial<UserProfile>) => {
     setProfile(prev => prev ? { ...prev, ...updates } : null);
   };
@@ -199,7 +272,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, updateProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, updateProfile, unreadCount, adminUnreadCount }}>
       {children}
     </AuthContext.Provider>
   );

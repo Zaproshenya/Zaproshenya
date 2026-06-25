@@ -52,7 +52,7 @@ export default function ClientGroupInvitePage({ id }: { id: string }) {
       finalName = profile.name;
     } else {
       if (!guestName.trim()) {
-        alert('Будь ласка, введіть своє ім\'я');
+        toast("Будь ласка, введіть своє ім'я", 'error');
         return;
       }
       finalName = guestName.trim();
@@ -260,11 +260,12 @@ export default function ClientGroupInvitePage({ id }: { id: string }) {
             </div>
           )}
 
-          <div className="envelope-footer" style={{display:'flex', justifyContent:'space-between', alignItems:'center', width:'100%', marginTop:'24px'}}>
-            {user ? (
+          <div className="envelope-footer" style={{display:'flex', justifyContent:'center', alignItems:'center', gap:'18px', width:'100%', marginTop:'24px'}}>
+            {user && (
               <Link href="/home">← Меню</Link>
-            ) : (
-              <div />
+            )}
+            {user && !answered && (
+              <span style={{color:'var(--border)', fontSize:'.85rem'}}>•</span>
             )}
             {!answered && (
               <button 

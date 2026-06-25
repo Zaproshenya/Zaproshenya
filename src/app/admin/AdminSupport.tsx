@@ -1,8 +1,11 @@
 'use client';
+import { useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { timeAgo } from '@/lib/utils';
 import { resolveSupportTicket } from '@/lib/firebase/db';
 import { createPortal } from 'react-dom';
+import { ConfirmModal } from '@/components/ConfirmModal';
+import { toast } from '@/components/Toast';
 
 export default function AdminSupport({ 
   supportTickets, 
@@ -15,20 +18,29 @@ export default function AdminSupport({
   sendSupportReply,
   users
 }: any) {
+  const [confirmModal, setConfirmModal] = useState<{ show: boolean; title: string; message: string; onConfirm: () => void; isDanger?: boolean }>({ show: false, title: '', message: '', onConfirm: () => {} });
   const pending = supportTickets.filter((t: any) => t.status === 'pending' || (t.status === 'open' && t.unreadBySupport));
   const active = supportTickets.filter((t: any) => t.status === 'open' && !t.unreadBySupport);
   const closed = supportTickets.filter((t: any) => t.status === 'resolved' || t.status === 'dismissed');
 
-  const handleResolve = async (id: string, status: string) => {
-    if (confirm(`Позначити тикет як "${status}"?`)) {
-      try {
-        await resolveSupportTicket(id, status);
-        reload();
-        if (openTicket && openTicket.id === id) setOpenTicket(null);
-      } catch (err) {
-        alert('Помилка: ' + err);
+  const handleResolve = (id: string, status: string) => {
+    const isResolved = status === 'resolved';
+    setConfirmModal({
+      show: true,
+      title: isResolved ? 'Вирішити звернення' : 'Закрити звернення',
+      message: `Ви дійсно хочете позначити це звернення як "${isResolved ? 'вирішене' : 'закрите'}"?`,
+      isDanger: !isResolved, // dismissed status is not necessarily danger, resolved is green
+      onConfirm: async () => {
+        try {
+          await resolveSupportTicket(id, status);
+          reload();
+          if (openTicket && openTicket.id === id) setOpenTicket(null);
+          toast('Статус звернення оновлено', 'success');
+        } catch (err: any) {
+          toast('Помилка: ' + (err.message || err), 'error');
+        }
       }
-    }
+    });
   };
 
   const renderTicketCard = (t: any) => {
@@ -295,7 +307,7 @@ export default function AdminSupport({
                 
                 return (
                   <div key={m.id} className={`chat-msg ${isSupport ? 'support' : 'user'}`}>
-                    <div className="chat-msg-avatar" style={{width:'40px',height:'40px',borderRadius:'12px',boxShadow:'var(--shadow-sm)'}}>
+                    <div className="chat-msg-avatar" style={{width:'40px',height:'40px',borderRadius:'12px',boxShadow:'var(--shadow-sm)',overflow:'hidden'}}>
                       {avatarUrl ? <img src={avatarUrl} alt="" style={{width:'100%',height:'100%',borderRadius:'12px',objectFit:'cover'}} /> : (isSupport ? <Icon name="headset" size={20}/> : (m.name || '?').charAt(0).toUpperCase())}
                     </div>
                     <div className="chat-msg-content" style={{maxWidth: '85%'}}>
@@ -334,6 +346,18 @@ export default function AdminSupport({
         </div>,
         document.body
       )}
+
+      <ConfirmModal
+        isOpen={confirmModal.show}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        isDanger={confirmModal.isDanger}
+        onConfirm={() => {
+          confirmModal.onConfirm();
+          setConfirmModal(prev => ({ ...prev, show: false }));
+        }}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, show: false }))}
+      />
     </>
   );
 }

@@ -5,9 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Icon } from './Icon';
 
 export function Navbar() {
-  const { user, profile } = useAuth();
+  const { user, profile, unreadCount, adminUnreadCount } = useAuth();
   const pathname = usePathname();
-  const unreadCount = 0; // TODO: fetch from notifications
 
   const isHiddenPage = pathname === '/login' || pathname === '/register' || pathname?.startsWith('/i/') || pathname?.startsWith('/g/');
   if (isHiddenPage) return null;
@@ -34,13 +33,14 @@ export function Navbar() {
               </Link>
             </div>
             {profile && (profile.role === 'founder' || profile.role === 'tech-admin' || profile.role === 'moderator') && (
-              <div className="pill-wrap">
+              <div className="pill-wrap" style={{ position: 'relative' }}>
                 <Link href="/admin" className={`nb ${isActive('/admin')}`} aria-label="Дашборд">
                   <Icon name="wrench" size={18} />
                 </Link>
+                {adminUnreadCount > 0 && <span className="notif-badge">{adminUnreadCount}</span>}
               </div>
             )}
-            <div className="pill-wrap">
+            <div className="pill-wrap" style={{ position: 'relative' }}>
               <Link href="/notifications" className={`nb ${isActive('/notifications')}`} aria-label="Сповіщення">
                 <Icon name="bell" size={18} />
               </Link>

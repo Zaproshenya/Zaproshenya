@@ -4,14 +4,17 @@ import type { NextRequest } from 'next/server';
 const dbUrl = "https://zaproshenya-82751-default-rtdb.europe-west1.firebasedatabase.app";
 
 const TYPE_MAP: Record<string, { l: string; e: string }> = {
-  other: { l: 'Інше', e: '✦' },
+  other: { l: 'Інше', e: '✨' },
   birthday: { l: 'День народження', e: '🎂' },
   wedding: { l: 'Весілля', e: '💍' },
-  party: { l: 'Вечірка', e: '🎉' },
+  party: { l: 'Свято / Вечірка', e: '🥂' },
   meeting: { l: 'Зустріч', e: '🤝' },
   business: { l: 'Робоча зустріч', e: '💼' },
-  date: { l: 'Побачення', e: '❤️' },
-  cinema: { l: 'Кіно', e: '🍿' },
+  date: { l: 'Побачення', e: '🌹' },
+  cinema: { l: 'Кіно', e: '🎬' },
+  coffee: { l: 'Кава', e: '☕' },
+  walk: { l: 'Прогулянка', e: '🍃' },
+  travel: { l: 'Подорож', e: '✈️' },
   trip: { l: 'Подорож', e: '✈️' },
   sport: { l: 'Спорт', e: '⚽' },
   games: { l: 'Ігри', e: '🎮' },
@@ -50,8 +53,8 @@ export async function middleware(request: NextRequest) {
     
     let title = isGroup ? 'Групове запрошення' : 'Запрошення';
     let desc = isGroup
-      ? 'Вам надіслано групове запрошення 🌟 Натисніть, щоб відкрити та дізнатися деталі!'
-      : 'Вам надіслано приватне запрошення 💌 Натисніть, щоб відкрити та дізнатися деталі!';
+      ? 'Вам надіслано групове запрошення 🌟\n\nНатисніть, щоб відкрити та дізнатися деталі!'
+      : 'Вам надіслано приватне запрошення 💌\n\nНатисніть, щоб відкрити та дізнатися деталі!';
 
     if (inv) {
       const t = TYPE_MAP[inv.type] || TYPE_MAP.other;

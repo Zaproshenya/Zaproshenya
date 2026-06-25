@@ -10,6 +10,7 @@ import {
 import { timeAgo } from '@/lib/utils';
 import { Icon } from '@/components/Icon';
 import { toast } from '@/components/Toast';
+import { ConfirmModal } from '@/components/ConfirmModal';
 import Link from 'next/link';
 
 export default function FriendsPage() {
@@ -20,6 +21,7 @@ export default function FriendsPage() {
   const [friendInvites, setFriendInvites] = useState<any[]>([]);
   const [tab, setTab] = useState<'friends' | 'requests' | 'invites'>('friends');
   const [loading, setLoading] = useState(true);
+  const [confirmModal, setConfirmModal] = useState<{ show: boolean; title: string; message: string; onConfirm: () => void; isDanger?: boolean }>({ show: false, title: '', message: '', onConfirm: () => {} });
 
   const [searchInput, setSearchInput] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
@@ -134,16 +136,23 @@ export default function FriendsPage() {
     }
   };
 
-  const handleRemoveFriend = async (friendUid: string) => {
+  const handleRemoveFriend = (friendUid: string) => {
     if (!user) return;
-    if (!confirm('Видалити користувача з друзів?')) return;
-    try {
-      await removeFriend(user.uid, friendUid);
-      toast('Друга видалено', 'info');
-      loadData();
-    } catch (e: any) {
-      toast('Помилка', 'error');
-    }
+    setConfirmModal({
+      show: true,
+      title: 'Видалення друга',
+      message: 'Ви дійсно хочете видалити цього користувача з друзів?',
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          await removeFriend(user.uid, friendUid);
+          toast('Друга видалено', 'info');
+          loadData();
+        } catch (e: any) {
+          toast('Помилка', 'error');
+        }
+      }
+    });
   };
 
   const toggleMenu = (e: React.MouseEvent, fUid: string) => {
@@ -361,6 +370,18 @@ export default function FriendsPage() {
           </div>
         )
       )}
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.show}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        isDanger={confirmModal.isDanger}
+        onConfirm={() => {
+          confirmModal.onConfirm();
+          setConfirmModal(prev => ({ ...prev, show: false }));
+        }}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, show: false }))}
+      />
     </div>
   );
 }

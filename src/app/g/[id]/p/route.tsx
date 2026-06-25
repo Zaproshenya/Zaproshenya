@@ -27,7 +27,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const ogImageUrl = `${baseUrl}/g/${id}/opengraph-image`;
   
   const title = inv && inv.type ? `${TYPE_MAP[inv.type]?.e || '✦'} ${inv.title || 'Групове запрошення'}` : 'Групове запрошення';
-  const desc = 'Вам надіслано групове запрошення 🌟 Натисніть, щоб відкрити та дізнатися деталі!';
+  const desc = 'Вам надіслано групове запрошення 🌟\n\nНатисніть, щоб відкрити та дізнатися деталі!';
 
   const html = `
 <!DOCTYPE html>

@@ -4,10 +4,13 @@ import { createPortal } from 'react-dom';
 import { Icon } from '@/components/Icon';
 import { timeAgo } from '@/lib/utils';
 import { updateUserRole, banUser } from '@/lib/firebase/db';
+import { ConfirmModal } from '@/components/ConfirmModal';
+import { toast } from '@/components/Toast';
 
 export default function AdminUsers({ users, profile, reload }: { users: any[], profile: any, reload: () => void }) {
   const [userSearch, setUserSearch] = useState('');
   const [userPage, setUserPage] = useState(0);
+  const [confirmModal, setConfirmModal] = useState<{ show: boolean; title: string; message: string; onConfirm: () => void; onCancel?: () => void; isDanger?: boolean }>({ show: false, title: '', message: '', onConfirm: () => {} });
   const PAGE_SIZE = 15;
 
   const [banModalOpen, setBanModalOpen] = useState(false);
@@ -31,25 +34,59 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
   const myRank = getRank(profile?.role);
   const isModeOnly = profile?.role === 'moderator' && profile?.role !== 'tech-admin' && profile?.role !== 'founder';
 
-  const handleRoleChange = async (uid: string, e: any) => {
+  const getBanTimeLeft = (bannedUntil: number | null | undefined) => {
+    if (!bannedUntil) return 'назавжди';
+    const diff = bannedUntil - Date.now();
+    if (diff <= 0) return 'скоро розблокується';
+    const mins = Math.ceil(diff / 60000);
+    if (mins < 60) return `залишилось ${mins} хв.`;
+    const hours = Math.floor(mins / 60);
+    const remainingMins = mins % 60;
+    if (hours < 24) return `залишилось ${hours} год. ${remainingMins} хв.`;
+    const days = Math.floor(hours / 24);
+    const remainingHours = hours % 24;
+    return `залишилось ${days} дн. ${remainingHours} год.`;
+  };
+
+  const handleRoleChange = (uid: string, e: any) => {
     const newRole = e.target.value;
-    if (confirm(`Змінити роль на ${newRole}?`)) {
-      try {
-        await updateUserRole(uid, newRole);
-        reload();
-      } catch (err) {
-        alert('Помилка збереження');
+    const oldRole = e.target.defaultValue;
+    setConfirmModal({
+      show: true,
+      title: 'Зміна ролі',
+      message: `Ви дійсно хочете змінити роль користувача на "${newRole}"?`,
+      onConfirm: async () => {
+        try {
+          await updateUserRole(uid, newRole);
+          reload();
+          toast('Роль успішно змінено', 'success');
+        } catch (err: any) {
+          toast('Помилка збереження', 'error');
+          e.target.value = oldRole;
+        }
+      },
+      onCancel: () => {
+        e.target.value = oldRole;
       }
-    } else {
-      e.target.value = e.target.defaultValue; // reset
-    }
+    });
   };
 
   const handleBanClick = (u: any) => {
     if (u.banned) {
-      if (confirm('Дійсно розблокувати цього користувача?')) {
-        banUser(u.uid, false, null).then(() => reload()).catch(e => alert('Помилка: ' + e));
-      }
+      setConfirmModal({
+        show: true,
+        title: 'Розблокування користувача',
+        message: `Дійсно розблокувати користувача ${u.name}?`,
+        onConfirm: async () => {
+          try {
+            await banUser(u.uid, false, null);
+            reload();
+            toast('Користувача розблоковано', 'success');
+          } catch (e: any) {
+            toast('Помилка: ' + (e.message || e), 'error');
+          }
+        }
+      });
     } else {
       setBanTarget(u);
       setBanModalOpen(true);
@@ -67,8 +104,9 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
       setBanModalOpen(false);
       setBanTarget(null);
       reload();
-    } catch (err) {
-      alert('Помилка: ' + err);
+      toast('Користувача заблоковано', 'success');
+    } catch (err: any) {
+      toast('Помилка: ' + (err.message || err), 'error');
     }
   };
 
@@ -117,7 +155,7 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
                       <div className="avatar avatar-sm">{u.avatar ? <img src={u.avatar} alt=""/> : u.name?.charAt(0)}</div>
                       <div>
                         <div style={{fontWeight:500}}>{u.name}</div>
-                        {u.banned && <div style={{fontSize:'.7rem',color:'var(--red)',fontWeight:600}}><Icon name="prohibit" size={10}/> Заблокований</div>}
+                        {u.banned && <div style={{fontSize:'.7rem',color:'var(--red)',fontWeight:600}}><Icon name="prohibit" size={10}/> Заблокований ({getBanTimeLeft(u.bannedUntil)})</div>}
                       </div>
                     </td>
                     <td>
@@ -196,6 +234,21 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
         </div>,
         document.body
       )}
+
+      <ConfirmModal
+        isOpen={confirmModal.show}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        isDanger={confirmModal.isDanger}
+        onConfirm={() => {
+          confirmModal.onConfirm();
+          setConfirmModal(prev => ({ ...prev, show: false }));
+        }}
+        onCancel={() => {
+          if (confirmModal.onCancel) confirmModal.onCancel();
+          setConfirmModal(prev => ({ ...prev, show: false }));
+        }}
+      />
     </>
   );
 }

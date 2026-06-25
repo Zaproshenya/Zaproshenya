@@ -22,6 +22,7 @@ import {
 import { Icon } from '@/components/Icon';
 import Link from 'next/link';
 import { TYPE_MAP, timeAgo } from '@/lib/utils';
+import { toast } from '@/components/Toast';
 
 import AdminOverview from './AdminOverview';
 import AdminUsers from './AdminUsers';
@@ -215,7 +216,7 @@ export default function ClientAdminPage() {
       });
       setTicketReply('');
     } catch (e) {
-      alert('Помилка відправки');
+      toast('Помилка відправки', 'error');
     }
   };
 

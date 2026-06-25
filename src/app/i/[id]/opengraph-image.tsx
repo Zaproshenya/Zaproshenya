@@ -66,7 +66,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           fontWeight: 'bold',
           marginBottom: '20px',
         }}>
-          ✦ ПРИВАТНЕ ЗАПРОШЕННЯ ✦
+          • ПРИВАТНЕ ЗАПРОШЕННЯ •
         </span>
 
         {/* Main Emoji */}

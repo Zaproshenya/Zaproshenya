@@ -238,11 +238,12 @@ export default function ClientInvitePage({ id }: { id: string }) {
             )
           )}
 
-          <div className="envelope-footer" style={{display:'flex', justifyContent:'space-between', alignItems:'center', width:'100%'}}>
-            {user ? (
+          <div className="envelope-footer" style={{display:'flex', justifyContent:'center', alignItems:'center', gap:'18px', width:'100%'}}>
+            {user && (
               <Link href="/home">← Меню</Link>
-            ) : (
-              <div />
+            )}
+            {user && !answered && (
+              <span style={{color:'var(--border)', fontSize:'.85rem'}}>•</span>
             )}
             {!answered && (
               <button 

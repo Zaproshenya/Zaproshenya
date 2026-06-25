@@ -67,7 +67,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           fontWeight: 'bold',
           marginBottom: '20px',
         }}>
-          ✦ ГРУПОВЕ ЗАПРОШЕННЯ ✦
+          • ГРУПОВЕ ЗАПРОШЕННЯ •
         </span>
 
         {/* Main Emoji */}

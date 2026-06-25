@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { listenNotifications, markNotifRead, markAllNotifsRead, deleteNotification } from '@/lib/firebase/db';
+import { listenNotifications, markNotifRead, deleteNotification } from '@/lib/firebase/db';
 import { timeAgo } from '@/lib/utils';
 import { Icon } from '@/components/Icon';
 import { toast } from '@/components/Toast';
@@ -28,16 +28,6 @@ export default function NotificationsPage() {
 
     return () => unsub();
   }, [user, router]);
-
-  const handleMarkAllRead = async () => {
-    if (!user) return;
-    try {
-      await markAllNotifsRead(user.uid);
-      toast('Всі сповіщення прочитано', 'success');
-    } catch (e) {
-      toast('Помилка', 'error');
-    }
-  };
 
   const handleMarkRead = async (notifId: string) => {
     if (!user) return;
@@ -104,11 +94,6 @@ export default function NotificationsPage() {
         <div className="notif-page-header-left">
           <h1 className="notif-page-title">Сповіщення</h1>
           <p className="notif-page-subtitle">Тут з'являтимуться відповіді на ваші запрошення та запити в друзі</p>
-        </div>
-        <div style={{display:'flex', gap:'8px'}}>
-          <button className="btn-icon" title="Прочитати всі" onClick={handleMarkAllRead}>
-            <Icon name="check-circle" size={20}/>
-          </button>
         </div>
       </div>
 

@@ -5,9 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Icon } from './Icon';
 
 export function BottomNav() {
-  const { user, profile } = useAuth();
+  const { user, profile, unreadCount, adminUnreadCount } = useAuth();
   const pathname = usePathname();
-  const unreadCount = 0; // TODO: fetch from notifications
 
   if (!user) return null;
 
@@ -40,9 +39,10 @@ export function BottomNav() {
       </Link>
       
       {isAdmin ? (
-        <Link href="/admin" className={`bn-item ${isActive('/admin')}`}>
+        <Link href="/admin" className={`bn-item ${isActive('/admin')}`} style={{ position: 'relative' }}>
           <div style={{ fontSize: '1.25rem' }}><Icon name="chart-bar" size={22} /></div>
           <span>Панель</span>
+          {adminUnreadCount > 0 && <span className="notif-badge">{adminUnreadCount}</span>}
         </Link>
       ) : (
         <Link href="/profile" className={`bn-item ${isActive('/profile')}`}>

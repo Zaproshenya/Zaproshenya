@@ -4,10 +4,12 @@ import { Icon } from '@/components/Icon';
 import { TYPE_MAP } from '@/lib/utils';
 import Link from 'next/link';
 import { deleteInvite } from '@/lib/firebase/db';
+import { ConfirmModal } from '@/components/ConfirmModal';
 
 export default function AdminModeration({ invites, users, reload }: { invites: any[], users: any[], reload?: () => void }) {
   const [inviteSearch, setInviteSearch] = useState('');
   const [invitePage, setInvitePage] = useState(0);
+  const [confirmModal, setConfirmModal] = useState<{ show: boolean; title: string; message: string; onConfirm: () => void; isDanger?: boolean }>({ show: false, title: '', message: '', onConfirm: () => {} });
   const INVITE_PAGE_SIZE = 30;
 
   const filtered = inviteSearch
@@ -61,11 +63,17 @@ export default function AdminModeration({ invites, users, reload }: { invites: a
                   </div>
                   <div style={{display:'flex',gap:'8px'}}>
                     <Link href={`/${inv.isGroup ? 'g' : 'i'}/${inv.id}`} target="_blank" className="btn btn-outline btn-sm"><Icon name="link" size={14} /></Link>
-                    <button className="btn btn-outline btn-sm" style={{color:'var(--red)',borderColor:'var(--red)'}} onClick={async () => {
-                      if(confirm('Видалити це запрошення?')) {
-                        await deleteInvite(inv.id, inv.creatorUid, inv.isGroup);
-                        if(reload) reload();
-                      }
+                     <button className="btn btn-outline btn-sm" style={{color:'var(--red)',borderColor:'var(--red)'}} onClick={() => {
+                      setConfirmModal({
+                        show: true,
+                        title: 'Видалити запрошення',
+                        message: `Ви дійсно хочете видалити це запрошення? Цю дію не можна буде скасувати.`,
+                        isDanger: true,
+                        onConfirm: async () => {
+                          await deleteInvite(inv.id, inv.creatorUid, inv.isGroup);
+                          if(reload) reload();
+                        }
+                      });
                     }}>
                       <Icon name="trash" size={14} /> Видалити
                     </button>
@@ -95,6 +103,18 @@ export default function AdminModeration({ invites, users, reload }: { invites: a
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmModal.show}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        isDanger={confirmModal.isDanger}
+        onConfirm={() => {
+          confirmModal.onConfirm();
+          setConfirmModal(prev => ({ ...prev, show: false }));
+        }}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, show: false }))}
+      />
     </>
   );
 }

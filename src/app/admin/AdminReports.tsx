@@ -4,21 +4,32 @@ import { Icon } from '@/components/Icon';
 import { timeAgo } from '@/lib/utils';
 import { resolveReport } from '@/lib/firebase/db';
 import Link from 'next/link';
+import { ConfirmModal } from '@/components/ConfirmModal';
+import { toast } from '@/components/Toast';
 
 export default function AdminReports({ reports, reload }: { reports: any[], reload: () => void }) {
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
+  const [confirmModal, setConfirmModal] = useState<{ show: boolean; title: string; message: string; onConfirm: () => void; isDanger?: boolean }>({ show: false, title: '', message: '', onConfirm: () => {} });
   const pending = reports.filter(r => r.status === 'pending');
   const other = reports.filter(r => r.status !== 'pending');
 
-  const handleResolve = async (id: string, status: string) => {
-    if (confirm(`Позначити скаргу як "${status}"?`)) {
-      try {
-        await resolveReport(id, status);
-        reload();
-      } catch (err) {
-        alert('Помилка: ' + err);
+  const handleResolve = (id: string, status: string) => {
+    const isResolved = status === 'resolved';
+    setConfirmModal({
+      show: true,
+      title: isResolved ? 'Схвалити скаргу' : 'Відхилити скаргу',
+      message: `Ви дійсно хочете позначити цю скаргу як "${isResolved ? 'схвалена' : 'відхилена'}"?`,
+      isDanger: isResolved,
+      onConfirm: async () => {
+        try {
+          await resolveReport(id, status);
+          reload();
+          toast('Статус скарги змінено', 'success');
+        } catch (err: any) {
+          toast('Помилка: ' + (err.message || err), 'error');
+        }
       }
-    }
+    });
   };
 
   const renderReport = (r: any) => {
@@ -374,6 +385,18 @@ export default function AdminReports({ reports, reload }: { reports: any[], relo
           )}
         </section>
       </div>
+
+      <ConfirmModal
+        isOpen={confirmModal.show}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        isDanger={confirmModal.isDanger}
+        onConfirm={() => {
+          confirmModal.onConfirm();
+          setConfirmModal(prev => ({ ...prev, show: false }));
+        }}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, show: false }))}
+      />
     </>
   );
 }
