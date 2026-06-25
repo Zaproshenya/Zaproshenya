@@ -67,29 +67,32 @@ export default function LandingPage() {
       <div className="hero-visual" aria-hidden="true">
         <div className="card-scene">
           <div className="card-ghost"></div>
-          <div className="invite-envelope" style={{animation: 'float 4.5s ease-in-out infinite', transform: 'rotate(-2deg)', minHeight: 'auto', margin: 0, position: 'relative', overflow: 'hidden', boxShadow: 'var(--shadow-lg)'}}>
+          <div className="invite-envelope" style={{animation: 'float 4.5s ease-in-out infinite', transform: 'rotate(-2deg)', minHeight: 'auto', margin: 0, boxShadow: 'var(--shadow-lg)'}}>
             <div className="envelope-top">
-              <span className="envelope-emoji" style={{animation: 'none'}}>☕</span>
-              <div className="envelope-type">Кава</div>
-              <div className="envelope-to" style={{fontSize: '1.25rem', marginBottom: '10px'}}>Зустрінемось за кавою?</div>
+              <span className="envelope-emoji">🍃</span>
+              <div className="envelope-type">Прогулянка</div>
+              <div className="envelope-to">Гураєвський</div>
+              <div className="envelope-from">від <strong>Artem</strong></div>
             </div>
-            <div className="envelope-body" style={{padding: '16px', background: 'var(--card)'}}>
-              <div className="detail-chips" style={{display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px'}}>
-                <div className="detail-chip full" style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--warm)', borderRadius: '12px'}}>
-                  <span className="detail-chip-icon" style={{color: 'var(--gold)', display: 'flex'}}><Icon name="calendar-blank" size={18}/></span>
-                  <div style={{fontSize: '.9rem', fontWeight: 500, color: 'var(--ink)'}}>Субота, 21 червня</div>
-                </div>
-                <div className="detail-chip full" style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--warm)', borderRadius: '12px'}}>
-                  <span className="detail-chip-icon" style={{color: 'var(--gold)', display: 'flex'}}><Icon name="clock" size={18}/></span>
-                  <div style={{fontSize: '.9rem', fontWeight: 500, color: 'var(--ink)'}}>11:00</div>
-                </div>
-                <div className="detail-chip full" style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--warm)', borderRadius: '12px'}}>
-                  <span className="detail-chip-icon" style={{color: 'var(--gold)', display: 'flex'}}><Icon name="map-pin" size={18}/></span>
-                  <div style={{fontSize: '.9rem', fontWeight: 500, color: 'var(--ink)'}}>Kyiv Coffee, Хрещатик</div>
-                </div>
+
+            <div className="envelope-body">
+              <div className="msg-block">
+                <p className="msg-text">Testuuuuuuuuuuu</p>
               </div>
-              <div className="envelope-from" style={{borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '12px', marginTop: '4px', fontSize: '.85rem', color: 'var(--muted)', textAlign: 'left', paddingBottom: '4px'}}>
-                Від: <strong style={{color: 'var(--ink)', fontWeight: 500}}>Олексій Дем'яненко</strong>
+
+              <div className="detail-chips">
+                <div className="detail-chip">
+                  <span className="detail-chip-icon"><Icon name="calendar-blank" size={16}/></span>
+                  <div><div className="detail-chip-label">Дата</div><div className="detail-chip-value">2026-06-28</div></div>
+                </div>
+                <div className="detail-chip">
+                  <span className="detail-chip-icon"><Icon name="clock" size={16}/></span>
+                  <div><div className="detail-chip-label">Час</div><div className="detail-chip-value">16:52</div></div>
+                </div>
+                <div className="detail-chip full">
+                  <span className="detail-chip-icon"><Icon name="map-pin" size={16}/></span>
+                  <div><div className="detail-chip-label">Місце</div><div className="detail-chip-value">Планета Марс</div></div>
+                </div>
               </div>
             </div>
           </div>
