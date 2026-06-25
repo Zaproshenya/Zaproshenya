@@ -299,7 +299,7 @@ export default function AdminSupport({
               </div>
             </div>
 
-            <div style={{flex:1,overflowY:'auto',padding:'24px',display:'flex',flexDirection:'column',gap:'16px', background: 'var(--paper)'}}>
+            <div style={{flex:1,overflowX:'hidden',overflowY:'auto',padding:'24px',display:'flex',flexDirection:'column',gap:'16px', background: 'var(--paper)'}}>
               {ticketMessages.map((m: any) => {
                 const isSupport = m.role === 'tech-admin' || m.role === 'moderator' || m.role === 'founder';
                 const userObj = users?.find((u: any) => u.uid === m.uid);
@@ -307,11 +307,11 @@ export default function AdminSupport({
                 
                 return (
                   <div key={m.id} className={`chat-msg ${isSupport ? 'support' : 'user'}`}>
-                    <div className="chat-msg-avatar" style={{width:'40px',height:'40px',borderRadius:'12px',boxShadow:'var(--shadow-sm)',overflow:'hidden'}}>
+                    <div className="chat-msg-avatar" style={{width:'40px',height:'40px',borderRadius:'50%',boxShadow:'var(--shadow-sm)',overflow:'hidden'}}>
                       {isSupport ? (
                         <Icon name="headset" size={20}/>
                       ) : (
-                        avatarUrl ? <img src={avatarUrl} alt="" style={{width:'100%',height:'100%',borderRadius:'12px',objectFit:'cover'}} /> : (m.name || '?').charAt(0).toUpperCase()
+                        avatarUrl ? <img src={avatarUrl} alt="" style={{width:'100%',height:'100%',borderRadius:'50%',objectFit:'cover'}} /> : (m.name || '?').charAt(0).toUpperCase()
                       )}
                     </div>
                     <div className="chat-msg-content" style={{maxWidth: '85%'}}>
@@ -332,7 +332,7 @@ export default function AdminSupport({
               <div style={{padding:'20px',borderTop:'1px solid var(--border)',display:'flex',gap:'12px', flexShrink: 0, background: 'var(--card)'}}>
                 <textarea 
                   placeholder="Написати відповідь користувачу..." 
-                  style={{flex:1,padding:'14px 16px',border:'1.5px solid var(--border)',borderRadius:'14px',resize:'none',height:'52px', fontSize: '.95rem', fontFamily: 'inherit', transition: 'border-color 0.2s', outline: 'none'}}
+                  style={{flex:1,padding:'10px 14px',border:'1.5px solid var(--border)',borderRadius:'12px',resize:'none',height:'42px',minHeight:'42px',fontSize:'.88rem',fontFamily:'inherit',outline:'none',boxSizing:'border-box',overflowY:'hidden',lineHeight:'1.4'}}
                   value={ticketReply}
                   onChange={e => setTicketReply(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSupportReply(); } }}

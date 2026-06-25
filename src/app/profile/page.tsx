@@ -598,7 +598,7 @@ export default function ProfilePage() {
                 <div className="chat-loading-spinner"><Icon name="circle-notch" size={24}/></div>
               ) : (
                 chatMessages.map((msg, i) => {
-                  const isUser = msg.uid === user?.uid;
+                  const isUser = msg.role === 'user';
                   const time = new Date(msg.createdAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
                   return (
                     <div key={msg.id || i} className={`chat-msg ${isUser ? 'user' : 'support'}`}>
