@@ -11,7 +11,7 @@ export function BottomNav() {
 
   if (!user) return null;
 
-  const isHiddenPage = pathname === '/login' || pathname === '/register' || pathname?.startsWith('/i/') || pathname?.startsWith('/g/');
+  const isHiddenPage = pathname === '/' || pathname === '/login' || pathname === '/register' || pathname?.startsWith('/i/') || pathname?.startsWith('/g/');
   if (isHiddenPage) return null;
 
   const isActive = (path: string) => pathname === path ? 'on' : '';
@@ -22,14 +22,16 @@ export function BottomNav() {
         <div style={{ fontSize: '1.25rem' }}><Icon name="house" size={22} /></div>
         <span>Мої</span>
       </Link>
-      <Link href="/create" className={`bn-item ${isActive('/create')}`}>
-        <div style={{ fontSize: '1.25rem' }}><Icon name="plus" size={22} /></div>
-        <span>Нове</span>
-      </Link>
       <Link href="/friends" className={`bn-item ${isActive('/friends')}`}>
         <div style={{ fontSize: '1.25rem' }}><Icon name="users" size={22} /></div>
         <span>Друзі</span>
       </Link>
+
+      {/* Center FAB Button */}
+      <Link href="/create" className="bn-fab">
+        <Icon name="plus" size={24} />
+      </Link>
+
       <Link href="/notifications" className={`bn-item ${isActive('/notifications')}`} style={{ position: 'relative' }}>
         <div style={{ fontSize: '1.25rem' }}><Icon name="bell" size={22} /></div>
         <span>Сповіщення</span>

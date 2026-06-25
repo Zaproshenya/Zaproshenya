@@ -65,7 +65,7 @@ export default function LandingPage() {
 
       {/**/}
       <div className="hero-visual" aria-hidden="true">
-        <div className="card-scene" style={{ width: '320px', height: '480px', display: 'flex', justifyContent: 'center' }}>
+        <div className="card-scene" style={{ display: 'flex', justifyContent: 'center' }}>
           <div className="card-ghost" style={{ inset: '8px -12px -8px 12px' }}></div>
           <div className="landing-demo-card" style={{ width: '100%', position: 'relative', zIndex: 2 }}>
             <div className="invite-envelope" style={{animation: 'float 4.5s ease-in-out infinite', margin: '0 auto', boxShadow: 'var(--shadow-lg)', width: '100%'}}>
