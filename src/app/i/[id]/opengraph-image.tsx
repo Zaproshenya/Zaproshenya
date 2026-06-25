@@ -34,74 +34,72 @@ export default async function Image({ params }: { params: Promise<{ id: string }
 
   const t = TYPE_MAP[inv.type] || TYPE_MAP.other;
 
-  return new ImageResponse(
-    (
-      <div style={{
-        background: 'linear-gradient(to bottom right, #1a1512, #0d0b0a)',
-        width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'sans-serif'
-      }}>
-        {/* Card / Envelope */}
+    return new ImageResponse(
+      (
         <div style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          background: 'linear-gradient(145deg, #241d18 0%, #17120e 100%)',
-          border: '1px solid #33281f',
-          borderRadius: '32px',
-          padding: '60px 80px',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
-          maxWidth: '900px',
-          textAlign: 'center'
+          background: 'linear-gradient(135deg, #1f1115 0%, #0a0507 100%)',
+          width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontFamily: 'sans-serif'
         }}>
-          {/* Envelope Top Flap Illusion */}
+          {/* Card / Envelope */}
           <div style={{
-            position: 'absolute', top: 0, left: 0, right: 0, height: '4px',
-            background: 'linear-gradient(90deg, transparent, #b8860b, transparent)',
-            opacity: 0.5, borderTopLeftRadius: '32px', borderTopRightRadius: '32px'
-          }} />
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            background: 'linear-gradient(180deg, #2a161c 0%, #150a0d 100%)',
+            border: '2px solid #5a2e3b',
+            borderRadius: '40px',
+            padding: '70px 100px',
+            boxShadow: '0 30px 60px rgba(0,0,0,0.8), inset 0 2px 10px rgba(255,255,255,0.1)',
+            maxWidth: '1000px',
+            textAlign: 'center',
+            position: 'relative'
+          }}>
+            {/* Envelope Top Flap Illusion */}
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0, height: '6px',
+              background: 'linear-gradient(90deg, transparent, #e8a0ba, transparent)',
+              opacity: 0.8, borderTopLeftRadius: '40px', borderTopRightRadius: '40px'
+            }} />
 
-          {/* Emoji */}
-          <div style={{ fontSize: '80px', marginBottom: '20px', display: 'flex' }}>
-            {t.e}
-          </div>
-
-          {/* Type */}
-          <div style={{ fontSize: '32px', color: '#a38a70', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '2px', display: 'flex' }}>
-            {t.l}
-          </div>
-
-          {/* To */}
-          <div style={{ fontSize: '72px', fontWeight: 'bold', color: '#fff', marginBottom: '40px', lineHeight: 1.1, display: 'flex' }}>
-            {inv.to}
-          </div>
-
-          {/* Details Row */}
-          <div style={{ display: 'flex', gap: '40px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '40px' }}>
-            {inv.date && (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <span style={{ fontSize: '24px', color: '#a38a70', marginBottom: '8px' }}>Коли</span>
-                <span style={{ fontSize: '32px', color: '#fff' }}>{inv.date} {inv.time || ''}</span>
-              </div>
-            )}
-            
-            {inv.place && (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <span style={{ fontSize: '24px', color: '#a38a70', marginBottom: '8px' }}>Де</span>
-                <span style={{ fontSize: '32px', color: '#fff', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {inv.place}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* From */}
-          {inv.showSender !== false && inv.senderName && (
-            <div style={{ position: 'absolute', bottom: '30px', right: '40px', fontSize: '24px', color: '#8a735c', display: 'flex' }}>
-              від: {inv.senderName}
+            {/* Emoji */}
+            <div style={{ fontSize: '90px', marginBottom: '30px', display: 'flex', textShadow: '0 10px 20px rgba(0,0,0,0.5)' }}>
+              {t.e}
             </div>
-          )}
+
+            {/* Type */}
+            <div style={{ fontSize: '36px', color: '#d496a7', marginBottom: '15px', textTransform: 'uppercase', letterSpacing: '4px', display: 'flex', fontWeight: 'bold' }}>
+              ПРИВАТНЕ ЗАПРОШЕННЯ
+            </div>
+
+            {/* To */}
+            <div style={{ fontSize: '85px', fontWeight: 'bold', color: '#fff', marginBottom: '50px', lineHeight: 1.1, display: 'flex', textShadow: '0 4px 10px rgba(0,0,0,0.5)' }}>
+              Для {inv.to}
+            </div>
+
+            {/* CTA Button Illusion */}
+            <div style={{
+              display: 'flex',
+              background: 'linear-gradient(90deg, #d6406b, #b32d54)',
+              padding: '20px 50px',
+              borderRadius: '50px',
+              color: '#fff',
+              fontSize: '36px',
+              fontWeight: 'bold',
+              boxShadow: '0 10px 30px rgba(214, 64, 107, 0.4)',
+              border: '1px solid #f2688f',
+              letterSpacing: '1px'
+            }}>
+              ✨ Натисніть, щоб відкрити
+            </div>
+
+            {/* From */}
+            {inv.showSender !== false && inv.senderName && (
+              <div style={{ position: 'absolute', bottom: '25px', right: '45px', fontSize: '26px', color: '#916371', display: 'flex', fontStyle: 'italic' }}>
+                від: {inv.senderName}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    ),
+      ),
     { ...size }
   );
 }

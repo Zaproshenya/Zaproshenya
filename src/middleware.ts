@@ -49,19 +49,15 @@ export async function middleware(request: NextRequest) {
     const ogImageUrl = `${baseUrl}/${isGroup ? 'g' : 'i'}/${id}/opengraph-image`;
     
     let title = isGroup ? 'Групове запрошення' : 'Запрошення';
-    let desc = '';
+    let desc = 'Вам надіслано приватне запрошення 💌 Натисніть, щоб відкрити та дізнатися деталі!';
 
     if (inv) {
       const t = TYPE_MAP[inv.type] || TYPE_MAP.other;
       if (isGroup) {
         title = `${t.e} ${inv.title || 'Групове запрошення'}`;
-        desc = `Тип: ${t.l}`;
       } else {
         title = `${t.e} Запрошення на: ${t.l}`;
-        desc = `Для: ${inv.to}`;
       }
-      if (inv.date) desc += ` | Коли: ${inv.date} ${inv.time || ''}`;
-      if (inv.place) desc += ` | Де: ${inv.place}`;
     }
 
     const html = `
