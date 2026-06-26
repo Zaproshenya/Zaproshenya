@@ -92,30 +92,32 @@ export async function loginUser(loginOrEmail: string, password: string) {
       const loginSnap = await get(ref(db, 'logins/' + clean));
       if (loginSnap.exists()) {
         const uid = loginSnap.val();
-        const userSnap = await get(ref(db, 'users/' + uid));
-        if (userSnap.exists()) {
-          const profile = userSnap.val();
-          const candidates: string[] = [];
+        const emailSnap = await get(ref(db, `users/${uid}/email`));
+        const pendingSnap = await get(ref(db, `users/${uid}/pendingEmail`));
 
-          if (profile.email && !profile.email.endsWith('@zap.app')) {
-            candidates.push(profile.email);
-          }
-          if (profile.pendingEmail && !profile.pendingEmail.endsWith('@zap.app')) {
-            candidates.push(profile.pendingEmail);
-          }
-          candidates.push(clean + '@zap.app');
+        const emailVal = emailSnap.exists() ? emailSnap.val() : null;
+        const pendingEmailVal = pendingSnap.exists() ? pendingSnap.val() : null;
 
-          const uniqueCandidates = Array.from(new Set(candidates));
-          let lastError: any = null;
-          for (const cand of uniqueCandidates) {
-            try {
-              return await signInWithEmailAndPassword(auth, cand, password);
-            } catch (err: any) {
-              lastError = err;
-            }
-          }
-          if (lastError) throw lastError;
+        const candidates: string[] = [];
+
+        if (emailVal && !emailVal.endsWith('@zap.app')) {
+          candidates.push(emailVal);
         }
+        if (pendingEmailVal && !pendingEmailVal.endsWith('@zap.app')) {
+          candidates.push(pendingEmailVal);
+        }
+        candidates.push(clean + '@zap.app');
+
+        const uniqueCandidates = Array.from(new Set(candidates));
+        let lastError: any = null;
+        for (const cand of uniqueCandidates) {
+          try {
+            return await signInWithEmailAndPassword(auth, cand, password);
+          } catch (err: any) {
+            lastError = err;
+          }
+        }
+        if (lastError) throw lastError;
       }
     } catch (e) {
       // Fallback below

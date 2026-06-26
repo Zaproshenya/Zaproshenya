@@ -9,6 +9,9 @@
         "email": {
           ".read": "true"
         },
+        "pendingEmail": {
+          ".read": "true"
+        },
         "role": {
           ".validate": "newData.val() === data.val() || (!data.exists() && newData.val() === 'user') || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin'"
         },
