@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
     await set(ref(db, `users/${uid}/otp`), { code, expiresAt });
 
     // SMTP configuration from environment variables
+    // SMTP configuration from environment variables (configured in Cloudflare Pages Dashboard)
     const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
     const smtpPort = parseInt(process.env.SMTP_PORT || "587");
     const smtpSecure = process.env.SMTP_SECURE === "true";
