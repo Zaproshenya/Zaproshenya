@@ -39,7 +39,7 @@ export async function register(name: string, login: string, password: string, em
 
   if (cleanName.length < 2) throw new Error('Ім\'я має бути не менше 2 символів');
   if (cleanLogin.length < 3) throw new Error('Логін має бути не менше 3 символів');
-  if (!/^[a-z0-9]+$/.test(cleanLogin)) throw new Error('Логін: тільки латиниця та цифри');
+  if (!/^[a-z0-9._]+$/.test(cleanLogin)) throw new Error('Логін: тільки латиниця, цифри, крапка (.) та підкреслення (_)');
   if (password.length < 6) throw new Error('Пароль має бути не менше 6 символів');
   if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) throw new Error('Некоректний формат пошти');
 
@@ -122,7 +122,7 @@ export async function updateProfileData(uid: string, updates: Partial<UserProfil
 
 export async function changeLogin(user: User, currentProfile: UserProfile, newLogin: string) {
   const cleanNewLogin = newLogin.trim().toLowerCase();
-  if (!/^[a-z0-9]+$/.test(cleanNewLogin)) throw new Error('Логін: тільки латиниця та цифри');
+  if (!/^[a-z0-9._]+$/.test(cleanNewLogin)) throw new Error('Логін: тільки латиниця, цифри, крапка (.) та підкреслення (_)');
   if (cleanNewLogin.length < 3) throw new Error('Логін має бути не менше 3 символів');
 
   const existing = await get(ref(db, 'logins/' + cleanNewLogin));

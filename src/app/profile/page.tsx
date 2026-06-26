@@ -614,11 +614,11 @@ export default function ProfilePage() {
                   <input 
                     ref={loginRef} 
                     defaultValue={profile.login} 
-                    placeholder="Логін (латиниця та цифри)" 
+                    placeholder="Логін (латиниця, цифри, _ та .)" 
                     maxLength={10}
                     onChange={e => {
                       if (e.target.value) {
-                        e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, '');
                       }
                     }}
                   />
