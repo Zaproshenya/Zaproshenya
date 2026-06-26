@@ -80,9 +80,9 @@ export async function register(name: string, login: string, password: string, em
   return profile;
 }
 
-export async function loginUser(login: string, password: string) {
-  const cleanLogin = login.trim().toLowerCase();
-  const email = cleanLogin + '@zap.app';
+export async function loginUser(loginOrEmail: string, password: string) {
+  const clean = loginOrEmail.trim().toLowerCase();
+  const email = clean.includes('@') ? clean : (clean + '@zap.app');
   return await signInWithEmailAndPassword(auth, email, password);
 }
 

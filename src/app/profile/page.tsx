@@ -225,7 +225,12 @@ export default function ProfilePage() {
     } catch (e: any) {
       let msg = e.message || 'Помилка';
       if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') msg = 'Невірний поточний пароль';
-      if (e.code === 'auth/requires-recent-login') msg = 'Для зміни логіну увійдіть знову';
+      if (e.code === 'auth/requires-recent-login') {
+        if (editMode === 'email') msg = 'Для налаштування 2FA потрібно переувійти в акаунт';
+        else if (editMode === 'password') msg = 'Для зміни паролю потрібно переувійти в акаунт';
+        else if (editMode === 'login') msg = 'Для зміни логіну увійдіть знову';
+        else msg = 'Для здійснення цієї дії потрібно переувійти в акаунт';
+      }
       setEditError(msg);
     } finally {
       setSaving(false);

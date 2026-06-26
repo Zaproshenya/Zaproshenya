@@ -266,10 +266,10 @@ export default function LoginPage() {
               <form className="auth-form" onSubmit={handleLogin}>
                 <div className="auth-field">
                   <label className="auth-field-label">
-                    <Icon name="user" size={14} /> Логін
+                    <Icon name="user" size={14} /> Логін або Email
                   </label>
                   <input type="text"
-                    placeholder="Ваш логін" autoComplete="username"
+                    placeholder="Ваш логін або email" autoComplete="username"
                     value={loginForm.login} onChange={e => setLoginForm({...loginForm, login: e.target.value})}
                   />
                 </div>
