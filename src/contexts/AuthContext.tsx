@@ -63,14 +63,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, profile]);
 
   const sendOtpCode = async (uid: string, email?: string) => {
-    if (!email) return;
+    if (!email || !user) return;
     setOtpLoading(true);
     setOtpError('');
     try {
+      const token = await user.getIdToken();
       const res = await fetch('/api/2fa/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid, email })
+        body: JSON.stringify({ uid, email, token })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Помилка надсилання коду');
@@ -89,10 +90,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setOtpLoading(true);
     setOtpError('');
     try {
+      const token = await user.getIdToken();
       const res = await fetch('/api/2fa/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid: user.uid, code })
+        body: JSON.stringify({ uid: user.uid, code, token })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Невірний код або термін дії закінчився');

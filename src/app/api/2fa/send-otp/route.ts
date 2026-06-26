@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { ref, set } from "firebase/database";
+
 import nodemailer from "nodemailer";
 
 export async function POST(req: NextRequest) {
   try {
-    const { uid, email } = await req.json();
-    if (!uid || !email) {
+    const { uid, email, token } = await req.json();
+    if (!uid || !email || !token) {
       return NextResponse.json({ message: "Неповні параметри запиту" }, { status: 400 });
     }
 
@@ -14,8 +13,20 @@ export async function POST(req: NextRequest) {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes expiration
 
-    // Save OTP to Firebase Realtime Database under users/{uid}/otp
-    await set(ref(db, `users/${uid}/otp`), { code, expiresAt });
+    // Save OTP to Firebase Realtime Database under users/{uid}/otp via REST API using token
+    const dbUrl = "https://zaproshenya-82751-default-rtdb.europe-west1.firebasedatabase.app";
+    const rtdbUrl = `${dbUrl}/users/${uid}/otp.json?auth=${token}`;
+    const dbRes = await fetch(rtdbUrl, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, expiresAt })
+    });
+    
+    if (!dbRes.ok) {
+      const errText = await dbRes.text();
+      console.error("Firebase Database write error:", errText);
+      return NextResponse.json({ message: "Помилка доступу до бази даних" }, { status: 500 });
+    }
 
     // SMTP configuration from environment variables
     // SMTP configuration from environment variables (configured in Cloudflare Pages Dashboard)
