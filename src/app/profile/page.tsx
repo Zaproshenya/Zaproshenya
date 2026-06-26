@@ -382,6 +382,8 @@ export default function ProfilePage() {
       ? new Date(profile.createdAt).toLocaleDateString('uk-UA', { year: 'numeric', month: 'long' })
       : '—';
 
+  const isGoogleUser = user?.providerData?.some(p => p.providerId === 'google.com');
+
   return (
     <>
       <div className="wrap" style={{paddingBottom: '80px'}}>
@@ -467,40 +469,42 @@ export default function ProfilePage() {
       </div>
 
       {/* Security */}
-      <div className="profile-section">
-        <div className="profile-section-header">
-          <div className="profile-section-icon"><Icon name="shield-check" size={16}/></div>
-          <div className="profile-section-title">Безпека</div>
-        </div>
-        <div className="profile-section-content">
-          <div className="profile-field">
-            <div>
-              <div className="profile-field-label">Пароль</div>
-              <div className="profile-field-value" style={{letterSpacing:'.15em', fontSize:'1.1rem'}}>••••••••</div>
-            </div>
-            <button className="btn-outline btn-sm" onClick={() => setEditMode('password')}>Змінити</button>
+      {!isGoogleUser && (
+        <div className="profile-section">
+          <div className="profile-section-header">
+            <div className="profile-section-icon"><Icon name="shield-check" size={16}/></div>
+            <div className="profile-section-title">Безпека</div>
           </div>
-          <div className="profile-field">
-            <div>
-              <div className="profile-field-label">Двофакторна автентифікація (2FA)</div>
-              <div className="profile-field-value" style={{fontSize:'.93rem', fontWeight:600}}>
-                {profile.twoFactorEnabled 
-                  ? `Увімкнено (${profile.email || 'пошта не вказана'})` 
-                  : 'Вимкнено'}
+          <div className="profile-section-content">
+            <div className="profile-field">
+              <div>
+                <div className="profile-field-label">Пароль</div>
+                <div className="profile-field-value" style={{letterSpacing:'.15em', fontSize:'1.1rem'}}>••••••••</div>
               </div>
+              <button className="btn-outline btn-sm" onClick={() => setEditMode('password')}>Змінити</button>
             </div>
-            {profile.twoFactorEnabled ? (
-              <button className="btn-outline btn-sm" style={{color:'var(--red)', borderColor:'rgba(192,57,43,.3)'}} onClick={() => setEditMode('disable2fa')}>
-                Вимкнути
-              </button>
-            ) : (
-              <button className="btn-outline btn-sm" onClick={() => setEditMode('email')}>
-                Налаштувати
-              </button>
-            )}
+            <div className="profile-field">
+              <div>
+                <div className="profile-field-label">Двофакторна автентифікація (2FA)</div>
+                <div className="profile-field-value" style={{fontSize:'.93rem', fontWeight:600}}>
+                  {profile.twoFactorEnabled 
+                    ? `Увімкнено (${profile.email || 'пошта не вказана'})` 
+                    : 'Вимкнено'}
+                </div>
+              </div>
+              {profile.twoFactorEnabled ? (
+                <button className="btn-outline btn-sm" style={{color:'var(--red)', borderColor:'rgba(192,57,43,.3)'}} onClick={() => setEditMode('disable2fa')}>
+                  Вимкнути
+                </button>
+              ) : (
+                <button className="btn-outline btn-sm" onClick={() => setEditMode('email')}>
+                  Налаштувати
+                </button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
 
       {/* Support & Ideas */}

@@ -20,9 +20,16 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://zaproshenya.site'),
   title: "Запрошення ✦",
   description: "Створюйте та надсилайте запрошення на зустрічі. Безкоштовний додаток українською.",
+  icons: {
+    icon: [
+      { url: '/favicon.png', type: 'image/png', sizes: '96x96' }
+    ],
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  }
 };
 
 export const viewport = {
@@ -38,6 +45,18 @@ export default function RootLayout({
     <html lang="uk" className={`${playfair.variable} ${dmSans.variable}`}>
       <head>
         <script src="https://unpkg.com/@phosphor-icons/web@2.1.1" async></script>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "Запрошення",
+              "alternateName": ["Запрошення ✦", "Zaproshenya"],
+              "url": "https://zaproshenya.site"
+            })
+          }}
+        />
       </head>
       <body>
         <AuthProvider>
