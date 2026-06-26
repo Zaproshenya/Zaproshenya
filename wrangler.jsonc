@@ -8,5 +8,12 @@
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
+  },
+  "vars": {
+    "SMTP_HOST": "smtp.resend.com",
+    "SMTP_PORT": "465",
+    "SMTP_SECURE": "true",
+    "SMTP_USER": "resend",
+    "SMTP_FROM": "support@zaproshenya.site"
   }
 }
