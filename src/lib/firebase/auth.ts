@@ -70,7 +70,8 @@ export async function register(name: string, login: string, password: string, em
 
   if (cleanEmail) {
     profile.email = cleanEmail;
-    profile.twoFactorEnabled = false;
+    profile.twoFactorEnabled = true;
+    await sendEmailVerification(cred.user);
   }
 
   await set(ref(db, 'users/' + uid), profile);

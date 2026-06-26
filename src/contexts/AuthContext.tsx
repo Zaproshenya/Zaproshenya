@@ -39,6 +39,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [otpError, setOtpError] = useState('');
   const [otpLoading, setOtpLoading] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
+  const [resending, setResending] = useState(false);
+
+  const isEmailVerificationPending = !!(
+    user &&
+    user.email &&
+    !user.email.endsWith('@zap.app') &&
+    !user.emailVerified &&
+    !user.providerData?.some(p => p.providerId === 'google.com')
+  );
+
+  useEffect(() => {
+    if (!user || !isEmailVerificationPending) return;
+
+    const interval = setInterval(async () => {
+      await user.reload();
+      if (user.emailVerified) {
+        clearInterval(interval);
+        const { updateProfileData } = await import('@/lib/firebase/auth');
+        await updateProfileData(user.uid, { twoFactorEnabled: true });
+        updateProfile({ twoFactorEnabled: true });
+        sessionStorage.setItem('2fa_verified_' + user.uid, 'true');
+        toast('Пошту успішно підтверджено! 2FA активовано. ✦', 'success');
+        window.location.reload();
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [user, isEmailVerificationPending]);
 
   useEffect(() => {
     if (user && profile && profile.twoFactorEnabled) {
@@ -124,6 +152,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setOtpSent(false);
     setVerificationCode('');
     setOtpError('');
+  };
+
+  const handleResendVerification = async () => {
+    if (!user) return;
+    setResending(true);
+    try {
+      const { sendVerification } = await import('@/lib/firebase/auth');
+      await sendVerification(user);
+      toast('Лист підтвердження надіслано знову ✦', 'success');
+    } catch (e: any) {
+      toast(e.message || 'Помилка надсилання листа', 'error');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  const handleCancelVerification = async () => {
+    const { logoutUser } = await import('@/lib/firebase/auth');
+    await logoutUser();
+    window.location.href = '/login';
   };
 
   useEffect(() => {
@@ -378,6 +426,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           <h2 style={{ fontFamily: 'var(--font-heading)', fontStyle: 'italic', marginBottom: '8px', color: 'var(--ink)' }}>{banStatusTitle}</h2>
           <p style={{ color: 'var(--muted)', marginBottom: '20px', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: banStatusBody }} />
           <button className="btn btn-outline" onClick={handleBanLogout}>Вийти</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isEmailVerificationPending && user) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', background: 'var(--paper)' }}>
+        <div className="auth-card" style={{ textAlign: 'center', maxWidth: '400px', width: '100%', padding: '32px 28px', border: '1px solid var(--border)', borderRadius: 'var(--radius-card)', animation: 'pop 0.3s var(--ease) both' }}>
+          <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(var(--gold-rgb), 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)', margin: '0 auto 20px' }}>
+            <Icon name="envelope-simple" size={28} />
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontStyle: 'italic', fontSize: '1.6rem', marginBottom: '10px' }}>Підтвердіть пошту</h2>
+          <p style={{ color: 'var(--muted)', fontSize: '.88rem', lineHeight: '1.6', marginBottom: '24px' }}>
+            На вашу електронну адресу <strong style={{ color: 'var(--ink)' }}>{user.email}</strong> надіслано лист із посиланням для підтвердження. 
+            Будь ласка, перевірте пошту та підтвердіть акаунт.
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <button 
+              onClick={async () => {
+                await user.reload();
+                if (user.emailVerified) {
+                  const { updateProfileData } = await import('@/lib/firebase/auth');
+                  await updateProfileData(user.uid, { twoFactorEnabled: true });
+                  updateProfile({ twoFactorEnabled: true });
+                  sessionStorage.setItem('2fa_verified_' + user.uid, 'true');
+                  toast('Пошту успішно підтверджено! 2FA активовано. ✦', 'success');
+                  window.location.reload();
+                } else {
+                  toast('Пошту ще не підтверджено. Перевірте ваш кошик або папку спам.', 'info');
+                }
+              }} 
+              className="btn btn-dark btn-full" 
+              style={{ padding: '12px' }}
+            >
+              Я підтвердив пошту
+            </button>
+            <button 
+              onClick={handleResendVerification} 
+              className="btn btn-outline btn-full btn-sm" 
+              disabled={resending} 
+              style={{ padding: '10px' }}
+            >
+              {resending ? 'Надсилання...' : 'Надіслати лист знову'}
+            </button>
+            <button 
+              onClick={handleCancelVerification} 
+              className="btn btn-ghost" 
+              style={{ color: 'var(--red)', fontSize: '.85rem', marginTop: '8px' }}
+            >
+              Вийти з акаунту
+            </button>
+          </div>
         </div>
       </div>
     );

@@ -98,10 +98,8 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const profile = await register(regForm.name, regForm.login, regForm.pass, regForm.email || undefined);
-      if (regForm.email && auth.currentUser) {
-        await sendVerification(auth.currentUser);
-        setVerifyEmail(regForm.email);
-        setShowVerifyModal(true);
+      if (regForm.email) {
+        toast('Акаунт створено! Будь ласка, підтвердіть пошту. ✦', 'success');
       } else {
         toast(`Ласкаво просимо, ${profile.name}! ✦`, 'success');
         router.push('/home');
