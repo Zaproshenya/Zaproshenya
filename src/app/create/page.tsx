@@ -192,6 +192,19 @@ export default function CreatePage() {
               <Icon name="house" size={14}/> До списку
             </Link>
           </div>
+
+          <div className="create-done-support">
+            <div className="create-done-support-inner">
+              <div className="create-done-support-icon">✦</div>
+              <div className="create-done-support-title">Підтримати розвиток проєкту</div>
+              <div className="create-done-support-text">
+                Запрошення ✦ — безкоштовний і незалежний. Якщо він вам корисний — ви можете підтримати його розвиток.
+              </div>
+              <a href="https://send.monobank.ua/jar/5se11GGQ5i" target="_blank" rel="noreferrer" className="donation-btn">
+                <Icon name="heart" size={16}/> Задонатити через Monobank
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     );

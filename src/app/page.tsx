@@ -97,7 +97,7 @@ export default function LandingPage() {
                 </div>
 
                 <div className="action-section-wrap">
-                  <div className="answer-wrap" style={{justifyContent: 'center'}}>
+                  <div className="answer-wrap" style={{justifyContent: 'center', pointerEvents: 'none'}}>
                     <button className="btn-yes" tabIndex={-1}><Icon name="check" size={14}/> Так, я приду!</button>
                     <button className="btn-reschedule" tabIndex={-1}><Icon name="calendar-blank" size={14}/> Перенести</button>
                     <button className="btn-no" tabIndex={-1}><Icon name="x" size={14}/> Ні, не зможу</button>

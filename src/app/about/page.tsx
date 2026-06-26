@@ -57,7 +57,7 @@ export default function AboutPage() {
               Спробувати зараз
             </Link>
             <Link href="/" className="btn btn-outline" style={{ padding: '12px 24px' }}>
-              Документація
+              На головну
             </Link>
           </div>
         </section>

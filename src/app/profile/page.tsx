@@ -556,10 +556,10 @@ export default function ProfilePage() {
         </div>
         <div className="donation-body">
           <div className="donation-text">
-            Запрошення ✦ — це безкоштовний незалежний проєкт. Якщо він приносить вам радість — ви можете підтримати його розвиток.
+            Запрошення ✦ — безкоштовний і незалежний. Якщо він вам корисний — ви можете підтримати його розвиток.
           </div>
           <a href="https://send.monobank.ua/jar/5se11GGQ5i" target="_blank" rel="noreferrer" className="donation-btn">
-            <Icon name="heart" size={18}/> Підтримати через Monobank
+            <Icon name="heart" size={18}/> Задонатити через Monobank
           </a>
         </div>
       </div>
@@ -586,6 +586,17 @@ export default function ProfilePage() {
           <Icon name="sign-out" size={16}/> Вийти з акаунту
         </button>
       </div>
+
+      <footer className="seo-footer" role="contentinfo">
+        <div className="seo-footer-links">
+          <Link href="/about">Про додаток</Link>
+          <span>•</span>
+          <Link href="/privacy">Конфіденційність</Link>
+          <span>•</span>
+          <Link href="/terms">Умови використання</Link>
+        </div>
+        <p className="seo-footer-copy">© 2026 Запрошення ✦. Всі права захищені.</p>
+      </footer>
       </div>
 
       {/* ─── MODALS ─── */}
