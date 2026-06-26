@@ -270,7 +270,7 @@ export default function LoginPage() {
                   </label>
                   <input type="text"
                     placeholder="Ваш логін або email" autoComplete="username"
-                    value={loginForm.login} onChange={e => setLoginForm({...loginForm, login: e.target.value})}
+                    value={loginForm.login} onChange={e => setLoginForm({...loginForm, login: e.target.value.toLowerCase().replace(/[^a-z0-9@._-]/g, '')})}
                   />
                 </div>
 
@@ -334,9 +334,9 @@ export default function LoginPage() {
                     <Icon name="at" size={14} /> Логін
                   </label>
                   <input type="text"
-                    placeholder="Латиниця, цифри, _ (3–10 символів)"
+                    placeholder="Латиниця та цифри (3–10 символів)"
                     autoComplete="username" maxLength={10}
-                    value={regForm.login} onChange={e => setRegForm({...regForm, login: e.target.value})}
+                    value={regForm.login} onChange={e => setRegForm({...regForm, login: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '')})}
                   />
                 </div>
 

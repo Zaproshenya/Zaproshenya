@@ -39,7 +39,7 @@ export async function register(name: string, login: string, password: string, em
 
   if (cleanName.length < 2) throw new Error('Ім\'я має бути не менше 2 символів');
   if (cleanLogin.length < 3) throw new Error('Логін має бути не менше 3 символів');
-  if (!/^[a-z0-9_]+$/.test(cleanLogin)) throw new Error('Логін: тільки латиниця, цифри, _');
+  if (!/^[a-z0-9]+$/.test(cleanLogin)) throw new Error('Логін: тільки латиниця та цифри');
   if (password.length < 6) throw new Error('Пароль має бути не менше 6 символів');
   if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) throw new Error('Некоректний формат пошти');
 
@@ -90,14 +90,9 @@ export async function loginUser(loginOrEmail: string, password: string) {
       const loginSnap = await get(ref(db, 'logins/' + clean));
       if (loginSnap.exists()) {
         const uid = loginSnap.val();
-        const userSnap = await get(ref(db, 'users/' + uid));
-        if (userSnap.exists()) {
-          const profile = userSnap.val();
-          if (profile.email) {
-            email = profile.email;
-          } else {
-            email = clean + '@zap.app';
-          }
+        const emailSnap = await get(ref(db, `users/${uid}/email`));
+        if (emailSnap.exists() && emailSnap.val()) {
+          email = emailSnap.val();
         } else {
           email = clean + '@zap.app';
         }
@@ -127,7 +122,7 @@ export async function updateProfileData(uid: string, updates: Partial<UserProfil
 
 export async function changeLogin(user: User, currentProfile: UserProfile, newLogin: string) {
   const cleanNewLogin = newLogin.trim().toLowerCase();
-  if (!/^[a-z0-9_]+$/.test(cleanNewLogin)) throw new Error('Логін: тільки латиниця, цифри, _');
+  if (!/^[a-z0-9]+$/.test(cleanNewLogin)) throw new Error('Логін: тільки латиниця та цифри');
   if (cleanNewLogin.length < 3) throw new Error('Логін має бути не менше 3 символів');
 
   const existing = await get(ref(db, 'logins/' + cleanNewLogin));

@@ -611,7 +611,17 @@ export default function ProfilePage() {
               <>
                 <div className="form-group">
                   <label className="lbl">Новий логін</label>
-                  <input ref={loginRef} defaultValue={profile.login} placeholder="Логін (латиниця, цифри, _)" maxLength={10} />
+                  <input 
+                    ref={loginRef} 
+                    defaultValue={profile.login} 
+                    placeholder="Логін (латиниця та цифри)" 
+                    maxLength={10}
+                    onChange={e => {
+                      if (e.target.value) {
+                        e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+                      }
+                    }}
+                  />
                 </div>
                 <p style={{fontSize:'.8rem', color:'var(--muted)', marginBottom:'12px'}}>
                   <Icon name="warning" size={14}/> Після зміни логіну потрібно буде входити з новим логіном
