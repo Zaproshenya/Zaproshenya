@@ -332,8 +332,8 @@ export default function LoginPage() {
                     <Icon name="at" size={14} /> Логін
                   </label>
                   <input type="text"
-                    placeholder="Латиниця, цифри, _ та . (3–10 символів)"
-                    autoComplete="username" maxLength={10}
+                    placeholder="Латиниця, цифри, _ та . (3–25 символів)"
+                    autoComplete="username" maxLength={25}
                     value={regForm.login} onChange={e => setRegForm({...regForm, login: e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, '')})}
                   />
                 </div>

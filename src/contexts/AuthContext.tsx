@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase/config';
 import { loadProfile, UserProfile } from '@/lib/firebase/auth';
-import { ref, set, query, orderByChild, limitToLast, onValue } from 'firebase/database';
+import { ref, set, get, update, query, orderByChild, limitToLast, onValue } from 'firebase/database';
 import { toast } from '@/components/Toast';
 import { Icon } from '@/components/Icon';
 
@@ -41,6 +41,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [verificationCode, setVerificationCode] = useState('');
   const [resending, setResending] = useState(false);
 
+  // Google registration completion state
+  const [completeName, setCompleteName] = useState('');
+  const [completeLogin, setCompleteLogin] = useState('');
+  const [completeError, setCompleteError] = useState('');
+  const [completeSaving, setCompleteSaving] = useState(false);
+
+  const isRegistrationIncomplete = !!(user && profile && profile.registrationIncomplete);
+
+  useEffect(() => {
+    if (profile && profile.registrationIncomplete) {
+      if (!completeName && profile.name) {
+        setCompleteName(profile.name);
+      }
+      if (!completeLogin && user?.email) {
+        const base = user.email.split('@')[0].replace(/[^a-z0-9]/g, '').slice(0, 25);
+        setCompleteLogin(base);
+      }
+    }
+  }, [profile, user]);
+
   const isEmailVerificationPending = !!(
     user &&
     user.email &&
@@ -59,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { updateProfileData } = await import('@/lib/firebase/auth');
         await updateProfileData(user.uid, { twoFactorEnabled: true });
         updateProfile({ twoFactorEnabled: true });
-        sessionStorage.setItem('2fa_verified_' + user.uid, 'true');
+        localStorage.setItem('2fa_verified_' + user.uid, 'true');
         toast('Пошту успішно підтверджено! 2FA активовано. ✦', 'success');
         window.location.reload();
       }
@@ -76,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const isVerified = sessionStorage.getItem('2fa_verified_' + user.uid) === 'true';
+      const isVerified = localStorage.getItem('2fa_verified_' + user.uid) === 'true';
       if (!isVerified) {
         setIs2faPending(true);
         if (!otpSent && !otpLoading) {
@@ -132,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Невірний код або термін дії закінчився');
       
-      sessionStorage.setItem('2fa_verified_' + user.uid, 'true');
+      localStorage.setItem('2fa_verified_' + user.uid, 'true');
       setIs2faPending(false);
       setVerificationCode('');
       setOtpError('');
@@ -172,6 +192,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { logoutUser } = await import('@/lib/firebase/auth');
     await logoutUser();
     window.location.href = '/login';
+  };
+
+  const handleCompleteRegistration = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setCompleteSaving(true);
+    setCompleteError('');
+
+    const cleanLogin = completeLogin.trim().toLowerCase();
+    const cleanName = completeName.trim();
+
+    try {
+      if (cleanName.length < 2) throw new Error("Ім'я має бути не менше 2 символів");
+      if (cleanLogin.length < 3) throw new Error("Логін має бути не менше 3 символів");
+      if (!/^[a-z0-9._]+$/.test(cleanLogin)) throw new Error("Логін може містити лише латинські літери, цифри, крапку (.) та підкреслення (_)");
+
+      // Check login uniqueness
+      const loginCheck = await get(ref(db, 'logins/' + cleanLogin));
+      if (loginCheck.exists()) throw new Error("Цей логін вже зайнятий");
+
+      // Generate unique ID
+      const { genUserId } = await import('@/lib/utils');
+      let uniqueId = genUserId();
+      let idCheck = await get(ref(db, 'ids/' + uniqueId));
+      while (idCheck.exists()) {
+        uniqueId = genUserId();
+        idCheck = await get(ref(db, 'ids/' + uniqueId));
+      }
+
+      // Update database profile
+      await update(ref(db, 'users/' + user.uid), {
+        name: cleanName,
+        login: cleanLogin,
+        uniqueId: uniqueId,
+        registrationIncomplete: null
+      });
+
+      // Write indexes
+      await set(ref(db, 'logins/' + cleanLogin), user.uid);
+      await set(ref(db, 'ids/' + uniqueId), user.uid);
+
+      toast("Реєстрацію успішно завершено! ✦", "success");
+    } catch (err: any) {
+      setCompleteError(err.message || "Помилка");
+      toast(err.message || "Помилка збереження", "error");
+    } finally {
+      setCompleteSaving(false);
+    }
+  };
+
+  const handleCancelRegistration = async () => {
+    const { logoutUser } = await import('@/lib/firebase/auth');
+    await logoutUser();
+    window.location.reload();
   };
 
   useEffect(() => {
@@ -220,6 +294,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setProfile(p);
             // Update last seen heartbeat
             set(ref(db, `users/${currentUser.uid}/lastSeen`), Date.now()).catch(() => {});
+
+            // Self-healing check: if Firebase Auth has a verified real email, sync it to the database
+            if (currentUser.emailVerified && currentUser.email && !currentUser.email.endsWith('@zap.app')) {
+              if (p.email !== currentUser.email || !p.twoFactorEnabled || p.pendingEmail) {
+                update(ref(db, `users/${currentUser.uid}`), {
+                  email: currentUser.email,
+                  twoFactorEnabled: true,
+                  pendingEmail: null
+                }).catch((err: any) => console.error("Error healing profile email:", err));
+              }
+            }
           } else {
             setProfile(null);
           }
@@ -431,6 +516,70 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
   }
 
+  if (isRegistrationIncomplete && user) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', background: 'var(--paper)' }}>
+        <div className="auth-card" style={{ textAlign: 'center', maxWidth: '400px', width: '100%', padding: '32px 28px', border: '1px solid var(--border)', borderRadius: 'var(--radius-card)', animation: 'pop 0.3s var(--ease) both' }}>
+          <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(var(--gold-rgb), 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)', margin: '0 auto 20px' }}>
+            <Icon name="user-plus" size={28} />
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontStyle: 'italic', fontSize: '1.6rem', marginBottom: '10px' }}>Завершення реєстрації</h2>
+          <p style={{ color: 'var(--muted)', fontSize: '.88rem', lineHeight: '1.6', marginBottom: '24px' }}>
+            Ви успішно авторизувались через Google! Для завершення створення акаунту виберіть ваше ім'я та унікальний логін.
+          </p>
+
+          <form onSubmit={handleCompleteRegistration} style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'left' }}>
+            <div className="auth-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label className="auth-field-label" style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--ink)' }}>
+                <Icon name="user" size={14} /> Ім'я
+              </label>
+              <input 
+                type="text" 
+                placeholder="Ваше ім'я" 
+                maxLength={15} 
+                value={completeName} 
+                onChange={e => setCompleteName(e.target.value)}
+                style={{ padding: '10px 12px', background: 'var(--warm)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-input)', color: 'var(--ink)', width: '100%' }}
+                disabled={completeSaving}
+                required
+              />
+            </div>
+
+            <div className="auth-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label className="auth-field-label" style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--ink)' }}>
+                <Icon name="at" size={14} /> Логін
+              </label>
+              <input 
+                type="text" 
+                placeholder="Тільки латиниця, цифри, . та _ (3-25 симв.)" 
+                maxLength={25} 
+                value={completeLogin} 
+                onChange={e => setCompleteLogin(e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, ''))}
+                style={{ padding: '10px 12px', background: 'var(--warm)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-input)', color: 'var(--ink)', width: '100%' }}
+                disabled={completeSaving}
+                required
+              />
+            </div>
+
+            {completeError && <div className="form-error show" style={{ marginTop: 0 }}>{completeError}</div>}
+            
+            <button className="btn btn-dark btn-full" type="submit" disabled={completeSaving || completeLogin.length < 3 || completeName.length < 2} style={{ padding: '12px', marginTop: '8px' }}>
+              {completeSaving ? 'Збереження...' : 'Створити акаунт'}
+            </button>
+          </form>
+
+          <button 
+            onClick={handleCancelRegistration} 
+            className="btn btn-ghost btn-full" 
+            style={{ color: 'var(--red)', fontSize: '.85rem', marginTop: '12px' }}
+          >
+            Скасувати реєстрацію
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (isEmailVerificationPending && user) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', background: 'var(--paper)' }}>
@@ -439,10 +588,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             <Icon name="envelope-simple" size={28} />
           </div>
           <h2 style={{ fontFamily: 'var(--font-heading)', fontStyle: 'italic', fontSize: '1.6rem', marginBottom: '10px' }}>Підтвердіть пошту</h2>
-          <p style={{ color: 'var(--muted)', fontSize: '.88rem', lineHeight: '1.6', marginBottom: '24px' }}>
+          <p style={{ color: 'var(--muted)', fontSize: '.88rem', lineHeight: '1.6', marginBottom: '16px' }}>
             На вашу електронну адресу <strong style={{ color: 'var(--ink)' }}>{user.email}</strong> надіслано лист із посиланням для підтвердження. 
             Будь ласка, перевірте пошту та підтвердіть акаунт.
           </p>
+
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', background: 'rgba(var(--gold-rgb), 0.06)', border: '1px solid rgba(var(--gold-rgb), 0.25)', padding: '12px 14px', borderRadius: '10px', textAlign: 'left', marginBottom: '24px', fontSize: '0.82rem', color: 'var(--ink)', lineHeight: '1.4' }}>
+            <span style={{ fontSize: '1.1rem', marginTop: '-2px' }}>⚠️</span>
+            <span>
+              Не бачите листа? Обов'язково перевірте папки <strong>«Спам» (Spam)</strong>, <strong>«Реклама/Оповіщення» (Promotions)</strong> або надішліть лист повторно.
+            </span>
+          </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <button 
@@ -452,7 +608,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   const { updateProfileData } = await import('@/lib/firebase/auth');
                   await updateProfileData(user.uid, { twoFactorEnabled: true });
                   updateProfile({ twoFactorEnabled: true });
-                  sessionStorage.setItem('2fa_verified_' + user.uid, 'true');
+                  localStorage.setItem('2fa_verified_' + user.uid, 'true');
                   toast('Пошту успішно підтверджено! 2FA активовано. ✦', 'success');
                   window.location.reload();
                 } else {

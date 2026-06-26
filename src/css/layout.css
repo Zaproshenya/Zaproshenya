@@ -430,12 +430,12 @@
   .envelope-body { padding: 9px 11px; }
 
   /* Modal mobile */
-  .overlay { padding: 12px; align-items: flex-end; }
+  .overlay { padding: 16px; align-items: center; justify-content: center; }
   .modal {
     border-radius: var(--radius-lg);
-    max-height: 85vh;
+    max-height: 85dvh;
     padding: 24px 20px;
-    animation: slideUpModal .3s var(--ease);
+    animation: fadeUp .3s var(--ease);
   }
 }
 

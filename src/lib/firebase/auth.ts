@@ -30,6 +30,8 @@ export interface UserProfile {
   bannedUntil?: number | null;
   email?: string;
   twoFactorEnabled?: boolean;
+  registrationIncomplete?: boolean;
+  pendingEmail?: string;
 }
 
 export async function register(name: string, login: string, password: string, email?: string): Promise<UserProfile> {
@@ -83,7 +85,6 @@ export async function register(name: string, login: string, password: string, em
 
 export async function loginUser(loginOrEmail: string, password: string) {
   const clean = loginOrEmail.trim().toLowerCase();
-  let email = clean;
 
   if (!clean.includes('@')) {
     // If it's a username, check if they have bound a real email in their profile
@@ -91,24 +92,47 @@ export async function loginUser(loginOrEmail: string, password: string) {
       const loginSnap = await get(ref(db, 'logins/' + clean));
       if (loginSnap.exists()) {
         const uid = loginSnap.val();
-        const emailSnap = await get(ref(db, `users/${uid}/email`));
-        if (emailSnap.exists() && emailSnap.val()) {
-          email = emailSnap.val();
-        } else {
-          email = clean + '@zap.app';
+        const userSnap = await get(ref(db, 'users/' + uid));
+        if (userSnap.exists()) {
+          const profile = userSnap.val();
+          const candidates: string[] = [];
+
+          if (profile.email && !profile.email.endsWith('@zap.app')) {
+            candidates.push(profile.email);
+          }
+          if (profile.pendingEmail && !profile.pendingEmail.endsWith('@zap.app')) {
+            candidates.push(profile.pendingEmail);
+          }
+          candidates.push(clean + '@zap.app');
+
+          const uniqueCandidates = Array.from(new Set(candidates));
+          let lastError: any = null;
+          for (const cand of uniqueCandidates) {
+            try {
+              return await signInWithEmailAndPassword(auth, cand, password);
+            } catch (err: any) {
+              lastError = err;
+            }
+          }
+          if (lastError) throw lastError;
         }
-      } else {
-        email = clean + '@zap.app';
       }
-    } catch {
-      email = clean + '@zap.app';
+    } catch (e) {
+      // Fallback below
     }
+    return await signInWithEmailAndPassword(auth, clean + '@zap.app', password);
   }
 
-  return await signInWithEmailAndPassword(auth, email, password);
+  return await signInWithEmailAndPassword(auth, clean, password);
 }
 
 export async function logoutUser() {
+  if (typeof window !== 'undefined') {
+    const uid = auth.currentUser?.uid;
+    if (uid) {
+      localStorage.removeItem('2fa_verified_' + uid);
+    }
+  }
   await signOut(auth);
 }
 
@@ -130,12 +154,15 @@ export async function changeLogin(user: User, currentProfile: UserProfile, newLo
   if (existing.exists()) throw new Error('Цей логін вже зайнятий');
 
   const oldLogin = currentProfile.login;
-  const newEmail = cleanNewLogin + '@zap.app';
+  const hasRealEmail = currentProfile.email && !currentProfile.email.endsWith('@zap.app');
 
-  try {
-    await verifyBeforeUpdateEmail(user, newEmail);
-  } catch {
-    await updateEmail(user, newEmail);
+  if (!hasRealEmail) {
+    const newEmail = cleanNewLogin + '@zap.app';
+    try {
+      await verifyBeforeUpdateEmail(user, newEmail);
+    } catch {
+      await updateEmail(user, newEmail);
+    }
   }
 
   await remove(ref(db, 'logins/' + oldLogin));
@@ -182,6 +209,7 @@ export async function sendVerification(user: User) {
 
 export async function verifyAndChangeEmail(user: User, newEmail: string) {
   await verifyBeforeUpdateEmail(user, newEmail);
+  await update(ref(db, 'users/' + user.uid), { pendingEmail: newEmail });
 }
 
 export async function signInWithSocial(providerName: 'google'): Promise<UserProfile> {
@@ -192,40 +220,16 @@ export async function signInWithSocial(providerName: 'google'): Promise<UserProf
 
   const snap = await get(ref(db, 'users/' + uid));
   if (!snap.exists()) {
-    let uniqueId = genUserId();
-    let idCheck = await get(ref(db, 'ids/' + uniqueId));
-    while (idCheck.exists()) {
-      uniqueId = genUserId();
-      idCheck = await get(ref(db, 'ids/' + uniqueId));
-    }
-
-    let baseLogin = 'user';
-    if (user.email) {
-      baseLogin = user.email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '');
-    } else if (user.displayName) {
-      baseLogin = user.displayName.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '');
-    }
-    baseLogin = baseLogin.slice(0, 10);
-    if (baseLogin.length < 3) baseLogin = 'u_' + baseLogin;
-
-    let cleanLogin = baseLogin;
-    let loginCheck = await get(ref(db, 'logins/' + cleanLogin));
-    let counter = 1;
-    while (loginCheck.exists()) {
-      cleanLogin = `${baseLogin.slice(0, 7)}${counter}`;
-      loginCheck = await get(ref(db, 'logins/' + cleanLogin));
-      counter++;
-    }
-
     const profile: UserProfile = {
       uid,
       name: user.displayName || 'Користувач',
-      login: cleanLogin,
-      uniqueId,
+      login: '',
+      uniqueId: '',
       role: 'user',
       avatar: user.photoURL || null,
       createdAt: Date.now(),
       lastSeen: Date.now(),
+      registrationIncomplete: true
     };
 
     if (user.email) {
@@ -234,9 +238,6 @@ export async function signInWithSocial(providerName: 'google'): Promise<UserProf
     }
 
     await set(ref(db, 'users/' + uid), profile);
-    await set(ref(db, 'logins/' + cleanLogin), uid);
-    await set(ref(db, 'ids/' + uniqueId), uid);
-
     return profile;
   }
 
