@@ -82,7 +82,33 @@ export async function register(name: string, login: string, password: string, em
 
 export async function loginUser(loginOrEmail: string, password: string) {
   const clean = loginOrEmail.trim().toLowerCase();
-  const email = clean.includes('@') ? clean : (clean + '@zap.app');
+  let email = clean;
+
+  if (!clean.includes('@')) {
+    // If it's a username, check if they have bound a real email in their profile
+    try {
+      const loginSnap = await get(ref(db, 'logins/' + clean));
+      if (loginSnap.exists()) {
+        const uid = loginSnap.val();
+        const userSnap = await get(ref(db, 'users/' + uid));
+        if (userSnap.exists()) {
+          const profile = userSnap.val();
+          if (profile.email) {
+            email = profile.email;
+          } else {
+            email = clean + '@zap.app';
+          }
+        } else {
+          email = clean + '@zap.app';
+        }
+      } else {
+        email = clean + '@zap.app';
+      }
+    } catch {
+      email = clean + '@zap.app';
+    }
+  }
+
   return await signInWithEmailAndPassword(auth, email, password);
 }
 
