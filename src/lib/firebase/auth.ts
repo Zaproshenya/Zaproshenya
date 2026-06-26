@@ -46,7 +46,7 @@ export async function register(name: string, login: string, password: string, em
   const existing = await get(ref(db, 'logins/' + cleanLogin));
   if (existing.exists()) throw new Error('Цей логін вже зайнятий');
 
-  const authEmail = cleanEmail || (cleanLogin + '@zaproshenya.site');
+  const authEmail = cleanEmail || (cleanLogin + '@zap.app');
   const cred = await createUserWithEmailAndPassword(auth, authEmail, password);
   const uid = cred.user.uid;
 
@@ -82,7 +82,7 @@ export async function register(name: string, login: string, password: string, em
 
 export async function loginUser(login: string, password: string) {
   const cleanLogin = login.trim().toLowerCase();
-  const email = cleanLogin + '@zaproshenya.site';
+  const email = cleanLogin + '@zap.app';
   return await signInWithEmailAndPassword(auth, email, password);
 }
 
@@ -108,7 +108,7 @@ export async function changeLogin(user: User, currentProfile: UserProfile, newLo
   if (existing.exists()) throw new Error('Цей логін вже зайнятий');
 
   const oldLogin = currentProfile.login;
-  const newEmail = cleanNewLogin + '@zaproshenya.site';
+  const newEmail = cleanNewLogin + '@zap.app';
 
   try {
     await verifyBeforeUpdateEmail(user, newEmail);
@@ -124,7 +124,7 @@ export async function changeLogin(user: User, currentProfile: UserProfile, newLo
 export async function changePassword(user: User, currentProfile: UserProfile, oldPassword: string, newPassword: string) {
   if (newPassword.length < 6) throw new Error('Пароль має бути не менше 6 символів');
 
-  const email = user.email || (currentProfile.login + '@zaproshenya.site');
+  const email = user.email || (currentProfile.login + '@zap.app');
   const cred = EmailAuthProvider.credential(email, oldPassword);
   await reauthenticateWithCredential(user, cred);
 
@@ -132,7 +132,7 @@ export async function changePassword(user: User, currentProfile: UserProfile, ol
 }
 
 export async function deleteAccount(user: User, currentProfile: UserProfile, password: string) {
-  const email = user.email || (currentProfile.login + '@zaproshenya.site');
+  const email = user.email || (currentProfile.login + '@zap.app');
   const cred = EmailAuthProvider.credential(email, password);
   await reauthenticateWithCredential(user, cred);
 

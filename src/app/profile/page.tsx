@@ -210,7 +210,7 @@ export default function ProfilePage() {
       } else if (editMode === 'disable2fa') {
         if (!disablePass) throw new Error("Введіть пароль");
         const { EmailAuthProvider, reauthenticateWithCredential } = await import('firebase/auth');
-        const email = user.email || (profile.login + '@zaproshenya.site');
+        const email = user.email || (profile.login + '@zap.app');
         const cred = EmailAuthProvider.credential(email, disablePass);
         await reauthenticateWithCredential(user, cred);
 
