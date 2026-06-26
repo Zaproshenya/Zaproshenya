@@ -262,7 +262,7 @@ export default function LandingPage() {
           <Link href="/privacy">Конфіденційність</Link>
           <Link href="/terms">Умови використання</Link>
         </nav>
-        <p className="footer-copy">© 2025 Запрошення ✦. Всі права захищені.</p>
+        <p className="footer-copy">© 2026 Запрошення ✦. Всі права захищені.</p>
       </footer>
     </>
   );

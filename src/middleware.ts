@@ -46,7 +46,7 @@ export async function middleware(request: NextRequest) {
       console.error("Middleware fetch error", e);
     }
 
-    const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'zaproshenya.pages.dev';
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'zaproshenya.site';
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${host}`;
     const ogImageUrl = `${baseUrl}/${isGroup ? 'g' : 'i'}/${id}/opengraph-image`;

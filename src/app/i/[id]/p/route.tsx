@@ -23,7 +23,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     console.error("Error fetching invite for bot preview:", e);
   }
 
-  const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'zaproshenya.pages.dev';
+  const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'zaproshenya.site';
   const protocol = host.includes('localhost') ? 'http' : 'https';
   const baseUrl = `${protocol}://${host}`;
   const ogImageUrl = `${baseUrl}/i/${id}/opengraph-image`;

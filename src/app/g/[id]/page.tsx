@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   
   const headersList = await headers();
-  const host = headersList.get('x-forwarded-host') || headersList.get('host') || 'zaproshenya.pages.dev';
+  const host = headersList.get('x-forwarded-host') || headersList.get('host') || 'zaproshenya.site';
   const protocol = host.includes('localhost') ? 'http' : 'https';
   const baseUrl = `${protocol}://${host}`;
   const ogImageUrl = `${baseUrl}/g/${id}/opengraph-image`;
