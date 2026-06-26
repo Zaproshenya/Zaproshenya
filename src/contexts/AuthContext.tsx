@@ -42,6 +42,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (user && profile && profile.twoFactorEnabled) {
+      const isGoogleUser = user.providerData?.some(p => p.providerId === 'google.com');
+      if (isGoogleUser) {
+        setIs2faPending(false);
+        return;
+      }
+
       const isVerified = sessionStorage.getItem('2fa_verified_' + user.uid) === 'true';
       if (!isVerified) {
         setIs2faPending(true);
@@ -142,22 +148,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [pathname, user, profile]);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    let dbUnsubscribe: (() => void) | null = null;
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      if (dbUnsubscribe) {
+        dbUnsubscribe();
+        dbUnsubscribe = null;
+      }
+
       if (currentUser) {
-        const p = await loadProfile(currentUser.uid);
-        setProfile(p);
-        if (p) {
-          // Update last seen heartbeat
-          set(ref(db, `users/${currentUser.uid}/lastSeen`), Date.now()).catch(() => {});
-        }
+        const userRef = ref(db, `users/${currentUser.uid}`);
+        dbUnsubscribe = onValue(userRef, (snapshot) => {
+          if (snapshot.exists()) {
+            const p = snapshot.val();
+            setProfile(p);
+            // Update last seen heartbeat
+            set(ref(db, `users/${currentUser.uid}/lastSeen`), Date.now()).catch(() => {});
+          } else {
+            setProfile(null);
+          }
+          setLoading(false);
+        }, (error) => {
+          console.error("Error loading user profile:", error);
+          setLoading(false);
+        });
       } else {
         setProfile(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (dbUnsubscribe) dbUnsubscribe();
+    };
   }, []);
 
   // Check if unban is needed at render time
