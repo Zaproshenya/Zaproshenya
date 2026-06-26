@@ -76,7 +76,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Помилка надсилання коду');
       setOtpSent(true);
-      toast('Код підтвердження надіслано на пошту ✦', 'success');
+      if (data.dev_code) {
+        toast(`[Тест] Код підтвердження: ${data.dev_code} ✦`, 'info');
+        console.log("OTP Code (Dev Mode):", data.dev_code);
+      } else {
+        toast('Код підтвердження надіслано на пошту ✦', 'success');
+      }
     } catch (e: any) {
       setOtpError(e.message || 'Помилка');
       toast(e.message || 'Помилка надсилання коду', 'error');
