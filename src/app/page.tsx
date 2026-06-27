@@ -3,7 +3,7 @@
 'use client';
 import Link from 'next/link';
 import './landing.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Icon } from '@/components/Icon';
 
 export default function LandingPage() {
@@ -30,47 +30,84 @@ export default function LandingPage() {
   // Feature interactive states
   const [inviteStatus, setInviteStatus] = useState<'yes' | 'no' | null>(null);
   const [joinedGroup, setJoinedGroup] = useState(false);
-  const [notifications, setNotifications] = useState<Array<{ id: number; text: string; time: string }>>([
-    { id: 1, text: '🔔 Максим запросив вас на зустріч "Кава"', time: 'Щойно' },
-    { id: 2, text: '💬 Ольга пропонує перенести зустріч "Кіно" на 19:30', time: '5 хв тому' }
+  const [notifications, setNotifications] = useState<Array<{ id: number; text: string; time: string; type: string; title: string }>>([
+    { id: 1, text: 'Максим запросив вас на зустріч "Кава"', time: 'Щойно', type: 'invite', title: 'Нове запрошення' },
+    { id: 2, text: 'Ольга хоче додати вас у друзі', time: '5 хв тому', type: 'friend-request', title: 'Запит у друзі' }
   ]);
   const [friendsList, setFriendsList] = useState([
-    { name: 'Денис', tag: 'denys', added: true },
-    { name: 'Ольга', tag: 'olga', added: true }
+    { name: 'Денис', uniqueId: 'ZAP-F8H2D1', login: 'denys', online: true },
+    { name: 'Ольга', uniqueId: 'ZAP-M3K9W2', login: 'olya_fine', online: true }
   ]);
   const [friendSearch, setFriendSearch] = useState('');
+  const [friendMenuOpen, setFriendMenuOpen] = useState<string | null>(null);
   const [rescheduleAccepted, setRescheduleAccepted] = useState(false);
-  const [privacyToggles, setPrivacyToggles] = useState({ tfa: false, private: false, hide: false });
+  const [tfaEnabled, setTfaEnabled] = useState(false);
 
   // How it works state
   const [activeStep, setActiveStep] = useState(0);
-  const [isHoveredStep, setIsHoveredStep] = useState(false);
+  const timelineRef = useRef<HTMLDivElement>(null);
   
-  // Stepper interactive states
-  const [stepperLogin, setStepperLogin] = useState('');
+  // Stepper interactive states (Step 1 Registration)
+  const [regForm, setRegForm] = useState({ name: '', login: '', pass: '', terms: false });
+  const [registeredProfile, setRegisteredProfile] = useState<{ name: string; login: string; uniqueId: string } | null>(null);
+  
+  // Step 2 Search
   const [stepperSearch, setStepperSearch] = useState('');
   const [stepperRequestSent, setStepperRequestSent] = useState(false);
-  const [stepperInviteType, setStepperInviteType] = useState('☕ Кава');
-  const [stepperInviteDate, setStepperInviteDate] = useState('Субота');
-  const [stepperResponseState, setStepperResponseState] = useState<'pending' | 'accepted'>('pending');
+  
+  // Step 3 Send
+  const [stepperInviteTo, setStepperInviteTo] = useState('');
+  const [stepperInviteMsg, setStepperInviteMsg] = useState('');
+  const [stepperInviteType, setStepperInviteType] = useState('coffee');
+  const [stepperInviteDate, setStepperInviteDate] = useState('');
+  const [stepperInviteTime, setStepperInviteTime] = useState('');
+  const [stepperInvitePlace, setStepperInvitePlace] = useState('');
+  
+  // Step 4 Result
+  const [stepperResponseState, setStepperResponseState] = useState<'pending' | 'accepted' | 'declined'>('pending');
 
+  // Scroll pinning effect
   useEffect(() => {
-    if (activeStep === 3) {
-      setStepperResponseState('pending');
-      const timer = setTimeout(() => {
-        setStepperResponseState('accepted');
-      }, 2500);
-      return () => clearTimeout(timer);
-    }
-  }, [activeStep]);
+    const handleScroll = () => {
+      if (!timelineRef.current) return;
+      
+      // If mobile view, disable scroll hijacking/pinning calculations
+      if (window.innerWidth <= 768) return;
 
-  useEffect(() => {
-    if (isHoveredStep) return;
-    const interval = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % 4);
-    }, 4500);
-    return () => clearInterval(interval);
-  }, [isHoveredStep]);
+      const rect = timelineRef.current.getBoundingClientRect();
+      const top = -rect.top;
+      const height = rect.height - window.innerHeight;
+
+      if (top < 0) {
+        setActiveStep(0);
+        return;
+      }
+      if (top > height) {
+        setActiveStep(3);
+        return;
+      }
+
+      const progress = top / height;
+      const step = Math.min(3, Math.floor(progress * 4));
+      setActiveStep(step);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleStepClick = (stepIndex: number) => {
+    setActiveStep(stepIndex);
+    if (window.innerWidth <= 768) return;
+
+    if (!timelineRef.current) return;
+    const rect = timelineRef.current.getBoundingClientRect();
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const elementTop = rect.top + scrollTop;
+    const scrollHeight = rect.height - window.innerHeight;
+    const targetScroll = elementTop + (stepIndex / 3) * scrollHeight;
+    window.scrollTo({ top: targetScroll, behavior: 'smooth' });
+  };
 
   // Event types state
   const [selectedType, setSelectedType] = useState('coffee');
@@ -132,38 +169,71 @@ export default function LandingPage() {
       case 0:
         return (
           <div className="phone-screen">
-            <div className="phone-header">
-              <div className="phone-notch"></div>
-              <div className="phone-status">12:00</div>
-            </div>
-            <div className="phone-content">
-              <div className="preview-card-wrap">
-                <div className="preview-card-emoji">☕</div>
-                <div className="preview-card-title">Кава</div>
-                <div className="preview-card-info">
-                  <p style={{ margin: '0 0 4px' }}><strong>Коли:</strong> Субота, 15:00</p>
-                  <p style={{ margin: 0 }}><strong>Де:</strong> Kyiv Coffee</p>
+            <div className="phone-notch"></div>
+            <div className="phone-status">12:00</div>
+            <div className="phone-content" style={{ padding: '8px' }}>
+              <div className="invite-envelope" style={{ minHeight: 'auto', borderRadius: '16px', boxShadow: 'none', border: '1px solid var(--border)' }}>
+                <div className="envelope-top" style={{ padding: '12px 12px 20px', borderRadius: '16px 16px 0 0' }}>
+                  <span className="envelope-emoji" style={{ fontSize: '1.5rem', animation: 'none' }}>☕</span>
+                  <div className="envelope-type" style={{ fontSize: '0.5rem', marginBottom: '4px' }}>Кава</div>
+                  <div className="envelope-to" style={{ fontSize: '1.1rem', marginBottom: '2px' }}>Олена</div>
+                  <div className="envelope-from" style={{ fontSize: '0.6rem', paddingBottom: '0' }}>від <strong>Максима</strong></div>
                 </div>
-                <div className="preview-card-message">
-                  "Зустрінемось на каву? Маю купу новин!"
+
+                <div className="envelope-body" style={{ padding: '10px' }}>
+                  <div className="msg-block" style={{ padding: '6px 8px', marginBottom: '8px', borderRadius: '8px' }}>
+                    <p className="msg-text" style={{ fontSize: '0.8rem' }}>Зустрінемось на каву? Маю купу новин!</p>
+                  </div>
+
+                  <div className="detail-chips" style={{ gap: '6px', marginBottom: '8px' }}>
+                    <div className="detail-chip" style={{ padding: '6px 8px', borderRadius: '6px', gap: '6px' }}>
+                      <span className="detail-chip-icon" style={{ fontSize: '0.8rem' }}><Icon name="calendar-blank" size={12}/></span>
+                      <div>
+                        <div className="detail-chip-label" style={{ fontSize: '0.5rem' }}>Дата</div>
+                        <div className="detail-chip-value" style={{ fontSize: '0.7rem' }}>Субота, 15:00</div>
+                      </div>
+                    </div>
+                    <div className="detail-chip" style={{ padding: '6px 8px', borderRadius: '6px', gap: '6px' }}>
+                      <span className="detail-chip-icon" style={{ fontSize: '0.8rem' }}><Icon name="map-pin" size={12}/></span>
+                      <div>
+                        <div className="detail-chip-label" style={{ fontSize: '0.5rem' }}>Місце</div>
+                        <div className="detail-chip-value" style={{ fontSize: '0.7rem' }}>Kyiv Coffee</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {inviteStatus === null ? (
+                    <div className="action-section-wrap" style={{ paddingTop: '2px', paddingBottom: '2px' }}>
+                      <div className="answer-wrap" style={{ gap: '4px' }}>
+                        <button className="btn-yes" onClick={() => setInviteStatus('yes')} style={{ fontSize: '0.62rem', padding: '6px 4px', borderRadius: '6px' }}>
+                          <Icon name="check" size={10}/> Так, я приду!
+                        </button>
+                        <button className="btn-no" onClick={() => setInviteStatus('no')} style={{ fontSize: '0.62rem', padding: '6px 4px', borderRadius: '6px' }}>
+                          <Icon name="x" size={10}/> Ні
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="result-screen" style={{ padding: '8px 0 4px' }}>
+                      {inviteStatus === 'yes' ? (
+                        <>
+                          <span className="result-icon" style={{ fontSize: '1.8rem', marginBottom: '4px' }}><Icon name="confetti" size={24}/></span>
+                          <div className="result-title" style={{ color: 'var(--green)', fontSize: '0.9rem', marginBottom: '2px' }}>Ура! Так!</div>
+                          <div className="result-sub" style={{ fontSize: '0.72rem' }}>Ви погодились!</div>
+                        </>
+                      ) : (
+                        <>
+                          <span className="result-icon" style={{ fontSize: '1.8rem', marginBottom: '4px' }}><Icon name="heart-crack" size={24}/></span>
+                          <div className="result-title" style={{ color: 'var(--red)', fontSize: '0.9rem', marginBottom: '2px' }}>Відмовлено</div>
+                          <div className="result-sub" style={{ fontSize: '0.72rem' }}>Ви відмовились.</div>
+                        </>
+                      )}
+                      <button className="btn-ghost" onClick={() => setInviteStatus(null)} style={{ fontSize: '0.65rem', marginTop: '4px', padding: '2px 6px' }}>
+                        Скинути відповідь
+                      </button>
+                    </div>
+                  )}
                 </div>
-                
-                {inviteStatus === null ? (
-                  <div className="preview-card-actions">
-                    <button className="btn-yes-preview" onClick={() => setInviteStatus('yes')}>Так, приду! ✅</button>
-                    <button className="btn-no-preview" onClick={() => setInviteStatus('no')}>Ні ❌</button>
-                  </div>
-                ) : inviteStatus === 'yes' ? (
-                  <div className="preview-card-status-success">
-                    <p style={{ margin: 0 }}>Ви приймете участь! 🎉</p>
-                    <button className="btn-reset-preview" onClick={() => setInviteStatus(null)}>Скинути</button>
-                  </div>
-                ) : (
-                  <div className="preview-card-status-declined">
-                    <p style={{ margin: 0 }}>Ви відхилили зустріч ❌</p>
-                    <button className="btn-reset-preview" onClick={() => setInviteStatus(null)}>Скинути</button>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -171,58 +241,56 @@ export default function LandingPage() {
       case 1:
         return (
           <div className="phone-screen">
-            <div className="phone-header">
-              <div className="phone-notch"></div>
-              <div className="phone-status">12:00</div>
-            </div>
-            <div className="phone-content">
-              <div className="preview-group-wrap">
-                <div>
-                  <div className="preview-group-title">🍕 Настільні ігри</div>
-                  <div className="preview-group-subtitle">Учасники ({joinedGroup ? 4 : 3})</div>
-                  <div className="preview-attendees-list">
-                    <div className="attendee-item">
-                      <div className="attendee-avatar">О</div>
-                      <div className="attendee-info">
-                        <span className="attendee-name">Олександр</span>
-                        <span className="attendee-status status-yes">Прийде ✅</span>
+            <div className="phone-notch"></div>
+            <div className="phone-status">12:00</div>
+            <div className="phone-content" style={{ padding: '8px' }}>
+              <div className="invite-envelope" style={{ minHeight: 'auto', borderRadius: '16px', boxShadow: 'none', border: '1px solid var(--border)' }}>
+                <div className="envelope-top" style={{ padding: '12px 12px 16px', borderRadius: '16px 16px 0 0' }}>
+                  <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,.15)', padding: '2px 6px', borderRadius: '10px', fontSize: '0.55rem', fontWeight: 600, color: '#fff', marginBottom: '6px', alignItems: 'center', gap: '3px' }}>
+                    <Icon name="users" size={8}/> Групове
+                  </div>
+                  <h1 className="envelope-to" style={{ fontSize: '1.1rem', marginBottom: '2px', fontFamily: 'var(--font-heading)' }}>🍕 Настільні ігри</h1>
+                  <div className="envelope-from" style={{ fontSize: '0.6rem', paddingBottom: '0' }}>від <strong>Максима</strong></div>
+                </div>
+
+                <div className="envelope-body" style={{ padding: '10px' }}>
+                  <div className="warm-panel" style={{ padding: '10px', borderRadius: '10px', border: '1px solid rgba(180,140,60,.12)', marginBottom: '8px' }}>
+                    <h3 style={{ fontSize: '0.75rem', fontWeight: 600, margin: '0 0 6px', display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Учасники ({joinedGroup ? 4 : 3})</span>
+                    </h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--card)', padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(0,0,0,.03)' }}>
+                        <div className="avatar avatar-sm" style={{ width: '18px', height: '18px', fontSize: '0.55rem' }}>О</div>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 500 }}>Олександр</span>
+                        <span style={{ marginLeft: 'auto', fontSize: '0.6rem', color: 'var(--green)' }}><Icon name="check-circle" size={10}/> Йде</span>
                       </div>
-                    </div>
-                    <div className="attendee-item">
-                      <div className="attendee-avatar">М</div>
-                      <div className="attendee-info">
-                        <span className="attendee-name">Марія</span>
-                        <span className="attendee-status status-pending">Думає ⏳</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--card)', padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(0,0,0,.03)' }}>
+                        <div className="avatar avatar-sm" style={{ width: '18px', height: '18px', fontSize: '0.55rem' }}>М</div>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 500 }}>Марія</span>
+                        <span style={{ marginLeft: 'auto', fontSize: '0.6rem', color: 'var(--gold)' }}>Думає</span>
                       </div>
-                    </div>
-                    <div className="attendee-item">
-                      <div className="attendee-avatar">І</div>
-                      <div className="attendee-info">
-                        <span className="attendee-name">Ірина</span>
-                        <span className="attendee-status status-pending">Думає ⏳</span>
-                      </div>
-                    </div>
-                    {joinedGroup && (
-                      <div className="attendee-item attendee-added-anim">
-                        <div className="attendee-avatar attendee-avatar-user">Ви</div>
-                        <div className="attendee-info">
-                          <span className="attendee-name">Ви</span>
-                          <span className="attendee-status status-yes">Прийдете ✅</span>
+                      {joinedGroup && (
+                        <div className="attendee-added-anim" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--card)', padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(0,0,0,.03)' }}>
+                          <div className="avatar avatar-sm" style={{ width: '18px', height: '18px', fontSize: '0.55rem', background: 'var(--ink)', color: '#fff' }}>В</div>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 500 }}>Ви (гість)</span>
+                          <span style={{ marginLeft: 'auto', fontSize: '0.6rem', color: 'var(--green)' }}><Icon name="check-circle" size={10}/> Йде</span>
                         </div>
-                      </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="action-section-wrap" style={{ paddingTop: '0', paddingBottom: '0' }}>
+                    {!joinedGroup ? (
+                      <button className="btn-yes" onClick={() => setJoinedGroup(true)} style={{ width: '100%', fontSize: '0.72rem', padding: '8px', borderRadius: '8px' }}>
+                        <Icon name="check" size={12}/> Приєднатися до зустрічі
+                      </button>
+                    ) : (
+                      <button className="btn-no" onClick={() => setJoinedGroup(false)} style={{ width: '100%', fontSize: '0.72rem', padding: '8px', borderRadius: '8px' }}>
+                        Скасувати участь
+                      </button>
                     )}
                   </div>
                 </div>
-
-                {!joinedGroup ? (
-                  <button className="btn-join-group" onClick={() => setJoinedGroup(true)}>
-                    Приєднатися до групи
-                  </button>
-                ) : (
-                  <button className="btn-leave-group" onClick={() => setJoinedGroup(false)}>
-                    Скасувати участь
-                  </button>
-                )}
               </div>
             </div>
           </div>
@@ -230,34 +298,34 @@ export default function LandingPage() {
       case 2:
         return (
           <div className="phone-screen">
-            <div className="phone-header">
-              <div className="phone-notch"></div>
-              <div className="phone-status">12:00</div>
-            </div>
-            <div className="phone-content notification-content">
-              <div className="lockscreen-date">Субота, 27 червня</div>
-              <div className="lockscreen-time">12:00</div>
+            <div className="phone-notch"></div>
+            <div className="phone-status">12:00</div>
+            <div className="phone-content" style={{ padding: '12px', background: 'var(--paper)', display: 'block' }}>
+              <h2 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-heading)', fontWeight: 400, fontStyle: 'italic', marginBottom: '10px' }}>Сповіщення</h2>
               
-              <div className="notifications-list-container">
-                {notifications.map((notif) => (
-                  <div key={notif.id} className="notification-card-item">
-                    <div className="notif-header">
-                      <span className="notif-app">Запрошення ✦</span>
-                      <span className="notif-time">{notif.time}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '380px', overflowY: 'auto' }}>
+                {notifications.map((n) => (
+                  <div key={n.id} className="notif-item unread" style={{ padding: '8px 10px', borderRadius: '10px', background: 'var(--card)', border: '1px solid var(--border)', display: 'flex', gap: '8px', alignItems: 'start' }}>
+                    <div className={`notif-icon-wrap type-${n.type}`} style={{ width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--gold-dim)', color: 'var(--gold)', flexShrink: 0 }}>
+                      <Icon name={n.type === 'friend-request' ? 'user-plus' : 'envelope-open'} size={14}/>
                     </div>
-                    <div className="notif-body">{notif.text}</div>
+                    <div className="notif-body" style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+                      <div className="notif-title" style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--ink)' }}>{n.title}</div>
+                      <div className="notif-text" style={{ fontSize: '0.7rem', color: 'var(--muted)', lineHeight: '1.3', margin: '1px 0' }}>{n.text}</div>
+                      <div className="notif-time" style={{ fontSize: '0.62rem', color: 'var(--muted)', opacity: 0.8 }}>{n.time}</div>
+                    </div>
                   </div>
                 ))}
               </div>
 
-              <button className="btn-trigger-notif" onClick={() => {
+              <button className="btn btn-dark btn-sm" style={{ width: '100%', marginTop: '12px', padding: '8px', fontSize: '0.72rem', borderRadius: '8px' }} onClick={() => {
                 const newId = notifications.length + 1;
                 setNotifications([
-                  { id: newId, text: '🔔 Дмитро погодився на вашу пропозицію зустрічі', time: 'Щойно' },
+                  { id: newId, text: 'Дмитро прийняв ваше запрошення на "Каву"', time: 'Щойно', type: 'invite', title: 'Згода на зустріч' },
                   ...notifications
                 ]);
               }}>
-                Надіслати сповіщення
+                Імітувати нове сповіщення
               </button>
             </div>
           </div>
@@ -265,94 +333,142 @@ export default function LandingPage() {
       case 3:
         return (
           <div className="phone-screen">
-            <div className="phone-header">
-              <div className="phone-notch"></div>
-              <div className="phone-status">12:00</div>
-            </div>
-            <div className="phone-content">
-              <div className="preview-friends-wrap">
-                <div className="friends-search-box">
+            <div className="phone-notch"></div>
+            <div className="phone-status">12:00</div>
+            <div className="phone-content" style={{ padding: '12px', background: 'var(--paper)', display: 'block' }}>
+              <h2 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-heading)', fontWeight: 400, fontStyle: 'italic', marginBottom: '8px' }}>Друзі</h2>
+
+              <div className="friends-search-bar" style={{ display: 'flex', gap: '4px', marginBottom: '10px' }}>
+                <div className="friends-search-input-wrap" style={{ flex: 1, display: 'flex', alignItems: 'center', background: '#fff', border: '1.5px solid var(--border)', borderRadius: '6px', padding: '0 6px' }}>
+                  <Icon name="magnifying-glass" size={12} color="var(--muted)"/>
                   <input 
-                    type="text" 
-                    placeholder="Пошук за логіном..." 
+                    placeholder="ID чи @логін" 
                     value={friendSearch}
                     onChange={(e) => setFriendSearch(e.target.value)}
-                    className="friends-search-input"
+                    style={{ border: 'none', padding: '4px 6px', fontSize: '0.75rem', width: '100%', outline: 'none' }}
                   />
                 </div>
-                
-                <div className="friends-list">
-                  {friendsList
-                    .filter(f => f.name.toLowerCase().includes(friendSearch.toLowerCase()) || f.tag.toLowerCase().includes(friendSearch.toLowerCase()))
-                    .map((friend, idx) => (
-                      <div key={idx} className="friend-row-item">
-                        <div className="friend-avatar">{friend.name[0]}</div>
-                        <div className="friend-details">
-                          <span className="friend-name">{friend.name}</span>
-                          <span className="friend-tag">@{friend.tag}</span>
-                        </div>
-                        <button className="friend-invite-action" style={{ border: 'none' }}>Запросити</button>
-                      </div>
-                    ))
-                  }
-                </div>
+                <button className="btn btn-dark" style={{ padding: '4px 10px', fontSize: '0.7rem', width: 'auto', borderRadius: '6px' }}>Знайти</button>
+              </div>
 
-                {friendSearch.toLowerCase() === 'andrii' && !friendsList.some(f => f.tag === 'andrii') && (
-                  <div className="friend-search-found">
-                    <div className="friend-row-item">
-                      <div className="friend-avatar friend-avatar-new">А</div>
-                      <div className="friend-details">
-                        <span className="friend-name">Андрій</span>
-                        <span className="friend-tag">@andrii</span>
+              {friendSearch.toLowerCase() === 'andrii' && (
+                <div className="search-result-card search-found" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', borderRadius: '8px', background: 'var(--card)', border: '1px solid var(--border)', marginBottom: '8px' }}>
+                  <div className="avatar avatar-sm" style={{ width: '24px', height: '24px', fontSize: '0.7rem' }}>А</div>
+                  <div style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 600 }}>Андрій</div>
+                    <div style={{ fontSize: '0.62rem', color: 'var(--muted)' }}>@andrii • ZAP-X9K2H4</div>
+                  </div>
+                  <button className="btn btn-dark" style={{ padding: '4px 8px', fontSize: '0.62rem', width: 'auto', borderRadius: '4px' }} onClick={() => {
+                    if (!friendsList.some(f => f.login === 'andrii')) {
+                      setFriendsList([...friendsList, { name: 'Андрій', uniqueId: 'ZAP-X9K2H4', login: 'andrii', online: true }]);
+                    }
+                    setFriendSearch('');
+                  }}>
+                    Додати
+                  </button>
+                </div>
+              )}
+
+              <div className="friend-list" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {friendsList.map((f) => (
+                  <div key={f.login} className="friend-row" style={{ padding: '6px 8px', borderRadius: '8px', background: 'var(--card)', border: '1px solid rgba(0,0,0,.03)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ position: 'relative' }}>
+                      <div className="avatar avatar-sm" style={{ width: '24px', height: '24px', fontSize: '0.7rem' }}>{f.name[0]}</div>
+                      {f.online && <span className="friend-online-dot" style={{ width: '6px', height: '6px', border: '1px solid #fff' }}></span>}
+                    </div>
+                    <div className="friend-row-info" style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+                      <div className="friend-row-name" style={{ fontSize: '0.75rem', fontWeight: 600 }}>
+                        {f.name}
+                        <span style={{ fontSize: '0.6rem', color: 'var(--muted)', marginLeft: '4px', fontFamily: 'monospace' }}>{f.uniqueId}</span>
                       </div>
-                      <button className="btn-add-friend-action" onClick={() => {
-                        setFriendsList([...friendsList, { name: 'Андрій', tag: 'andrii', added: true }]);
-                        setFriendSearch('');
+                      <div className="friend-row-status" style={{ fontSize: '0.62rem', color: 'var(--green)' }}>В мережі</div>
+                    </div>
+                    <div style={{ position: 'relative' }}>
+                      <button className="friend-menu-btn" style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer' }} onClick={(e) => {
+                        e.stopPropagation();
+                        setFriendMenuOpen(friendMenuOpen === f.login ? null : f.login);
                       }}>
-                        Додати
+                        <Icon name="dots-three-vertical" size={16}/>
                       </button>
+                      
+                      {friendMenuOpen === f.login && (
+                        <div className="friend-menu" style={{ position: 'absolute', top: '100%', right: '0', zIndex: 10, background: '#fff', border: '1px solid var(--border)', borderRadius: '6px', boxShadow: 'var(--shadow)', padding: '4px', minWidth: '120px' }}>
+                          <button className="friend-menu-item" style={{ width: '100%', padding: '4px 8px', fontSize: '0.65rem', border: 'none', background: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => setFriendMenuOpen(null)}>
+                            <Icon name="user" size={10}/> Профіль
+                          </button>
+                          <button className="friend-menu-item" style={{ width: '100%', padding: '4px 8px', fontSize: '0.65rem', border: 'none', background: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => setFriendMenuOpen(null)}>
+                            <Icon name="paper-plane-tilt" size={10}/> Запросити
+                          </button>
+                          <button className="friend-menu-item danger" style={{ width: '100%', padding: '4px 8px', fontSize: '0.65rem', border: 'none', background: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--red)' }} onClick={() => {
+                            setFriendsList(friendsList.filter(item => item.login !== f.login));
+                            setFriendMenuOpen(null);
+                          }}>
+                            <Icon name="user-minus" size={10}/> Видалити
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
-                )}
-
-                <p className="friends-hint">Введіть "andrii" для додавання</p>
+                ))}
               </div>
+              <p style={{ fontSize: '0.6rem', color: 'var(--muted)', marginTop: '8px', fontStyle: 'italic' }}>Спробуйте ввести "andrii" в пошук!</p>
             </div>
           </div>
         );
       case 4:
         return (
           <div className="phone-screen">
-            <div className="phone-header">
-              <div className="phone-notch"></div>
-              <div className="phone-status">12:00</div>
-            </div>
-            <div className="phone-content">
-              <div className="preview-card-wrap">
-                <div className="preview-card-emoji">🎬</div>
-                <div className="preview-card-title">Кіно</div>
-                <div className="preview-card-info">
-                  <p style={{ margin: '0 0 4px' }}><strong>Коли:</strong> {!rescheduleAccepted ? 'Субота, 18:00' : 'Неділя, 19:30'}</p>
-                  <p style={{ margin: 0 }}><strong>Де:</strong> Multiplex</p>
+            <div className="phone-notch"></div>
+            <div className="phone-status">12:00</div>
+            <div className="phone-content" style={{ padding: '8px' }}>
+              <div className="invite-envelope" style={{ minHeight: 'auto', borderRadius: '16px', boxShadow: 'none', border: '1px solid var(--border)' }}>
+                <div className="envelope-top" style={{ padding: '12px 12px 20px', borderRadius: '16px 16px 0 0' }}>
+                  <span className="envelope-emoji" style={{ fontSize: '1.5rem', animation: 'none' }}>🎬</span>
+                  <div className="envelope-type" style={{ fontSize: '0.5rem', marginBottom: '4px' }}>Кіно</div>
+                  <div className="envelope-to" style={{ fontSize: '1.1rem', marginBottom: '2px' }}>Дмитро</div>
+                  <div className="envelope-from" style={{ fontSize: '0.6rem', paddingBottom: '0' }}>від <strong>Максима</strong></div>
                 </div>
-                
-                {!rescheduleAccepted ? (
-                  <div className="reschedule-proposal-alert">
-                    <div className="proposal-badge">Запит перенесення</div>
-                    <p style={{ margin: '4px 0 8px' }}>Пропонують: <strong>Неділя, 19:30</strong></p>
-                    <button className="btn-accept-proposal" onClick={() => setRescheduleAccepted(true)}>
-                      Прийняти новий час
-                    </button>
+
+                <div className="envelope-body" style={{ padding: '10px' }}>
+                  <div className="msg-block" style={{ padding: '6px 8px', marginBottom: '8px', borderRadius: '8px' }}>
+                    <p className="msg-text" style={{ fontSize: '0.8rem' }}>Йдемо на вечірній сеанс? Квитки вже у мене!</p>
                   </div>
-                ) : (
-                  <div className="reschedule-success-alert">
-                    <div className="success-badge">Успішно змінено! 🎉</div>
-                    <p style={{ margin: '4px 0 8px' }}>Час змінено на <strong>Неділя, 19:30</strong></p>
-                    <button className="btn-reset-reschedule" onClick={() => setRescheduleAccepted(false)}>
-                      Скинути
-                    </button>
+
+                  <div className="detail-chips" style={{ gap: '6px', marginBottom: '8px' }}>
+                    <div className="detail-chip" style={{ padding: '6px 8px', borderRadius: '6px', gap: '6px' }}>
+                      <span className="detail-chip-icon" style={{ fontSize: '0.8rem' }}><Icon name="calendar-blank" size={12}/></span>
+                      <div>
+                        <div className="detail-chip-label" style={{ fontSize: '0.5rem' }}>Дата</div>
+                        <div className="detail-chip-value" style={{ fontSize: '0.7rem' }}>{!rescheduleAccepted ? 'Субота, 18:00' : 'Неділя, 19:30'}</div>
+                      </div>
+                    </div>
+                    <div className="detail-chip" style={{ padding: '6px 8px', borderRadius: '6px', gap: '6px' }}>
+                      <span className="detail-chip-icon" style={{ fontSize: '0.8rem' }}><Icon name="map-pin" size={12}/></span>
+                      <div>
+                        <div className="detail-chip-label" style={{ fontSize: '0.5rem' }}>Місце</div>
+                        <div className="detail-chip-value" style={{ fontSize: '0.7rem' }}>Multiplex</div>
+                      </div>
+                    </div>
                   </div>
-                )}
+
+                  {!rescheduleAccepted ? (
+                    <div style={{ background: 'var(--gold-dim)', border: '1px solid var(--gold-border)', borderRadius: '10px', padding: '8px', textAlign: 'center', marginTop: '4px' }}>
+                      <div style={{ display: 'inline-block', fontSize: '0.55rem', fontWeight: 700, textTransform: 'uppercase', background: 'var(--gold)', color: '#fff', padding: '1px 4px', borderRadius: '3px' }}>Перенесення</div>
+                      <p style={{ fontSize: '0.72rem', margin: '3px 0 6px' }}>Пропонують: <strong>Неділя, 19:30</strong></p>
+                      <button className="btn-yes" onClick={() => setRescheduleAccepted(true)} style={{ width: '100%', fontSize: '0.65rem', padding: '6px', borderRadius: '6px' }}>
+                        Прийняти новий час
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ background: 'rgba(45,122,79,0.06)', border: '1px solid rgba(45,122,79,0.2)', borderRadius: '10px', padding: '8px', textAlign: 'center', marginTop: '4px' }}>
+                      <div style={{ display: 'inline-block', fontSize: '0.55rem', fontWeight: 700, textTransform: 'uppercase', background: 'var(--green)', color: '#fff', padding: '1px 4px', borderRadius: '3px' }}>Змінено</div>
+                      <p style={{ fontSize: '0.72rem', margin: '3px 0 4px', color: 'var(--green)' }}>Час погоджено! ✅</p>
+                      <button className="btn-ghost" onClick={() => setRescheduleAccepted(false)} style={{ fontSize: '0.65rem', textDecoration: 'underline' }}>
+                        Скинути
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -360,69 +476,61 @@ export default function LandingPage() {
       case 5:
         return (
           <div className="phone-screen">
-            <div className="phone-header">
-              <div className="phone-notch"></div>
-              <div className="phone-status">12:00</div>
-            </div>
-            <div className="phone-content">
-              <div className="preview-security-wrap">
-                <div className="security-status-badge">
-                  <span className="security-status-icon">🛡️</span>
-                  <span className="security-status-text">
-                    Безпека: {' '}
-                    <strong>
-                      {(!privacyToggles.tfa && !privacyToggles.private && !privacyToggles.hide) && 'Базова'}
-                      {((privacyToggles.tfa || privacyToggles.private || privacyToggles.hide) && !(privacyToggles.tfa && privacyToggles.private && privacyToggles.hide)) && 'Покращена ⚡'}
-                      {(privacyToggles.tfa && privacyToggles.private && privacyToggles.hide) && 'Максимальна! 🌟'}
-                    </strong>
-                  </span>
+            <div className="phone-notch"></div>
+            <div className="phone-status">12:00</div>
+            <div className="phone-content" style={{ padding: '12px', background: 'var(--paper)', display: 'block' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>
+                <div className="avatar" style={{ width: '28px', height: '28px', fontSize: '0.75rem' }}>М</div>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>Максим</div>
+                  <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>ZAP-X7H2K9</div>
                 </div>
-                
-                <div className="security-toggles">
-                  <div className="security-toggle-row">
-                    <div className="toggle-label">
-                      <span>Двофакторна автентифікація</span>
-                      <span className="toggle-desc">OTP коди при вході</span>
-                    </div>
-                    <label className="switch">
-                      <input 
-                        type="checkbox" 
-                        checked={privacyToggles.tfa}
-                        onChange={(e) => setPrivacyToggles({...privacyToggles, tfa: e.target.checked})}
-                      />
-                      <span className="slider round"></span>
-                    </label>
-                  </div>
+                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '3px', background: tfaEnabled ? 'var(--green-bg)' : 'var(--warm)', padding: '2px 6px', borderRadius: '8px', fontSize: '0.6rem', fontWeight: 600, color: tfaEnabled ? 'var(--green)' : 'var(--muted)', border: '1px solid var(--border)' }}>
+                  <span>{tfaEnabled ? 'Максимум 🛡️' : 'Базова ⚡'}</span>
+                </div>
+              </div>
 
-                  <div className="security-toggle-row">
-                    <div className="toggle-label">
-                      <span>Приватний профіль</span>
-                      <span className="toggle-desc">Тільки для ваших друзів</span>
-                    </div>
-                    <label className="switch">
-                      <input 
-                        type="checkbox" 
-                        checked={privacyToggles.private}
-                        onChange={(e) => setPrivacyToggles({...privacyToggles, private: e.target.checked})}
-                      />
-                      <span className="slider round"></span>
-                    </label>
+              <div className="profile-section" style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: '10px', padding: '8px', marginBottom: '8px' }}>
+                <div className="profile-field" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.03)' }}>
+                  <div style={{ textAlign: 'left' }}>
+                    <div className="profile-field-label" style={{ fontSize: '0.55rem', color: 'var(--muted)' }}>Ім'я</div>
+                    <div className="profile-field-value" style={{ fontSize: '0.75rem', fontWeight: 600 }}>Максим</div>
                   </div>
+                  <button className="btn-outline btn-sm" style={{ padding: '2px 6px', fontSize: '0.6rem', borderRadius: '4px' }}>Змінити</button>
+                </div>
 
-                  <div className="security-toggle-row">
-                    <div className="toggle-label">
-                      <span>Приховати з пошуку</span>
-                      <span className="toggle-desc">Пошук тільки за ZAP-ID</span>
-                    </div>
-                    <label className="switch">
-                      <input 
-                        type="checkbox" 
-                        checked={privacyToggles.hide}
-                        onChange={(e) => setPrivacyToggles({...privacyToggles, hide: e.target.checked})}
-                      />
-                      <span className="slider round"></span>
-                    </label>
+                <div className="profile-field" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.03)' }}>
+                  <div style={{ textAlign: 'left' }}>
+                    <div className="profile-field-label" style={{ fontSize: '0.55rem', color: 'var(--muted)' }}>Логін</div>
+                    <div className="profile-field-value" style={{ fontSize: '0.75rem', fontWeight: 600 }}>@maxim_zap</div>
                   </div>
+                  <button className="btn-outline btn-sm" style={{ padding: '2px 6px', fontSize: '0.6rem', borderRadius: '4px' }}>Змінити</button>
+                </div>
+
+                <div className="profile-field" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0' }}>
+                  <div style={{ textAlign: 'left' }}>
+                    <div className="profile-field-label" style={{ fontSize: '0.55rem', color: 'var(--muted)' }}>Унікальний ID</div>
+                    <div className="profile-field-value" style={{ fontSize: '0.75rem', fontWeight: 600, fontFamily: 'monospace' }}>ZAP-X7H2K9</div>
+                  </div>
+                  <button className="btn-outline btn-sm" style={{ padding: '2px 6px', fontSize: '0.6rem', borderRadius: '4px' }}>Копіювати</button>
+                </div>
+              </div>
+
+              <div className="profile-section" style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: '10px', padding: '8px' }}>
+                <div className="profile-field" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0' }}>
+                  <div style={{ textAlign: 'left' }}>
+                    <div className="profile-field-label" style={{ fontSize: '0.55rem', color: 'var(--muted)' }}>Двофакторна автентифікація</div>
+                    <div className="profile-field-value" style={{ fontSize: '0.72rem', fontWeight: 600 }}>
+                      {tfaEnabled ? 'Увімкнено (2FA активна)' : 'Вимкнено'}
+                    </div>
+                  </div>
+                  <button 
+                    className="btn-outline btn-sm" 
+                    style={{ padding: '2px 6px', fontSize: '0.6rem', borderRadius: '4px', color: tfaEnabled ? 'var(--red)' : 'var(--gold)', borderColor: tfaEnabled ? 'rgba(192,57,43,.3)' : 'var(--border)' }}
+                    onClick={() => setTfaEnabled(!tfaEnabled)}
+                  >
+                    {tfaEnabled ? 'Вимкнути' : 'Налаштувати'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -439,30 +547,101 @@ export default function LandingPage() {
         return (
           <div className="stepper-showcase-item">
             <div className="stepper-visual">
-              <div className="stepper-card-mock">
-                <div className="card-mock-title">Створення профілю</div>
-                <div className="card-mock-input-group">
-                  <label>Ваш логін</label>
-                  <input 
-                    type="text" 
-                    value={stepperLogin} 
-                    onChange={(e) => setStepperLogin(e.target.value.replace(/[^a-z0-9._]/gi, '').toLowerCase())}
-                    placeholder="наприклад, ivan" 
-                    maxLength={15}
-                    className="stepper-input"
-                  />
-                </div>
-                <div className="card-mock-result">
-                  <span>Ваш унікальний ZAP-ID:</span>
-                  <strong>{stepperLogin ? `ZAP-${stepperLogin.toUpperCase()}-82` : 'ZAP-LOGIN-82'}</strong>
-                </div>
-                <p className="card-mock-note">Спробуйте ввести свій логін вище!</p>
+              <div className="stepper-card-mock" style={{ minWidth: '290px' }}>
+                <div className="card-mock-title" style={{ marginBottom: '8px' }}>Реєстрація профілю</div>
+                
+                {registeredProfile === null ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', textAlign: 'left' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <label style={{ fontSize: '0.62rem', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 600 }}>Ім'я</label>
+                      <input 
+                        type="text" 
+                        value={regForm.name} 
+                        onChange={(e) => setRegForm({ ...regForm, name: e.target.value })}
+                        placeholder="Олена" 
+                        style={{ padding: '6px 8px', fontSize: '0.75rem', borderRadius: '6px' }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <label style={{ fontSize: '0.62rem', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 600 }}>Логін</label>
+                      <input 
+                        type="text" 
+                        value={regForm.login} 
+                        onChange={(e) => setRegForm({ ...regForm, login: e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, '') })}
+                        placeholder="elena_w" 
+                        style={{ padding: '6px 8px', fontSize: '0.75rem', borderRadius: '6px' }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <label style={{ fontSize: '0.62rem', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 600 }}>Пароль</label>
+                      <input 
+                        type="password" 
+                        value={regForm.pass} 
+                        onChange={(e) => setRegForm({ ...regForm, pass: e.target.value })}
+                        placeholder="••••••" 
+                        style={{ padding: '6px 8px', fontSize: '0.75rem', borderRadius: '6px' }}
+                      />
+                    </div>
+                    
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.65rem', marginTop: '2px', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={regForm.terms} 
+                        onChange={(e) => setRegForm({ ...regForm, terms: e.target.checked })}
+                        style={{ width: 'auto', cursor: 'pointer' }}
+                      />
+                      <span>Згоден з умовами</span>
+                    </label>
+
+                    <button 
+                      className="btn btn-dark" 
+                      onClick={() => {
+                        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+                        let id = '';
+                        for (let i = 0; i < 6; i++) id += chars[Math.floor(Math.random() * chars.length)];
+                        setRegisteredProfile({ name: regForm.name || 'Олена', login: regForm.login || 'elena_w', uniqueId: 'ZAP-' + id });
+                      }}
+                      disabled={!regForm.terms || regForm.name.length < 2 || regForm.login.length < 3 || regForm.pass.length < 6}
+                      style={{ padding: '8px', fontSize: '0.72rem', borderRadius: '8px', marginTop: '4px' }}
+                    >
+                      Зареєструватися
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'center' }}>
+                    <div style={{ color: 'var(--green)', fontSize: '1.5rem', lineHeight: '1' }}>🎉</div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--green)' }}>Акаунт створено!</div>
+                    
+                    <div className="warm-panel" style={{ padding: '8px 10px', borderRadius: '8px', border: '1px solid rgba(180,140,60,.1)', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem' }}>
+                        <span style={{ color: 'var(--muted)' }}>Ім'я:</span>
+                        <strong style={{ color: 'var(--ink)' }}>{registeredProfile.name}</strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem' }}>
+                        <span style={{ color: 'var(--muted)' }}>Логін:</span>
+                        <strong style={{ color: 'var(--ink)' }}>@{registeredProfile.login}</strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem' }}>
+                        <span style={{ color: 'var(--muted)' }}>Ваш ID:</span>
+                        <strong style={{ color: 'var(--gold)', fontFamily: 'monospace' }}>{registeredProfile.uniqueId}</strong>
+                      </div>
+                    </div>
+
+                    <button 
+                      className="btn-reset-preview" 
+                      onClick={() => setRegisteredProfile(null)}
+                      style={{ fontSize: '0.68rem', margin: '4px auto 0' }}
+                    >
+                      Створити інший
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
             <div className="stepper-text-info">
-              <h3>Крок 1. Швидкий старт</h3>
-              <p>Реєстрація забирає менше хвилини. Ви можете використовувати акаунт Google або звичайну пошту.</p>
-              <p>Після входу ви отримуєте свій унікальний ZAP-ID та логін. Саме за ними ваші друзі зможуть легко знаходити вас у пошуку, щоб надсилати запрошення.</p>
+              <h3>Крок 1. Створення профілю</h3>
+              <p>Реєстрація займає менше хвилини. Ви можете використовувати акаунт Google або звичайну пошту.</p>
+              <p>Після входу ви отримуєте свій унікальний ZAP-ID (видається рандомно у форматі ZAP-XXXXXX) та логін. Саме за ними друзі зможуть знаходити вас.</p>
             </div>
           </div>
         );
@@ -470,39 +649,60 @@ export default function LandingPage() {
         return (
           <div className="stepper-showcase-item">
             <div className="stepper-visual">
-              <div className="stepper-card-mock">
-                <div className="card-mock-title">Пошук та додавання</div>
-                <div className="card-mock-input-group">
-                  <input 
-                    type="text" 
-                    value={stepperSearch} 
-                    onChange={(e) => {
-                      setStepperSearch(e.target.value);
-                      setStepperRequestSent(false);
-                    }}
-                    placeholder="Введіть 'оля'..." 
-                    className="stepper-input"
-                  />
+              <div className="stepper-card-mock" style={{ minWidth: '290px' }}>
+                <div className="card-mock-title" style={{ marginBottom: '8px' }}>Пошук друзів</div>
+                
+                <div className="friends-search-bar" style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+                  <div className="friends-search-input-wrap" style={{ flex: 1, display: 'flex', alignItems: 'center', background: '#fff', border: '1.5px solid var(--border)', borderRadius: '6px', padding: '0 6px' }}>
+                    <Icon name="magnifying-glass" size={12} color="var(--muted)"/>
+                    <input 
+                      placeholder="Введіть 'оля'..." 
+                      value={stepperSearch} 
+                      onChange={(e) => {
+                        setStepperSearch(e.target.value);
+                        setStepperRequestSent(false);
+                      }}
+                      style={{ border: 'none', padding: '4px 6px', fontSize: '0.75rem', width: '100%', outline: 'none' }}
+                    />
+                  </div>
+                  <button className="btn btn-dark" style={{ padding: '4px 10px', fontSize: '0.7rem', width: 'auto', borderRadius: '6px' }}>Знайти</button>
                 </div>
-                {stepperSearch.toLowerCase().includes('оля') ? (
-                  <div className="stepper-search-result-item">
-                    <div className="search-res-info">
-                      <strong>Ольга</strong>
-                      <span>@olya_fine</span>
+
+                {stepperSearch.toLowerCase().includes('оля') && (
+                  <div className="search-result-card search-found" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', borderRadius: '8px', background: 'var(--card)', border: '1px solid var(--border)', marginBottom: '8px' }}>
+                    <div className="avatar avatar-sm" style={{ width: '22px', height: '22px', fontSize: '0.65rem' }}>О</div>
+                    <div style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 600 }}>Ольга</div>
+                      <div style={{ fontSize: '0.6rem', color: 'var(--muted)' }}>@olya_fine • ZAP-M3K9W2</div>
                     </div>
                     {!stepperRequestSent ? (
-                      <button className="btn-send-req" onClick={() => setStepperRequestSent(true)}>
-                        Додати друга
+                      <button className="btn btn-dark" style={{ padding: '4px 8px', fontSize: '0.62rem', width: 'auto', borderRadius: '4px' }} onClick={() => setStepperRequestSent(true)}>
+                        Додати
                       </button>
                     ) : (
-                      <span className="req-sent-badge">Запит надіслано 📨</span>
+                      <span style={{ fontSize: '0.62rem', color: 'var(--green)', fontWeight: 600 }}>Запит 📨</span>
                     )}
                   </div>
-                ) : (
-                  <div className="stepper-search-placeholder">
-                    Введіть "оля" для пошуку
-                  </div>
                 )}
+
+                <div className="friend-list" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div className="friend-row" style={{ padding: '6px 8px', borderRadius: '8px', background: '#fff', border: '1px solid rgba(0,0,0,.03)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ position: 'relative' }}>
+                      <div className="avatar avatar-sm" style={{ width: '22px', height: '22px', fontSize: '0.65rem' }}>Д</div>
+                      <span className="friend-online-dot" style={{ width: '5px', height: '5px', border: '1px solid #fff' }}></span>
+                    </div>
+                    <div className="friend-row-info" style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+                      <div className="friend-row-name" style={{ fontSize: '0.72rem', fontWeight: 600 }}>
+                        Денис
+                        <span style={{ fontSize: '0.58rem', color: 'var(--muted)', marginLeft: '4px', fontFamily: 'monospace' }}>ZAP-F8H2D1</span>
+                      </div>
+                    </div>
+                    <button className="friend-menu-btn" style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer' }}>
+                      <Icon name="dots-three-vertical" size={14}/>
+                    </button>
+                  </div>
+                </div>
+                <p style={{ fontSize: '0.6rem', color: 'var(--muted)', marginTop: '8px', fontStyle: 'italic', textAlign: 'center' }}>Введіть "оля" для імітації пошуку!</p>
               </div>
             </div>
             <div className="stepper-text-info">
@@ -516,31 +716,80 @@ export default function LandingPage() {
         return (
           <div className="stepper-showcase-item">
             <div className="stepper-visual">
-              <div className="stepper-card-mock">
-                <div className="card-mock-title">Нове запрошення</div>
-                <div className="stepper-form-simulate">
-                  <div className="simulate-row">
-                    <label>Тип події:</label>
-                    <select value={stepperInviteType} onChange={(e) => setStepperInviteType(e.target.value)}>
-                      <option value="☕ Кава">☕ Кава</option>
-                      <option value="🍕 Піца">🍕 Піца</option>
-                      <option value="🎬 Кіно">🎬 Кіно</option>
-                      <option value="🌹 Побачення">🌹 Побачення</option>
-                    </select>
+              <div className="stepper-card-mock" style={{ minWidth: '290px' }}>
+                <div className="card-mock-title" style={{ marginBottom: '8px' }}>Нове запрошення</div>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', textAlign: 'left' }}>
+                  <div className="form-section" style={{ border: 'none', padding: 0, margin: 0, background: 'none' }}>
+                    <div className="form-section-body" style={{ padding: 0 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '4px' }}>
+                        <label className="lbl" style={{ fontSize: '0.6rem', marginBottom: '2px' }}>Кому</label>
+                        <input 
+                          placeholder="Ім'я друга" 
+                          value={stepperInviteTo}
+                          onChange={(e) => setStepperInviteTo(e.target.value)}
+                          style={{ padding: '4px 6px', fontSize: '0.72rem', borderRadius: '4px' }}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '4px' }}>
+                        <label className="lbl" style={{ fontSize: '0.6rem', marginBottom: '2px' }}>Повідомлення</label>
+                        <textarea 
+                          placeholder="Що планується?" 
+                          value={stepperInviteMsg}
+                          onChange={(e) => setStepperInviteMsg(e.target.value)}
+                          style={{ padding: '4px 6px', fontSize: '0.72rem', borderRadius: '4px', minHeight: '40px', lineHeight: '1.3' }}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '4px' }}>
+                        <label className="lbl" style={{ fontSize: '0.6rem', marginBottom: '2px' }}>Тип події</label>
+                        <div className="type-picker" style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                          {['coffee', 'date', 'birthday', 'cinema'].map((typeVal) => {
+                            const em = typeVal === 'coffee' ? '☕' : typeVal === 'date' ? '🌹' : typeVal === 'birthday' ? '🎂' : '🎬';
+                            return (
+                              <button
+                                key={typeVal}
+                                type="button"
+                                className={`type-option ${stepperInviteType === typeVal ? 'selected' : ''}`}
+                                onClick={() => setStepperInviteType(typeVal)}
+                                style={{ padding: '3px 6px', fontSize: '0.62rem', borderRadius: '4px' }}
+                              >
+                                <span>{em}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div className="datetime-row" style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
+                        <div style={{ flex: 1 }}>
+                          <label className="lbl" style={{ fontSize: '0.6rem', marginBottom: '2px' }}>Коли</label>
+                          <input 
+                            placeholder="Субота"
+                            value={stepperInviteDate}
+                            onChange={(e) => setStepperInviteDate(e.target.value)}
+                            style={{ padding: '4px 6px', fontSize: '0.72rem', borderRadius: '4px' }}
+                          />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <label className="lbl" style={{ fontSize: '0.6rem', marginBottom: '2px' }}>Час</label>
+                          <input 
+                            placeholder="19:00"
+                            value={stepperInviteTime}
+                            onChange={(e) => setStepperInviteTime(e.target.value)}
+                            style={{ padding: '4px 6px', fontSize: '0.72rem', borderRadius: '4px' }}
+                          />
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <label className="lbl" style={{ fontSize: '0.6rem', marginBottom: '2px' }}>Місце</label>
+                        <input 
+                          placeholder="Де зустрічаємось" 
+                          value={stepperInvitePlace}
+                          onChange={(e) => setStepperInvitePlace(e.target.value)}
+                          style={{ padding: '4px 6px', fontSize: '0.72rem', borderRadius: '4px' }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="simulate-row">
-                    <label>День тижня:</label>
-                    <select value={stepperInviteDate} onChange={(e) => setStepperInviteDate(e.target.value)}>
-                      <option value="Сьогодні">Сьогодні</option>
-                      <option value="Завтра">Завтра</option>
-                      <option value="Субота">Субота</option>
-                      <option value="Неділя">Неділя</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="draft-card-preview">
-                  <div className="draft-header">Запрошення на: <strong>{stepperInviteType}</strong></div>
-                  <div className="draft-body" style={{ margin: '4px 0 0' }}>Коли: <strong>{stepperInviteDate}</strong></div>
                 </div>
               </div>
             </div>
@@ -555,20 +804,69 @@ export default function LandingPage() {
         return (
           <div className="stepper-showcase-item">
             <div className="stepper-visual">
-              <div className="stepper-card-mock">
-                <div className="card-mock-title">Відповідь друга</div>
-                <div className="response-card-demo">
-                  <div className="res-card-top">
-                    <span className="res-emoji">🍕</span>
-                    <span className="res-title">Піца</span>
+              <div className="stepper-card-mock" style={{ minWidth: '290px' }}>
+                <div className="card-mock-title" style={{ marginBottom: '8px' }}>Картка запрошення</div>
+                
+                <div className="invite-envelope" style={{ minHeight: 'auto', borderRadius: '16px', boxShadow: 'none', border: '1px solid var(--border)' }}>
+                  <div className="envelope-top" style={{ padding: '12px 12px 16px', borderRadius: '16px 16px 0 0' }}>
+                    <span className="envelope-emoji" style={{ fontSize: '1.25rem', animation: 'none' }}>🍕</span>
+                    <div className="envelope-type" style={{ fontSize: '0.5rem', marginBottom: '4px' }}>Піца</div>
+                    <div className="envelope-to" style={{ fontSize: '1.1rem', marginBottom: '2px' }}>Дмитро</div>
+                    <div className="envelope-from" style={{ fontSize: '0.6rem', paddingBottom: '0' }}>від <strong>Олени</strong></div>
                   </div>
-                  <div className="res-card-detail">Коли: Субота, 19:00</div>
-                  <div className="res-card-status-bar">
-                    Статус: {' '}
+
+                  <div className="envelope-body" style={{ padding: '10px' }}>
+                    <div className="msg-block" style={{ padding: '6px 8px', marginBottom: '8px', borderRadius: '8px' }}>
+                      <p className="msg-text" style={{ fontSize: '0.8rem' }}>Зберемося на піцу в суботу ввечері?</p>
+                    </div>
+
+                    <div className="detail-chips" style={{ gap: '6px', marginBottom: '8px' }}>
+                      <div className="detail-chip" style={{ padding: '6px 8px', borderRadius: '6px', gap: '6px' }}>
+                        <span className="detail-chip-icon" style={{ fontSize: '0.8rem' }}><Icon name="calendar-blank" size={12}/></span>
+                        <div>
+                          <div className="detail-chip-label" style={{ fontSize: '0.5rem' }}>Дата</div>
+                          <div className="detail-chip-value" style={{ fontSize: '0.7rem' }}>Субота, 19:00</div>
+                        </div>
+                      </div>
+                      <div className="detail-chip" style={{ padding: '6px 8px', borderRadius: '6px', gap: '6px' }}>
+                        <span className="detail-chip-icon" style={{ fontSize: '0.8rem' }}><Icon name="map-pin" size={12}/></span>
+                        <div>
+                          <div className="detail-chip-label" style={{ fontSize: '0.5rem' }}>Місце</div>
+                          <div className="detail-chip-value" style={{ fontSize: '0.7rem' }}>Піцерія у центрі</div>
+                        </div>
+                      </div>
+                    </div>
+
                     {stepperResponseState === 'pending' ? (
-                      <span className="status-pending-pill">Друг думає ⏳</span>
+                      <div className="action-section-wrap" style={{ paddingTop: '2px', paddingBottom: '2px' }}>
+                        <div className="answer-wrap" style={{ gap: '4px' }}>
+                          <button className="btn-yes" onClick={() => setStepperResponseState('accepted')} style={{ fontSize: '0.62rem', padding: '6px 4px', borderRadius: '6px' }}>
+                            <Icon name="check" size={10}/> Так, я приду!
+                          </button>
+                          <button className="btn-no" onClick={() => setStepperResponseState('declined')} style={{ fontSize: '0.62rem', padding: '6px 4px', borderRadius: '6px' }}>
+                            <Icon name="x" size={10}/> Ні
+                          </button>
+                        </div>
+                      </div>
                     ) : (
-                      <span className="status-accepted-pill">Ольга прийде! ✅</span>
+                      <div className="result-screen" style={{ padding: '8px 0 4px' }}>
+                        {stepperResponseState === 'accepted' ? (
+                          <>
+                            <span className="result-icon" style={{ fontSize: '1.8rem', marginBottom: '4px' }}><Icon name="confetti" size={24}/></span>
+                            <div className="result-title" style={{ color: 'var(--green)', fontSize: '0.9rem', marginBottom: '2px' }}>Ура! Так!</div>
+                            <div className="result-sub" style={{ fontSize: '0.72rem' }}>Дмитро прийде!</div>
+                          </>
+                        ) : (
+                          <>
+                            <span className="result-icon" style={{ fontSize: '1.8rem', marginBottom: '4px' }}><Icon name="heart-crack" size={24}/></span>
+                            <div className="result-title" style={{ color: 'var(--red)', fontSize: '0.9rem', marginBottom: '2px' }}>Відмовлено</div>
+                            <div className="result-sub" style={{ fontSize: '0.72rem' }}>Дмитро не зможе.</div>
+                          </>
+                        )}
+                        <button className="btn-ghost" onClick={() => setStepperResponseState('pending')} style={{ fontSize: '0.65rem', marginTop: '4px', padding: '2px 6px' }}>
+                          Скинути
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -761,40 +1059,44 @@ export default function LandingPage() {
 
 
     {/**/}
-    <section className="section-wrap" id="how" aria-label="Як це працює">
-      <div className="section-head" data-reveal>
-        <span className="eyebrow">Як це працює</span>
-        <h2 className="section-title">Від ідеї до зустрічі — чотири кроки</h2>
-      </div>
+    <section className="how-timeline-scroll-container" ref={timelineRef} id="how" aria-label="Як це працює">
+      <div className="how-timeline-sticky-wrapper">
+        <div className="section-wrap" style={{ paddingBottom: 0, paddingTop: '2rem' }}>
+          <div className="section-head" data-reveal>
+            <span className="eyebrow">Як це працює</span>
+            <h2 className="section-title">Від ідеї до зустрічі — чотири кроки</h2>
+          </div>
 
-      <div className="how-timeline-container" onMouseEnter={() => setIsHoveredStep(true)} onMouseLeave={() => setIsHoveredStep(false)}>
-        <div className="how-timeline-line-bg">
-          <div className="how-timeline-line-fill" style={{ width: `${(activeStep / 3) * 100}%` }}></div>
+          <div className="how-timeline-container">
+            <div className="how-timeline-line-bg">
+              <div className="how-timeline-line-fill" style={{ width: `${(activeStep / 3) * 100}%` }}></div>
+            </div>
+            
+            <button className={`how-timeline-node ${activeStep === 0 ? 'active' : ''}`} onClick={() => handleStepClick(0)}>
+              <div className="how-timeline-circle">1</div>
+              <span className="how-timeline-label">Реєструєшся</span>
+            </button>
+
+            <button className={`how-timeline-node ${activeStep === 1 ? 'active' : ''}`} onClick={() => handleStepClick(1)}>
+              <div className="how-timeline-circle">2</div>
+              <span className="how-timeline-label">Додаєш друзів</span>
+            </button>
+
+            <button className={`how-timeline-node ${activeStep === 2 ? 'active' : ''}`} onClick={() => handleStepClick(2)}>
+              <div className="how-timeline-circle">3</div>
+              <span className="how-timeline-label">Надсилаєш</span>
+            </button>
+
+            <button className={`how-timeline-node ${activeStep === 3 ? 'active' : ''}`} onClick={() => handleStepClick(3)}>
+              <div className="how-timeline-circle">4</div>
+              <span className="how-timeline-label">Результат</span>
+            </button>
+          </div>
+
+          <div className="stepper-showcase-container">
+            {renderStepShowcase()}
+          </div>
         </div>
-        
-        <button className={`how-timeline-node ${activeStep === 0 ? 'active' : ''}`} onClick={() => { setActiveStep(0); setIsHoveredStep(true); }}>
-          <div className="how-timeline-circle">1</div>
-          <span className="how-timeline-label">Реєструєшся</span>
-        </button>
-
-        <button className={`how-timeline-node ${activeStep === 1 ? 'active' : ''}`} onClick={() => { setActiveStep(1); setIsHoveredStep(true); }}>
-          <div className="how-timeline-circle">2</div>
-          <span className="how-timeline-label">Додаєш друзів</span>
-        </button>
-
-        <button className={`how-timeline-node ${activeStep === 2 ? 'active' : ''}`} onClick={() => { setActiveStep(2); setIsHoveredStep(true); }}>
-          <div className="how-timeline-circle">3</div>
-          <span className="how-timeline-label">Надсилаєш</span>
-        </button>
-
-        <button className={`how-timeline-node ${activeStep === 3 ? 'active' : ''}`} onClick={() => { setActiveStep(3); setIsHoveredStep(true); }}>
-          <div className="how-timeline-circle">4</div>
-          <span className="how-timeline-label">Результат</span>
-        </button>
-      </div>
-
-      <div className="stepper-showcase-container" onMouseEnter={() => setIsHoveredStep(true)} onMouseLeave={() => setIsHoveredStep(false)}>
-        {renderStepShowcase()}
       </div>
     </section>
 
@@ -865,10 +1167,11 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              <div className="action-section-wrap-interactive">
-                <div className="answer-wrap-interactive" style={{ pointerEvents: 'none' }}>
-                  <button className="btn-yes-interactive"><Icon name="check" size={14}/> Так, приду!</button>
-                  <button className="btn-reschedule-interactive"><Icon name="calendar-blank" size={14}/> Перенести</button>
+              <div className="action-section-wrap">
+                <div className="answer-wrap" style={{ gap: '6px', justifyContent: 'center', pointerEvents: 'none', width: '100%' }}>
+                  <button className="btn-yes" tabIndex={-1}><Icon name="check" size={14}/> Так, я приду!</button>
+                  <button className="btn-reschedule" tabIndex={-1}><Icon name="calendar-blank" size={14}/> Перенести</button>
+                  <button className="btn-no" tabIndex={-1}><Icon name="x" size={14}/> Ні, не зможу</button>
                 </div>
               </div>
             </div>

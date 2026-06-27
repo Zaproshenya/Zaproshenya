@@ -492,7 +492,7 @@
     /* ── Phone Screen Mockup ── */
     .phone-screen {
       width: 320px;
-      height: 480px;
+      height: 580px;
       background: #000;
       border: 10px solid #1a1510;
       border-radius: 40px;
@@ -1592,14 +1592,14 @@
     .type-pill-interactive:hover {
       transform: translateY(-3px);
       box-shadow: var(--shadow);
-      background: var(--hover-bg);
+      background: var(--card);
       border-color: var(--hover-border);
     }
 
     .type-pill-interactive.active {
       transform: translateY(-3px);
       box-shadow: var(--shadow-lg);
-      background: var(--hover-bg);
+      background: var(--card);
       border-color: var(--gold);
     }
 
@@ -2047,4 +2047,71 @@
     .landing-demo-card .btn-reschedule i.ph, .landing-demo-card .btn-reschedule svg {
       font-size: .75rem !important;
       width: 12px; height: 12px;
+    }
+
+    /* ── Scroll Pinning Timeline Section ── */
+    .how-timeline-scroll-container {
+      position: relative;
+      height: 350vh;
+    }
+
+    .how-timeline-sticky-wrapper {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Stepper UI specific styling for forms inside mocks */
+    .stepper-card-mock input,
+    .stepper-card-mock textarea,
+    .stepper-card-mock select {
+      border: 1.5px solid var(--border);
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+      font-family: var(--font-body);
+      transition: border-color 0.2s var(--ease);
+    }
+    .stepper-card-mock input:focus,
+    .stepper-card-mock textarea:focus,
+    .stepper-card-mock select:focus {
+      border-color: var(--gold);
+    }
+
+    .type-picker button {
+      border: 1px solid var(--border);
+      background: var(--card);
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+    }
+    .type-picker button.selected {
+      border-color: var(--gold);
+      background: var(--gold-dim);
+    }
+
+    /* Mobile responsiveness fallback for scroll pinning */
+    @media (max-width: 768px) {
+      .how-timeline-scroll-container {
+        height: auto !important;
+      }
+      .how-timeline-sticky-wrapper {
+        position: relative !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      .how-timeline-container {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: center;
+      }
+      .how-timeline-node {
+        flex: 1 1 40%;
+      }
+      .how-timeline-line-bg {
+        display: none !important;
+      }
     }
