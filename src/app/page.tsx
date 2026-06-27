@@ -253,7 +253,7 @@ export default function LandingPage() {
     </section>
   
       </main>
-      <footer role="contentinfo">
+      <footer className="landing-footer" role="contentinfo">
         <Link href="/" className="footer-logo">
           Запрошення <span className="footer-star">✦</span>
         </Link>

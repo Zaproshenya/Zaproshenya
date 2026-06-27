@@ -482,6 +482,12 @@
       color: var(--ink);
       margin-bottom: .6rem;
       line-height: 1.3;
+      transition: all 0.3s var(--ease);
+    }
+
+    .feat-card:hover .feat-title {
+      color: var(--gold);
+      transform: translateX(4px);
     }
 
     .feat-desc {
@@ -794,7 +800,7 @@
     /* ═══════════════════════════════════════
        FOOTER
     ═══════════════════════════════════════ */
-    footer {
+    .landing-footer {
       background: #0d0a04;
       padding: 2rem clamp(1.25rem, 5vw, 4rem);
       display: flex;
@@ -813,7 +819,7 @@
       letter-spacing: -.01em;
     }
 
-    .footer-logo .footer-star { color: var(--ink); }
+    .footer-logo .footer-star { color: var(--gold); }
 
     .footer-links {
       display: flex;
@@ -890,7 +896,7 @@
       .types-grid    { grid-template-columns: repeat(2, 1fr); }
 
       .footer-copy { text-align: center; }
-      footer       { justify-content: center; text-align: center; }
+      .landing-footer { justify-content: center; text-align: center; }
       .footer-links { justify-content: center; }
     }
 

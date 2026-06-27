@@ -15,6 +15,7 @@ export default function LoginPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
 
@@ -121,18 +122,19 @@ export default function LoginPage() {
   };
 
   const handleSocialLogin = async (provider: 'google') => {
-    setLoading(true);
+    setSocialLoading(true);
     try {
       await signInWithSocial(provider);
       toast('Ласкаво просимо! ✦', 'success');
       router.push('/home');
     } catch (e: any) {
-      setLoading(false);
       if (e.code === 'auth/popup-closed-by-user') {
         toast('Вхід скасовано', 'info');
       } else {
         toast(e.message || 'Помилка входу через соцмережу', 'error');
       }
+    } finally {
+      setSocialLoading(false);
     }
   };
 
@@ -295,7 +297,7 @@ export default function LoginPage() {
 
                 {loginError && <div className="form-error show">{loginError}</div>}
 
-                <button className="btn btn-dark btn-full auth-submit-btn" type="submit" disabled={loading}>
+                <button className="btn btn-dark btn-full auth-submit-btn" type="submit" disabled={loading || socialLoading}>
                   {loading
                     ? <span className="auth-loading-dots"><span></span><span></span><span></span></span>
                     : <>Увійти <Icon name="arrow-right" size={16} /></>}
@@ -303,9 +305,15 @@ export default function LoginPage() {
 
                 <div className="auth-divider"><span>або</span></div>
 
-                <button type="button" onClick={() => handleSocialLogin('google')} className="btn btn-outline btn-full" style={{display:'flex', alignItems:'center', justifyContent:'center', gap:'10px', padding:'12px', border:'1.5px solid var(--border)', borderRadius:'var(--radius-input)', fontSize:'0.9rem', fontWeight:600, width:'100%', marginTop:'6px'}}>
-                  <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.61 14.99 1 12 1 7.35 1 3.39 3.65 1.5 7.5l3.97 3.08C6.39 7.37 9 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.75 2.91c2.18-2 3.68-4.96 3.68-8.64z"/><path fill="#FBBC05" d="M5.47 10.58c-.24-.71-.37-1.46-.37-2.24s.13-1.53.37-2.24L1.5 3.02C.54 4.95 0 7.12 0 9.4s.54 4.45 1.5 6.38l3.97-3.2z"/><path fill="#34A853" d="M12 18.96c-3 0-5.61-2.33-6.53-5.54L1.5 16.5c1.89 3.85 5.85 6.5 10.5 6.5 2.99 0 5.67-1 7.67-2.73l-3.75-2.91c-1.09.73-2.48 1.6-3.92 1.6z"/></svg>
-                  Продовжити з Google
+                <button type="button" disabled={loading || socialLoading} onClick={() => handleSocialLogin('google')} className="btn btn-outline btn-full" style={{display:'flex', alignItems:'center', justifyContent:'center', gap:'10px', padding:'12px', border:'1.5px solid var(--border)', borderRadius:'var(--radius-input)', fontSize:'0.9rem', fontWeight:600, width:'100%', marginTop:'6px'}}>
+                  {socialLoading ? (
+                    <span className="auth-loading-dots"><span></span><span></span><span></span></span>
+                  ) : (
+                    <>
+                      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.61 14.99 1 12 1 7.35 1 3.39 3.65 1.5 7.5l3.97 3.08C6.39 7.37 9 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.75 2.91c2.18-2 3.68-4.96 3.68-8.64z"/><path fill="#FBBC05" d="M5.47 10.58c-.24-.71-.37-1.46-.37-2.24s.13-1.53.37-2.24L1.5 3.02C.54 4.95 0 7.12 0 9.4s.54 4.45 1.5 6.38l3.97-3.2z"/><path fill="#34A853" d="M12 18.96c-3 0-5.61-2.33-6.53-5.54L1.5 16.5c1.89 3.85 5.85 6.5 10.5 6.5 2.99 0 5.67-1 7.67-2.73l-3.75-2.91c-1.09.73-2.48 1.6-3.92 1.6z"/></svg>
+                      Продовжити з Google
+                    </>
+                  )}
                 </button>
 
                 <div className="auth-footer-link">
@@ -381,7 +389,7 @@ export default function LoginPage() {
 
                 {regError && <div className="form-error show">{regError}</div>}
 
-                <button className="btn btn-dark btn-full auth-submit-btn" type="submit" disabled={loading}>
+                <button className="btn btn-dark btn-full auth-submit-btn" type="submit" disabled={loading || socialLoading}>
                   {loading
                     ? <span className="auth-loading-dots"><span></span><span></span><span></span></span>
                     : <>Створити акаунт <Icon name="arrow-right" size={16} /></>}
@@ -389,9 +397,15 @@ export default function LoginPage() {
 
                 <div className="auth-divider"><span>або</span></div>
 
-                <button type="button" onClick={() => handleSocialLogin('google')} className="btn btn-outline btn-full" style={{display:'flex', alignItems:'center', justifyContent:'center', gap:'10px', padding:'12px', border:'1.5px solid var(--border)', borderRadius:'var(--radius-input)', fontSize:'0.9rem', fontWeight:600, width:'100%', marginTop:'6px'}}>
-                  <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.61 14.99 1 12 1 7.35 1 3.39 3.65 1.5 7.5l3.97 3.08C6.39 7.37 9 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.75 2.91c2.18-2 3.68-4.96 3.68-8.64z"/><path fill="#FBBC05" d="M5.47 10.58c-.24-.71-.37-1.46-.37-2.24s.13-1.53.37-2.24L1.5 3.02C.54 4.95 0 7.12 0 9.4s.54 4.45 1.5 6.38l3.97-3.2z"/><path fill="#34A853" d="M12 18.96c-3 0-5.61-2.33-6.53-5.54L1.5 16.5c1.89 3.85 5.85 6.5 10.5 6.5 2.99 0 5.67-1 7.67-2.73l-3.75-2.91c-1.09.73-2.48 1.6-3.92 1.6z"/></svg>
-                  Продовжити з Google
+                <button type="button" disabled={loading || socialLoading} onClick={() => handleSocialLogin('google')} className="btn btn-outline btn-full" style={{display:'flex', alignItems:'center', justifyContent:'center', gap:'10px', padding:'12px', border:'1.5px solid var(--border)', borderRadius:'var(--radius-input)', fontSize:'0.9rem', fontWeight:600, width:'100%', marginTop:'6px'}}>
+                  {socialLoading ? (
+                    <span className="auth-loading-dots"><span></span><span></span><span></span></span>
+                  ) : (
+                    <>
+                      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.61 14.99 1 12 1 7.35 1 3.39 3.65 1.5 7.5l3.97 3.08C6.39 7.37 9 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.75 2.91c2.18-2 3.68-4.96 3.68-8.64z"/><path fill="#FBBC05" d="M5.47 10.58c-.24-.71-.37-1.46-.37-2.24s.13-1.53.37-2.24L1.5 3.02C.54 4.95 0 7.12 0 9.4s.54 4.45 1.5 6.38l3.97-3.2z"/><path fill="#34A853" d="M12 18.96c-3 0-5.61-2.33-6.53-5.54L1.5 16.5c1.89 3.85 5.85 6.5 10.5 6.5 2.99 0 5.67-1 7.67-2.73l-3.75-2.91c-1.09.73-2.48 1.6-3.92 1.6z"/></svg>
+                      Продовжити з Google
+                    </>
+                  )}
                 </button>
 
                 <div className="auth-footer-link">

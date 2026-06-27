@@ -21,14 +21,52 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://zaproshenya.site'),
-  title: "Запрошення ✦",
-  description: "Створюйте та надсилайте запрошення на зустрічі. Безкоштовний додаток українською.",
+  title: {
+    default: "Запрошення ✦ Зустрічі, які справді відбуваються",
+    template: "%s | Запрошення ✦"
+  },
+  description: "Надсилайте красиві запрошення з датою, часом і місцем. Отримуйте чіткі відповіді — без «ну давай якось» у чаті. Безкоштовний додаток українською.",
+  keywords: ["запрошення", "зустріч", "запросити друга", "календар", "події", "дн", "кава", "побачення"],
+  authors: [{ name: "Запрошення" }],
+  creator: "Запрошення",
+  publisher: "Запрошення",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    title: "Запрошення ✦ Зустрічі, які справді відбуваються",
+    description: "Надсилайте красиві запрошення з датою, часом і місцем. Отримуйте чіткі відповіді — без «ну давай якось» у чаті.",
+    url: "https://zaproshenya.site",
+    siteName: "Запрошення ✦",
+    locale: "uk_UA",
+    type: "website",
+    images: [
+      {
+        url: "/icon.png",
+        width: 512,
+        height: 512,
+        alt: "Запрошення ✦"
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Запрошення ✦",
+    description: "Надсилайте красиві запрошення з датою, часом і місцем. Отримуйте чіткі відповіді — без «ну давай якось» у чаті.",
+    images: ["/icon.png"],
+  },
   icons: {
     icon: [
-      { url: '/favicon.png', type: 'image/png', sizes: '96x96' }
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon.png', type: 'image/png', sizes: '96x96' },
+      { url: '/icon.png', type: 'image/png', sizes: '192x192' }
     ],
-    shortcut: '/favicon.png',
-    apple: '/favicon.png',
+    shortcut: '/favicon.ico',
+    apple: [
+      { url: '/icon.png', sizes: '180x180', type: 'image/png' }
+    ]
   }
 };
 
