@@ -484,7 +484,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     pathname.startsWith('/u/')
   );
 
-  if (user && profile?.banned && isAuthRequiredPage) {
+  const isBannedActive = profile?.banned && (!profile.bannedUntil || Date.now() <= profile.bannedUntil);
+  if (user && isBannedActive && isAuthRequiredPage) {
     let banStatusTitle = 'Назавжди заблокований';
     let banStatusBody = 'Ваш акаунт було перманентно заблоковано модератором.';
 

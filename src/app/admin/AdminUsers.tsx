@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Icon } from '@/components/Icon';
 import { timeAgo } from '@/lib/utils';
@@ -12,6 +12,21 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
   const [userPage, setUserPage] = useState(0);
   const [confirmModal, setConfirmModal] = useState<{ show: boolean; title: string; message: string; onConfirm: () => void; onCancel?: () => void; isDanger?: boolean }>({ show: false, title: '', message: '', onConfirm: () => {} });
   const PAGE_SIZE = 15;
+
+  // Auto-unban expired users when admin views the list
+  useEffect(() => {
+    const now = Date.now();
+    users.forEach(async (u) => {
+      if (u.banned && u.bannedUntil && now > u.bannedUntil) {
+        try {
+          await banUser(u.uid, false, null);
+          reload();
+        } catch (err) {
+          console.error(`Auto-unban failed for user ${u.uid}:`, err);
+        }
+      }
+    });
+  }, [users, reload]);
 
   const [banModalOpen, setBanModalOpen] = useState(false);
   const [banTarget, setBanTarget] = useState<any>(null);
