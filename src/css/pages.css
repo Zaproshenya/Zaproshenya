@@ -1991,6 +1991,39 @@
 }
 .chat-modal-close:hover { background: var(--red-bg); color: var(--red); }
 
+.chat-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 4px;
+}
+.chat-action-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+.chat-action-btn.close {
+  color: var(--green);
+}
+.chat-action-btn.close:hover {
+  background: var(--green-bg);
+  border-color: var(--green);
+}
+.chat-action-btn.delete {
+  color: var(--red);
+}
+.chat-action-btn.delete:hover {
+  background: var(--red-bg);
+  border-color: var(--red);
+}
+
 /* Chat messages area */
 .chat-messages-area {
   flex: 1;

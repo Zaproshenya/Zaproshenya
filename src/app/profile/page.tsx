@@ -291,6 +291,7 @@ export default function ProfilePage() {
 
   const handleCloseTicket = async () => {
     if (!chatTicketId) return;
+    if (!window.confirm('Ви дійсно хочете закрити це звернення?')) return;
     try {
       await resolveSupportTicket(chatTicketId, 'resolved');
       toast('Звернення закрито', 'success');
@@ -302,6 +303,7 @@ export default function ProfilePage() {
 
   const handleDeleteTicket = async () => {
     if (!chatTicketId) return;
+    if (!window.confirm('Ви дійсно хочете видалити це звернення? Цю дію неможливо скасувати.')) return;
     try {
       await deleteSupportTicket(chatTicketId);
       toast('Звернення видалено', 'info');
@@ -793,16 +795,16 @@ export default function ProfilePage() {
                   {chatTicket?.status === 'resolved' ? 'Вирішено' : chatTicket?.status === 'dismissed' ? 'Закрито' : 'Відкрито'}
                 </div>
               </div>
-              {chatTicket?.status !== 'resolved' && chatTicket?.status !== 'dismissed' && (
-                <div className="chat-modal-actions">
+              <div className="chat-modal-actions">
+                {chatTicket?.status !== 'resolved' && chatTicket?.status !== 'dismissed' && (
                   <button className="chat-action-btn close" onClick={handleCloseTicket} title="Закрити звернення">
                     <Icon name="check" size={16}/>
                   </button>
-                  <button className="chat-action-btn delete" onClick={handleDeleteTicket} title="Видалити звернення">
-                    <Icon name="trash" size={16}/>
-                  </button>
-                </div>
-              )}
+                )}
+                <button className="chat-action-btn delete" onClick={handleDeleteTicket} title="Видалити звернення">
+                  <Icon name="trash" size={16}/>
+                </button>
+              </div>
               <button className="chat-modal-close" onClick={() => setChatTicketId(null)}>×</button>
             </div>
             
