@@ -217,6 +217,10 @@ export async function removeFriend(myUid: string, friendUid: string) {
 
 // ── Notifications ──
 export async function addNotification(toUid: string, data: any) {
+  if (!toUid || toUid === 'undefined') {
+    console.warn('addNotification: toUid is invalid:', toUid);
+    return;
+  }
   const refObj = push(ref(db, 'notifications/' + toUid));
   await set(refObj, {
     id: refObj.key,
@@ -227,6 +231,7 @@ export async function addNotification(toUid: string, data: any) {
 }
 
 export async function getNotifications(uid: string) {
+  if (!uid || uid === 'undefined') return [];
   const q = query(ref(db, 'notifications/' + uid), orderByChild('createdAt'), limitToLast(50));
   const snap = await get(q);
   if (!snap.exists()) return [];
@@ -241,10 +246,12 @@ export async function getNotifications(uid: string) {
 }
 
 export async function markNotifRead(uid: string, notifId: string) {
+  if (!uid || uid === 'undefined' || !notifId) return;
   await set(ref(db, 'notifications/' + uid + '/' + notifId + '/read'), true);
 }
 
 export async function markAllNotifsRead(uid: string) {
+  if (!uid || uid === 'undefined') return;
   const snap = await get(ref(db, 'notifications/' + uid));
   if (!snap.exists()) return;
   const updates: any = {};
@@ -260,6 +267,7 @@ export async function markAllNotifsRead(uid: string) {
 }
 
 export async function deleteNotification(uid: string, notifId: string) {
+  if (!uid || uid === 'undefined' || !notifId) return;
   await remove(ref(db, 'notifications/' + uid + '/' + notifId));
 }
 
@@ -620,6 +628,10 @@ export function listenUserInvites(uid: string, callback: (list: any[]) => void) 
 }
 
 export function listenNotifications(uid: string, callback: (list: any[]) => void) {
+  if (!uid || uid === 'undefined') {
+    callback([]);
+    return () => {};
+  }
   const q = query(ref(db, 'notifications/' + uid), orderByChild('createdAt'), limitToLast(50));
   onValue(q, (snap) => {
     const list: any[] = [];
@@ -722,6 +734,10 @@ export function listenAdminFriends(callback: (friends: Record<string, any>) => v
 }
 
 export async function adminDeleteAccount(uid: string, login?: string, uniqueId?: string) {
+  if (!uid || uid === 'undefined') {
+    console.warn('adminDeleteAccount: uid is invalid:', uid);
+    return;
+  }
   await remove(ref(db, 'users/' + uid));
   if (login) {
     await remove(ref(db, 'logins/' + login.toLowerCase().trim()));
