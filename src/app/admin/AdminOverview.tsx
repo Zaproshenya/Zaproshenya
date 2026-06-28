@@ -295,9 +295,11 @@ export default function AdminOverview({ stats, users }: { stats: any, users: any
               <tbody>
                 {onlineUsers.map((u: any) => (
                   <tr key={u.uid}>
-                    <td style={{display:'flex',alignItems:'center',gap:'8px'}}>
-                      <div className="avatar avatar-sm">{u.avatar ? <img src={u.avatar} alt=""/> : u.name?.charAt(0)}</div>
-                      <span style={{fontWeight:500}}>{u.name}</span>
+                    <td>
+                      <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+                        <div className="avatar avatar-sm">{u.avatar ? <img src={u.avatar} alt=""/> : u.name?.charAt(0)}</div>
+                        <span style={{fontWeight:500}}>{u.name}</span>
+                      </div>
                     </td>
                     <td style={{color:'var(--muted)'}}>@{u.login}</td>
                     <td>{u.role}</td>

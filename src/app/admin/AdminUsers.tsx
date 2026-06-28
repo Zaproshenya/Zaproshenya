@@ -170,11 +170,13 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
 
                 return (
                   <tr key={u.uid} style={u.banned ? {opacity:0.6, background:'rgba(255,0,0,0.02)'} : {}}>
-                    <td style={{display:'flex',alignItems:'center',gap:'8px'}}>
-                      <div className="avatar avatar-sm">{u.avatar ? <img src={u.avatar} alt=""/> : u.name?.charAt(0)}</div>
-                      <div>
-                        <div style={{fontWeight:500}}>{u.name}</div>
-                        {u.banned && <div style={{fontSize:'.7rem',color:'var(--red)',fontWeight:600}}><Icon name="prohibit" size={10}/> Заблокований ({getBanTimeLeft(u.bannedUntil)})</div>}
+                    <td>
+                      <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+                        <div className="avatar avatar-sm">{u.avatar ? <img src={u.avatar} alt=""/> : u.name?.charAt(0)}</div>
+                        <div>
+                          <div style={{fontWeight:500}}>{u.name}</div>
+                          {u.banned && <div style={{fontSize:'.7rem',color:'var(--red)',fontWeight:600}}><Icon name="prohibit" size={10}/> Заблокований ({getBanTimeLeft(u.bannedUntil)})</div>}
+                        </div>
                       </div>
                     </td>
                     <td>
@@ -198,29 +200,31 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
                     </td>
                     <td style={{fontSize:'.82rem',color:'var(--muted)'}}>{timeAgo(u.createdAt)}</td>
                     <td style={{fontSize:'.82rem',color:'var(--muted)'}}>{u.lastSeen ? timeAgo(u.lastSeen) : 'Ніколи'}</td>
-                    <td style={{display:'flex', gap:'6px', alignItems:'center'}}>
-                      {canBan && u.uid !== profile.uid ? (
-                        <button 
-                          className={`btn btn-sm ${u.banned ? 'btn-outline' : 'btn-red'}`} 
-                          style={{padding:'4px 10px'}}
-                          onClick={() => handleBanClick(u)}
-                        >
-                          {u.banned ? 'Розблокувати' : 'Бан'}
-                        </button>
-                      ) : null}
-                      {isSuperAdmin && u.uid !== profile.uid ? (
-                        <button 
-                          className="btn btn-sm btn-red" 
-                          style={{padding:'4px 8px', display:'inline-flex', alignItems:'center', justifyContent:'center'}}
-                          onClick={() => handleDeleteClick(u)}
-                          title="Видалити акаунт"
-                        >
-                          <Icon name="trash" size={14}/>
-                        </button>
-                      ) : null}
-                      {!(canBan && u.uid !== profile.uid) && !(isSuperAdmin && u.uid !== profile.uid) && (
-                        <span style={{color:'var(--muted)',fontSize:'.8rem'}}>—</span>
-                      )}
+                    <td>
+                      <div style={{display:'flex', gap:'6px', alignItems:'center'}}>
+                        {canBan && u.uid !== profile.uid ? (
+                          <button 
+                            className={`btn btn-sm ${u.banned ? 'btn-outline' : 'btn-red'}`} 
+                            style={{padding:'4px 10px'}}
+                            onClick={() => handleBanClick(u)}
+                          >
+                            {u.banned ? 'Розблокувати' : 'Бан'}
+                          </button>
+                        ) : null}
+                        {isSuperAdmin && u.uid !== profile.uid ? (
+                          <button 
+                            className="btn btn-sm btn-red" 
+                            style={{padding:'4px 8px', display:'inline-flex', alignItems:'center', justifyContent:'center'}}
+                            onClick={() => handleDeleteClick(u)}
+                            title="Видалити акаунт"
+                          >
+                            <Icon name="trash" size={14}/>
+                          </button>
+                        ) : null}
+                        {!(canBan && u.uid !== profile.uid) && !(isSuperAdmin && u.uid !== profile.uid) && (
+                          <span style={{color:'var(--muted)',fontSize:'.8rem'}}>—</span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
