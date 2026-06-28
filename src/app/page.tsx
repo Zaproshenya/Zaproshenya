@@ -46,6 +46,9 @@ export default function LandingPage() {
           <a href="#features" className="btn-landing-outline">
             Дізнатись більше
           </a>
+          <a href="https://send.monobank.ua/jar/5se11GGQ5i" target="_blank" rel="noreferrer" className="btn-landing-support">
+            <Icon name="heart" size={16}/> Підтримати проєкт
+          </a>
         </div>
         <div className="hero-trust">
           <div className="trust-item">
@@ -233,6 +236,21 @@ export default function LandingPage() {
     </section>
 
 
+    <section className="section-wrap support-section" id="support" aria-label="Підтримати проєкт" style={{ maxWidth: '800px', margin: '40px auto', textAlign: 'center' }}>
+      <div className="section-head" data-reveal style={{ marginBottom: '20px' }}>
+        <span className="eyebrow" style={{ color: 'var(--red)' }}>✦ Підтримка ✦</span>
+        <h2 className="section-title" style={{ fontSize: '1.8rem', marginTop: '10px' }}>Сподобався проєкт?</h2>
+        <p className="section-desc" style={{ maxWidth: '600px', margin: '10px auto' }}>
+          «Запрошення» — це повністю безкоштовний некомерційний додаток без реклами та платних підписок. Ви можете підтримати розвиток проєкту добровільним донатом через Monobank.
+        </p>
+      </div>
+      <div data-reveal data-delay="1" style={{ marginTop: '24px' }}>
+        <a href="https://send.monobank.ua/jar/5se11GGQ5i" target="_blank" rel="noreferrer" className="btn-landing-support">
+          <Icon name="heart" size={16}/> Підтримати розвиток
+        </a>
+      </div>
+    </section>
+
     {/**/}
     <section className="cta-section" aria-label="Приєднатись">
       <div className="cta-blob cta-blob-1"></div>
@@ -259,6 +277,7 @@ export default function LandingPage() {
         </Link>
         <nav className="footer-links" aria-label="Посилання в футері">
           <Link href="/about">Про додаток</Link>
+          <a href="https://send.monobank.ua/jar/5se11GGQ5i" target="_blank" rel="noreferrer" style={{color: 'var(--red)'}}>Підтримати проєкт</a>
           <Link href="/privacy">Конфіденційність</Link>
           <Link href="/terms">Умови використання</Link>
         </nav>
