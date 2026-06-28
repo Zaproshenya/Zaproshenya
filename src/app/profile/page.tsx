@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { logoutUser, updateProfileData, changeLogin, changePassword, deleteAccount, verifyAndChangeEmail } from '@/lib/firebase/auth';
 import { auth } from '@/lib/firebase/config';
-import { getUserInvites, getFriends, getUserTickets, createSupportTicket, listenTicketMessages, stopListeningTicket, listenTicket, stopListeningTicketMeta, sendTicketMessage, markTicketReadByUser } from '@/lib/firebase/db';
+import { getUserInvites, getFriends, getUserTickets, createSupportTicket, listenTicketMessages, stopListeningTicket, listenTicket, stopListeningTicketMeta, sendTicketMessage, markTicketReadByUser, resolveSupportTicket, deleteSupportTicket } from '@/lib/firebase/db';
 import { Icon } from '@/components/Icon';
 import { toast } from '@/components/Toast';
 import Link from 'next/link';
@@ -286,6 +286,29 @@ export default function ProfilePage() {
     if (t?.unreadByUser) {
       markTicketReadByUser(tid).catch(console.warn);
       setTickets(prev => prev.map(x => x.id === tid ? { ...x, unreadByUser: false } : x));
+    }
+  };
+
+  const handleCloseTicket = async () => {
+    if (!chatTicketId) return;
+    try {
+      await resolveSupportTicket(chatTicketId, 'resolved');
+      toast('Звернення закрито', 'success');
+      setTickets(prev => prev.map(t => t.id === chatTicketId ? { ...t, status: 'resolved' } : t));
+    } catch (e) {
+      toast('Помилка закриття звернення', 'error');
+    }
+  };
+
+  const handleDeleteTicket = async () => {
+    if (!chatTicketId) return;
+    try {
+      await deleteSupportTicket(chatTicketId);
+      toast('Звернення видалено', 'info');
+      setTickets(prev => prev.filter(t => t.id !== chatTicketId));
+      setChatTicketId(null);
+    } catch (e) {
+      toast('Помилка видалення звернення', 'error');
     }
   };
 
@@ -770,6 +793,16 @@ export default function ProfilePage() {
                   {chatTicket?.status === 'resolved' ? 'Вирішено' : chatTicket?.status === 'dismissed' ? 'Закрито' : 'Відкрито'}
                 </div>
               </div>
+              {chatTicket?.status !== 'resolved' && chatTicket?.status !== 'dismissed' && (
+                <div className="chat-modal-actions">
+                  <button className="chat-action-btn close" onClick={handleCloseTicket} title="Закрити звернення">
+                    <Icon name="check" size={16}/>
+                  </button>
+                  <button className="chat-action-btn delete" onClick={handleDeleteTicket} title="Видалити звернення">
+                    <Icon name="trash" size={16}/>
+                  </button>
+                </div>
+              )}
               <button className="chat-modal-close" onClick={() => setChatTicketId(null)}>×</button>
             </div>
             

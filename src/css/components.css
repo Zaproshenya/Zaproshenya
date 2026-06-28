@@ -147,11 +147,18 @@ button:focus-visible, .btn:focus-visible {
 .btn-icon:hover { background: var(--gold-light); color: var(--gold); border-color: var(--gold); }
 
 /* ── Inputs ── */
-input, textarea, select {
+input, select {
+  font-family: var(--font-body); font-size: 1rem;
+  background: #fff; border: 1.5px solid var(--border);
+  color: var(--ink); width: 100%; padding: 11px 18px;
+  border-radius: var(--radius-input); outline: none;
+  transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
+}
+textarea {
   font-family: var(--font-body); font-size: 1rem;
   background: #fff; border: 1.5px solid var(--border);
   color: var(--ink); width: 100%; padding: 11px 14px;
-  border-radius: var(--radius-sm); outline: none;
+  border-radius: var(--radius-md); outline: none;
   transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
 }
 input:focus, textarea:focus, select:focus {

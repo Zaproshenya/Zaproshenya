@@ -81,6 +81,21 @@ export async function updateInviteStatus(invId: string, status: string, uid?: st
 
 export async function deleteInvite(invId: string, uid?: string, isGroup?: boolean) {
   const path = isGroup ? 'group-invites/' : 'invites/';
+  if (uid) {
+    try {
+      const inviteSnap = await get(ref(db, path + invId));
+      if (inviteSnap.exists()) {
+        const inviteVal = inviteSnap.val();
+        await addNotification(uid, {
+          type: 'invite-moderated',
+          title: 'Запрошення видалено модератором',
+          body: `Ваше запрошення "${inviteVal.title || inviteVal.type || 'без назви'}" було видалено модератором через скаргу або порушення правил.`
+        });
+      }
+    } catch (e) {
+      console.error('Failed to send invite moderated notification:', e);
+    }
+  }
   await remove(ref(db, path + invId));
   await remove(ref(db, 'statuses/' + invId));
   await remove(ref(db, 'reschedule/' + invId));
@@ -316,6 +331,23 @@ export async function sendTicketMessage(ticketId: string, message: any) {
   } else {
     ticketUpdate.unreadByUser = true;
     ticketUpdate.unreadBySupport = false;
+
+    try {
+      const ticketSnap = await get(ref(db, 'support_tickets/' + ticketId));
+      if (ticketSnap.exists()) {
+        const ticketVal = ticketSnap.val();
+        if (ticketVal.authorUid) {
+          await addNotification(ticketVal.authorUid, {
+            type: 'support-reply',
+            ticketId,
+            title: 'Нова відповідь від підтримки',
+            body: `Підтримка відповіла на ваше звернення "${ticketVal.subject || 'без теми'}": ${message.text ? message.text.slice(0, 60) : '📷 Зображення'}`
+          });
+        }
+      }
+    } catch (e) {
+      console.error('Failed to send support reply notification:', e);
+    }
   }
   await update(ref(db, 'support_tickets/' + ticketId), ticketUpdate);
 }
@@ -362,6 +394,10 @@ export async function resolveSupportTicket(ticketId: string, action: string, res
   });
 }
 
+export async function deleteSupportTicket(ticketId: string) {
+  await remove(ref(db, 'support_tickets/' + ticketId));
+}
+
 export async function getSupportTickets() {
   const snap = await get(ref(db, 'support_tickets'));
   if (!snap.exists()) return [];
@@ -385,6 +421,26 @@ export async function resolveReport(reportId: string, status: string, resolverUi
     resolvedBy: resolverUid || null,
     resolvedAt: Date.now()
   });
+
+  try {
+    const reportSnap = await get(ref(db, 'reports/' + reportId));
+    if (reportSnap.exists()) {
+      const reportVal = reportSnap.val();
+      if (reportVal.reporterUid) {
+        const isApproved = status === 'resolved';
+        await addNotification(reportVal.reporterUid, {
+          type: 'report-resolved',
+          reportId,
+          title: isApproved ? 'Скаргу розглянуто' : 'Скаргу відхилено',
+          body: isApproved 
+            ? `Адміністрація вжила заходів щодо вашої скарги на запрошення "${reportVal.reason || 'без теми'}". Дякуємо за допомогу!`
+            : `Адміністрація відхилила вашу скаргу на запрошення "${reportVal.reason || 'без теми'}" після перевірки.`
+        });
+      }
+    }
+  } catch (e) {
+    console.error('Failed to send report resolved notification:', e);
+  }
 }
 
 // ── Admin Stats ──

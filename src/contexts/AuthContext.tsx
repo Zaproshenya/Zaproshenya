@@ -519,8 +519,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   if (isRegistrationIncomplete && user) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', background: 'var(--paper)' }}>
-        <div className="auth-card" style={{ textAlign: 'center', maxWidth: '400px', width: '100%', padding: '32px 28px', border: '1px solid var(--border)', borderRadius: 'var(--radius-card)', animation: 'pop 0.3s var(--ease) both' }}>
-          <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(var(--gold-rgb), 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)', margin: '0 auto 20px' }}>
+        <div className="auth-card" style={{ textAlign: 'center', maxWidth: '400px', width: '100%', padding: '36px 30px', border: '1px solid rgba(201, 146, 42, 0.12)', borderRadius: '20px', background: 'linear-gradient(135deg, var(--card) 0%, #fffdfa 100%)', boxShadow: '0 20px 48px rgba(24, 18, 10, 0.08), 0 4px 12px rgba(24, 18, 10, 0.02)', animation: 'pop 0.3s var(--ease) both' }}>
+          <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(201, 146, 42, 0.06)', border: '1.5px dashed rgba(201, 146, 42, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)', margin: '0 auto 20px' }}>
             <Icon name="user-plus" size={28} />
           </div>
           <h2 style={{ fontFamily: 'var(--font-heading)', fontStyle: 'italic', fontSize: '1.6rem', marginBottom: '10px' }}>Завершення реєстрації</h2>
@@ -539,7 +539,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 maxLength={15} 
                 value={completeName} 
                 onChange={e => setCompleteName(e.target.value)}
-                style={{ padding: '10px 12px', background: 'var(--warm)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-input)', color: 'var(--ink)', width: '100%' }}
+                style={{ padding: '11px 18px', background: 'var(--warm)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-input)', color: 'var(--ink)', width: '100%', outline: 'none' }}
                 disabled={completeSaving}
                 required
               />
@@ -555,7 +555,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 maxLength={25} 
                 value={completeLogin} 
                 onChange={e => setCompleteLogin(e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, ''))}
-                style={{ padding: '10px 12px', background: 'var(--warm)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-input)', color: 'var(--ink)', width: '100%' }}
+                style={{ padding: '11px 18px', background: 'var(--warm)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-input)', color: 'var(--ink)', width: '100%', outline: 'none' }}
                 disabled={completeSaving}
                 required
               />
@@ -563,7 +563,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             {completeError && <div className="form-error show" style={{ marginTop: 0 }}>{completeError}</div>}
             
-            <button className="btn btn-dark btn-full" type="submit" disabled={completeSaving || completeLogin.length < 3 || completeName.length < 2} style={{ padding: '12px', marginTop: '8px' }}>
+            <button className="btn btn-dark btn-full" type="submit" disabled={completeSaving || completeLogin.length < 3 || completeName.length < 2} style={{ padding: '12px', marginTop: '8px', borderRadius: '30px' }}>
               {completeSaving ? 'Збереження...' : 'Створити акаунт'}
             </button>
           </form>
@@ -571,7 +571,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           <button 
             onClick={handleCancelRegistration} 
             className="btn btn-ghost btn-full" 
-            style={{ color: 'var(--red)', fontSize: '.85rem', marginTop: '12px' }}
+            style={{ color: 'var(--red)', fontSize: '.85rem', marginTop: '12px', borderRadius: '30px' }}
           >
             Скасувати реєстрацію
           </button>

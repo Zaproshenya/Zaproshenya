@@ -245,9 +245,9 @@ export default function LandingPage() {
         <p className="cta-desc" data-reveal>
           Без кредитної картки, без реклами, повністю українською. Тільки ти і твої зустрічі.
         </p>
-        <a href="#"  className="btn-cta" data-reveal>
+        <Link href="/login" className="btn-cta" data-reveal>
           Приєднатись безкоштовно →
-        </a>
+        </Link>
         <p className="cta-small" data-reveal>Реєстрація займає менше хвилини</p>
       </div>
     </section>
