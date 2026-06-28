@@ -53,12 +53,12 @@ export default function NotFound() {
           </p>
 
           <div className="notfound-actions">
-            <Link href="/" className="btn-primary notfound-btn-primary">
+            <Link href="/" className="btn btn-gold" style={{ flex: 1 }}>
               <Icon name="house" size={18} />
               На головну
             </Link>
             
-            <Link href="/create" className="btn-outline notfound-btn-secondary">
+            <Link href="/create" className="btn btn-outline" style={{ flex: 1 }}>
               <Icon name="plus" size={18} />
               Створити запрошення
             </Link>
