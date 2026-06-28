@@ -356,6 +356,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, profile]);
 
+  // Register push notifications on user login
+  useEffect(() => {
+    if (!user) return;
+
+    const initPushNotifications = async () => {
+      try {
+        if (typeof window === 'undefined' || !('Notification' in window) || !('serviceWorker' in navigator)) {
+          return;
+        }
+
+        // Request permission if not already set
+        if (Notification.permission === 'default') {
+          await Notification.requestPermission();
+        }
+
+        if (Notification.permission !== 'granted') return;
+
+        // Dynamically import messaging and config to prevent SSR errors
+        const { getMessaging, getToken } = await import('firebase/messaging');
+        const { app } = await import('@/lib/firebase/config');
+        const messaging = getMessaging(app);
+
+        const token = await getToken(messaging, {
+          vapidKey: 'BGfTmcxPeL2Y6-YVjUv--G-rUP0sD5WrWBiV2lxuRFySQx65UD3HlPKOPhxw4W2ZaLWZPGKaYeHuSAM5RPpeaFk',
+        });
+
+        if (token) {
+          const { ref, set } = await import('firebase/database');
+          const { db } = await import('@/lib/firebase/config');
+          const safeTokenKey = btoa(token).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+          await set(ref(db, `users/${user.uid}/fcmTokens/${safeTokenKey}`), token);
+          console.log('✦ FCM token registered on new domain');
+        }
+      } catch (err) {
+        console.warn('FCM registration failed:', err);
+      }
+    };
+
+    initPushNotifications();
+  }, [user]);
+
   const shownNotifs = useRef<Set<string>>(new Set());
 
   // Listen to new notifications in real-time and show Toast alerts

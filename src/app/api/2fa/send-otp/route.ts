@@ -61,16 +61,48 @@ export async function POST(req: NextRequest) {
       to: email,
       subject: "Код підтвердження двофакторної автентифікації - Запрошення",
       html: `
-        <div style="font-family: sans-serif; padding: 32px 24px; max-width: 480px; margin: 0 auto; border: 1px solid rgba(180,140,60,.2); border-radius: 12px; background: #faf6f0; color: #18120a;">
-          <h2 style="color: #c9922a; font-style: italic; text-align: center; margin-bottom: 24px;">Запрошення ✦</h2>
-          <p style="font-size: 0.95rem; margin-bottom: 16px;">Вітаємо!</p>
-          <p style="font-size: 0.95rem; margin-bottom: 24px;">Ваш одноразовий 6-значний код для підтвердження входу в акаунт:</p>
-          <div style="font-size: 2.2rem; font-weight: bold; letter-spacing: 0.15em; text-align: center; margin: 24px 0; color: #18120a; background: #ffffff; padding: 16px; border-radius: 8px; border: 1.5px solid rgba(180,140,60,.25); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-            ${code}
+        <div style="background-color: #fcfaf7; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+          <div style="max-width: 480px; margin: 0 auto; background: #ffffff; border: 1px solid rgba(180, 140, 60, 0.15); border-radius: 16px; box-shadow: 0 8px 30px rgba(24, 18, 10, 0.03); overflow: hidden;">
+            <!-- Top gold accent bar -->
+            <div style="height: 6px; background: linear-gradient(90deg, #c9922a 0%, #e5b85c 100%);"></div>
+            
+            <div style="padding: 40px 32px 32px 32px;">
+              <!-- Logo Header -->
+              <div style="text-align: center; margin-bottom: 32px;">
+                <span style="font-size: 1.4rem; font-weight: 700; color: #18120a; letter-spacing: 0.02em; display: inline-flex; align-items: center; gap: 6px;">
+                  Запрошення <span style="color: #c9922a;">✦</span>
+                </span>
+              </div>
+              
+              <!-- Body Text -->
+              <h3 style="font-size: 1.15rem; font-weight: 600; color: #18120a; margin: 0 0 12px 0; text-align: center;">Вітаємо!</h3>
+              <p style="font-size: 0.95rem; line-height: 1.6; color: #6b6058; margin: 0 0 32px 0; text-align: center;">
+                Ваш одноразовий 6-значний код для безпечного підтвердження входу в акаунт:
+              </p>
+              
+              <!-- Code Display Block -->
+              <div style="margin: 0 auto 32px auto; padding: 20px 24px; background: #faf6f0; border: 1.5px dashed rgba(201, 146, 42, 0.3); border-radius: 12px; text-align: center; max-width: 320px;">
+                <div style="font-size: 2.6rem; font-weight: 800; letter-spacing: 0.2em; color: #18120a; font-family: 'Courier New', Courier, monospace; margin-left: 0.2em;">
+                  ${code}
+                </div>
+              </div>
+              
+              <!-- Footer Info -->
+              <p style="font-size: 0.82rem; line-height: 1.6; color: #8c8076; text-align: center; margin: 0 0 32px 0;">
+                Цей код є конфіденційним та дійсний протягом <strong>5 хвилин</strong>. Якщо ви не надсилали цей запит, просто проігноруйте цей лист.
+              </p>
+              
+              <!-- Divider -->
+              <div style="border-top: 1px dashed rgba(180, 140, 60, 0.15); margin-bottom: 20px;"></div>
+              
+              <!-- Uniqueness tag to prevent Gmail grouping / trimming -->
+              <div style="text-align: center;">
+                <span style="font-size: 0.7rem; color: #bcaea2; text-transform: uppercase; letter-spacing: 0.05em;">
+                  ID запиту: ZAP-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}
+                </span>
+              </div>
+            </div>
           </div>
-          <p style="font-size: 0.82rem; color: #6b6058; line-height: 1.6; margin-top: 24px;">
-            Цей код дійсний протягом 5 хвилин. Якщо ви не намагалися увійти в акаунт, просто проігноруйте цей лист.
-          </p>
         </div>
       `,
     };

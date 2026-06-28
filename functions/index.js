@@ -27,15 +27,15 @@ exports.sendPushNotification = functions.region('europe-west1').database.ref('/n
     const tokens = Object.values(fcmTokensObj);
 
     // Determine target URL for notification click
-    let clickUrl = '/';
+    let clickUrl = 'https://zaproshenya.site/';
     if (notif.type === 'friend-request' || notif.type === 'friend-accepted') {
-      clickUrl = '/friends';
+      clickUrl = 'https://zaproshenya.site/friends';
     } else if (notif.type === 'invite' && notif.inviteId) {
-      clickUrl = `/i/${notif.inviteId}`;
+      clickUrl = `https://zaproshenya.site/i/${notif.inviteId}`;
     } else if (notif.type === 'group-invite' && notif.inviteId) {
-      clickUrl = `/g/${notif.inviteId}`;
+      clickUrl = `https://zaproshenya.site/g/${notif.inviteId}`;
     } else if (notif.type === 'invite-response' || notif.type === 'invite-reschedule') {
-      clickUrl = '/home';
+      clickUrl = 'https://zaproshenya.site/home';
     }
 
     const payload = {
@@ -49,8 +49,8 @@ exports.sendPushNotification = functions.region('europe-west1').database.ref('/n
       },
       webpush: {
         notification: {
-          icon: 'https://files.catbox.moe/0m8wur.png',
-          badge: 'https://files.catbox.moe/0m8wur.png',
+          icon: 'https://zaproshenya.site/icon.png',
+          badge: 'https://zaproshenya.site/favicon.png',
         }
       }
     };
