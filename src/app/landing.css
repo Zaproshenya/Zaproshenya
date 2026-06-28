@@ -153,7 +153,7 @@
 
     .hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; }
 
-    .btn-primary {
+    .btn-landing-primary {
       display: inline-flex;
       align-items: center;
       gap: .45rem;
@@ -171,13 +171,13 @@
       transition: all .2s var(--ease);
     }
 
-    .btn-primary:hover {
+    .btn-landing-primary:hover {
       background: #b5811f;
       transform: translateY(-2px);
       box-shadow: 0 8px 28px rgba(201,146,42,.45);
     }
 
-    .btn-outline {
+    .btn-landing-outline {
       display: inline-flex;
       align-items: center;
       gap: .4rem;
@@ -194,7 +194,7 @@
       transition: all .2s var(--ease);
     }
 
-    .btn-outline:hover {
+    .btn-landing-outline:hover {
       background: var(--warm);
       border-color: var(--gold);
     }
@@ -903,7 +903,7 @@
     @media (max-width: 480px) {
       .hero-title { font-size: 2.2rem; }
       .hero-ctas  { flex-direction: column; align-items: center; }
-      .btn-primary, .btn-outline { width: 100%; justify-content: center; }
+      .btn-landing-primary, .btn-landing-outline { width: 100%; justify-content: center; }
       .steps-grid { grid-template-columns: 1fr; }
       .types-grid { grid-template-columns: repeat(2, 1fr); }
     }

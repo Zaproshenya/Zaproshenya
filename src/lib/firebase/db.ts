@@ -720,3 +720,17 @@ export function listenAdminFriends(callback: (friends: Record<string, any>) => v
   });
   return () => off(friendsRef);
 }
+
+export async function adminDeleteAccount(uid: string, login?: string, uniqueId?: string) {
+  await remove(ref(db, 'users/' + uid));
+  if (login) {
+    await remove(ref(db, 'logins/' + login.toLowerCase().trim()));
+  }
+  if (uniqueId) {
+    await remove(ref(db, 'ids/' + uniqueId.trim()));
+  }
+  await remove(ref(db, 'notifications/' + uid));
+  await remove(ref(db, 'friends/' + uid));
+  await remove(ref(db, 'friend-requests/' + uid));
+  await remove(ref(db, 'user-invites/' + uid));
+}

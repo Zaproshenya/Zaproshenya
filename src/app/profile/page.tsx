@@ -7,6 +7,7 @@ import { auth } from '@/lib/firebase/config';
 import { getUserInvites, getFriends, getUserTickets, createSupportTicket, listenTicketMessages, stopListeningTicket, listenTicket, stopListeningTicketMeta, sendTicketMessage, markTicketReadByUser, resolveSupportTicket, deleteSupportTicket } from '@/lib/firebase/db';
 import { Icon } from '@/components/Icon';
 import { toast } from '@/components/Toast';
+import { ConfirmModal } from '@/components/ConfirmModal';
 import Link from 'next/link';
 
 export default function ProfilePage() {
@@ -25,6 +26,21 @@ export default function ProfilePage() {
   const [targetEmail, setTargetEmail] = useState('');
   const [showEmailSent, setShowEmailSent] = useState(false);
   const [disablePass, setDisablePass] = useState('');
+
+  const [confirmModal, setConfirmModal] = useState<{
+    show: boolean;
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    isDanger?: boolean;
+    onConfirm: () => void;
+  }>({
+    show: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     if (editMode !== 'email' || !showEmailSent || !targetEmail) return;
@@ -291,27 +307,47 @@ export default function ProfilePage() {
 
   const handleCloseTicket = async () => {
     if (!chatTicketId) return;
-    if (!window.confirm('Ви дійсно хочете закрити це звернення?')) return;
-    try {
-      await resolveSupportTicket(chatTicketId, 'resolved');
-      toast('Звернення закрито', 'success');
-      setTickets(prev => prev.map(t => t.id === chatTicketId ? { ...t, status: 'resolved' } : t));
-    } catch (e) {
-      toast('Помилка закриття звернення', 'error');
-    }
+    setConfirmModal({
+      show: true,
+      title: 'Закрити звернення',
+      message: 'Ви дійсно хочете закрити це звернення?',
+      confirmText: 'Так, закрити',
+      cancelText: 'Скасувати',
+      isDanger: false,
+      onConfirm: async () => {
+        try {
+          await resolveSupportTicket(chatTicketId, 'resolved');
+          toast('Звернення закрито', 'success');
+          setTickets(prev => prev.map(t => t.id === chatTicketId ? { ...t, status: 'resolved' } : t));
+        } catch (e) {
+          toast('Помилка закриття звернення', 'error');
+        }
+        setConfirmModal(prev => ({ ...prev, show: false }));
+      }
+    });
   };
 
   const handleDeleteTicket = async () => {
     if (!chatTicketId) return;
-    if (!window.confirm('Ви дійсно хочете видалити це звернення? Цю дію неможливо скасувати.')) return;
-    try {
-      await deleteSupportTicket(chatTicketId);
-      toast('Звернення видалено', 'info');
-      setTickets(prev => prev.filter(t => t.id !== chatTicketId));
-      setChatTicketId(null);
-    } catch (e) {
-      toast('Помилка видалення звернення', 'error');
-    }
+    setConfirmModal({
+      show: true,
+      title: 'Видалити звернення',
+      message: 'Ви дійсно хочете видалити це звернення? Цю дію неможливо скасувати.',
+      confirmText: 'Так, видалити',
+      cancelText: 'Скасувати',
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          await deleteSupportTicket(chatTicketId);
+          toast('Звернення видалено', 'info');
+          setTickets(prev => prev.filter(t => t.id !== chatTicketId));
+          setChatTicketId(null);
+        } catch (e) {
+          toast('Помилка видалення звернення', 'error');
+        }
+        setConfirmModal(prev => ({ ...prev, show: false }));
+      }
+    });
   };
 
   const handleSendChat = async () => {
@@ -894,6 +930,17 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmModal.show}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        cancelText={confirmModal.cancelText}
+        isDanger={confirmModal.isDanger}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, show: false }))}
+      />
     </>
   );
 }

@@ -93,6 +93,25 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
     }
   };
 
+  const handleDeleteClick = (u: any) => {
+    setConfirmModal({
+      show: true,
+      title: 'Видалення акаунту',
+      message: `Ви дійсно хочете повністю видалити акаунт користувача ${u.name} (@${u.login})? Всі його дані, запрошення та друзі будуть видалені назавжди. Цю дію неможливо скасувати.`,
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          const { adminDeleteAccount } = await import('@/lib/firebase/db');
+          await adminDeleteAccount(u.uid, u.login, u.uniqueId);
+          reload();
+          toast('Акаунт успішно видалено', 'success');
+        } catch (err: any) {
+          toast('Помилка: ' + (err.message || err), 'error');
+        }
+      }
+    });
+  };
+
   const submitBan = async (hours: number) => {
     if (!banTarget) return;
     try {
@@ -179,7 +198,7 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
                     </td>
                     <td style={{fontSize:'.82rem',color:'var(--muted)'}}>{timeAgo(u.createdAt)}</td>
                     <td style={{fontSize:'.82rem',color:'var(--muted)'}}>{u.lastSeen ? timeAgo(u.lastSeen) : 'Ніколи'}</td>
-                    <td>
+                    <td style={{display:'flex', gap:'6px', alignItems:'center'}}>
                       {canBan && u.uid !== profile.uid ? (
                         <button 
                           className={`btn btn-sm ${u.banned ? 'btn-outline' : 'btn-red'}`} 
@@ -188,7 +207,20 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
                         >
                           {u.banned ? 'Розблокувати' : 'Бан'}
                         </button>
-                      ) : <span style={{color:'var(--muted)',fontSize:'.8rem'}}>—</span>}
+                      ) : null}
+                      {isSuperAdmin && u.uid !== profile.uid ? (
+                        <button 
+                          className="btn btn-sm btn-red" 
+                          style={{padding:'4px 8px', display:'inline-flex', alignItems:'center', justifyContent:'center'}}
+                          onClick={() => handleDeleteClick(u)}
+                          title="Видалити акаунт"
+                        >
+                          <Icon name="trash" size={14}/>
+                        </button>
+                      ) : null}
+                      {!(canBan && u.uid !== profile.uid) && !(isSuperAdmin && u.uid !== profile.uid) && (
+                        <span style={{color:'var(--muted)',fontSize:'.8rem'}}>—</span>
+                      )}
                     </td>
                   </tr>
                 );

@@ -29,15 +29,15 @@
     "logins": {
       ".read": true,
       "$login": {
-        ".write": "auth != null && (!root.child('logins').child($login).exists() || root.child('logins').child($login).val() === auth.uid)",
-        ".validate": "newData.val() === auth.uid"
+        ".write": "auth != null && (!root.child('logins').child($login).exists() || root.child('logins').child($login).val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin')",
+        ".validate": "!newData.exists() || newData.val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin'"
       }
     },
     "ids": {
       ".read": true,
       "$id": {
-        ".write": "auth != null && (!root.child('ids').child($id).exists() || root.child('ids').child($id).val() === auth.uid)",
-        ".validate": "newData.val() === auth.uid"
+        ".write": "auth != null && (!root.child('ids').child($id).exists() || root.child('ids').child($id).val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin')",
+        ".validate": "!newData.exists() || newData.val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin'"
       }
     },
     "invites": {
@@ -67,21 +67,21 @@
     "friends": {
       "$uid": {
         ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin'",
-        ".write": "$uid === auth.uid"
+        ".write": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin'"
       }
     },
     "friend-requests": {
       "$uid": {
-        ".read": "$uid === auth.uid",
-        ".write": "$uid === auth.uid"
+        ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin'",
+        ".write": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin'"
       }
     },
     "notifications": {
       "$uid": {
-        ".read": "$uid === auth.uid",
+        ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin'",
         ".indexOn": ["createdAt", "read"],
         "$notificationId": {
-          ".write": "auth != null && (!data.exists() && newData.exists() || $uid === auth.uid)"
+          ".write": "auth != null && (!data.exists() && newData.exists() || $uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin')"
         }
       }
     },

@@ -239,7 +239,6 @@ export async function signInWithSocial(providerName: 'google'): Promise<UserProf
       profile.twoFactorEnabled = false;
     }
 
-    await set(ref(db, 'users/' + uid), profile);
     return profile;
   }
 

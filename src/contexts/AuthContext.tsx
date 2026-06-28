@@ -47,19 +47,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [completeError, setCompleteError] = useState('');
   const [completeSaving, setCompleteSaving] = useState(false);
 
-  const isRegistrationIncomplete = !!(user && profile && profile.registrationIncomplete);
+  const isRegistrationIncomplete = !!(user && !loading && (!profile || profile.registrationIncomplete));
 
   useEffect(() => {
-    if (profile && profile.registrationIncomplete) {
-      if (!completeName && profile.name) {
-        setCompleteName(profile.name);
+    if (isRegistrationIncomplete) {
+      if (!completeName) {
+        setCompleteName(profile?.name || user?.displayName || '');
       }
       if (!completeLogin && user?.email) {
         const base = user.email.split('@')[0].replace(/[^a-z0-9]/g, '').slice(0, 25);
         setCompleteLogin(base);
       }
     }
-  }, [profile, user]);
+  }, [isRegistrationIncomplete, profile, user]);
 
   const isEmailVerificationPending = !!(
     user &&
@@ -221,13 +221,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         idCheck = await get(ref(db, 'ids/' + uniqueId));
       }
 
-      // Update database profile
-      await update(ref(db, 'users/' + user.uid), {
-        name: cleanName,
-        login: cleanLogin,
-        uniqueId: uniqueId,
-        registrationIncomplete: null
-      });
+      // Check if profile exists (meaning it's an existing incomplete registration from the database)
+      // or if we need to create it from scratch.
+      const userRef = ref(db, 'users/' + user.uid);
+      const snap = await get(userRef);
+      if (!snap.exists()) {
+        const newProfile = {
+          uid: user.uid,
+          name: cleanName,
+          login: cleanLogin,
+          uniqueId: uniqueId,
+          role: 'user',
+          avatar: user.photoURL || null,
+          createdAt: Date.now(),
+          lastSeen: Date.now(),
+          email: user.email || null,
+          twoFactorEnabled: false
+        };
+        await set(userRef, newProfile);
+      } else {
+        await update(userRef, {
+          name: cleanName,
+          login: cleanLogin,
+          uniqueId: uniqueId,
+          registrationIncomplete: null
+        });
+      }
 
       // Write indexes
       await set(ref(db, 'logins/' + cleanLogin), user.uid);
