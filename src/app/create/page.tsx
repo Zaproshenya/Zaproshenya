@@ -82,6 +82,14 @@ export default function CreatePage() {
   };
 
   const isFormValid = () => {
+    const hasCommonFields =
+      form.msg.trim().length > 0 &&
+      form.date.trim().length > 0 &&
+      form.time.trim().length > 0 &&
+      form.place.trim().length > 0;
+
+    if (!hasCommonFields) return false;
+
     if (mode === 'group') return form.title.trim().length > 0;
     return form.to.trim().length > 0 || selectedFriends.length > 0;
   };
