@@ -20,6 +20,11 @@ export default function ClientInvitePage({ id }: { id: string }) {
   const [comment, setComment] = useState('');
   const [submittingReport, setSubmittingReport] = useState(false);
 
+  // States for rescheduling
+  const [showRescheduleForm, setShowRescheduleForm] = useState(false);
+  const [rescheduleDate, setRescheduleDate] = useState('');
+  const [rescheduleTime, setRescheduleTime] = useState('');
+
   useEffect(() => {
     if (user === undefined) return;
 
@@ -52,6 +57,20 @@ export default function ClientInvitePage({ id }: { id: string }) {
     };
   }, [id, user]);
 
+  const [rescheduleData, setRescheduleData] = useState<any>(null);
+
+  useEffect(() => {
+    if (answerStatus === 'reschedule') {
+      import('@/lib/firebase/db').then(({ getReschedule }) => {
+        getReschedule(id).then((res) => {
+          setRescheduleData(res);
+        });
+      });
+    } else {
+      setRescheduleData(null);
+    }
+  }, [id, answerStatus]);
+
   const handleAnswer = async (status: string) => {
     try {
       await updateInviteStatus(id, status, invData?.creatorUid);
@@ -62,6 +81,37 @@ export default function ClientInvitePage({ id }: { id: string }) {
       }
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const submitReschedule = async () => {
+    if (!rescheduleDate && !rescheduleTime) {
+      toast('Виберіть дату або час!', 'error');
+      return;
+    }
+
+    try {
+      const { saveReschedule, addNotification } = await import('@/lib/firebase/db');
+      await saveReschedule(id, { date: rescheduleDate, time: rescheduleTime });
+
+      // Notify creator
+      if (invData?.creatorUid) {
+        const responderName = profile?.name || invData.to || 'Хтось';
+        await addNotification(invData.creatorUid, {
+          type: 'invite-reschedule',
+          title: `Запит на перенесення`,
+          body: `${responderName} хоче перенести зустріч`,
+          inviteId: id,
+        });
+      }
+
+      setAnswered(true);
+      setAnswerStatus('reschedule');
+      setShowRescheduleForm(false);
+      toast('Пропозицію надіслано!', 'success');
+    } catch (e) {
+      console.error(e);
+      toast('Сталася помилка при збереженні', 'error');
     }
   };
 
@@ -196,25 +246,54 @@ export default function ClientInvitePage({ id }: { id: string }) {
           {answered ? (
             <div className="result-screen" style={{animation:'pop .5s cubic-bezier(.34,1.56,.64,1) both'}}>
               {answerStatus === 'accepted' && (
-                <>
-                  <span className="result-icon"><Icon name="confetti" size={32}/></span>
-                  <div className="result-title" style={{color:'var(--green)'}}>Ура! Так! <Icon name="star" size={14}/></div>
-                  <div className="result-sub">Ви погодились! Відправник дізнається автоматично <Icon name="check" size={14}/></div>
-                </>
+                isCreator ? (
+                  <>
+                    <span className="result-icon"><Icon name="confetti" size={32}/></span>
+                    <div className="result-title" style={{color:'var(--green)'}}>Запрошення прийнято! <Icon name="star" size={14}/></div>
+                    <div className="result-sub">Отримувач погодився прийти на зустріч <Icon name="check" size={14}/></div>
+                  </>
+                ) : (
+                  <>
+                    <span className="result-icon"><Icon name="confetti" size={32}/></span>
+                    <div className="result-title" style={{color:'var(--green)'}}>Ура! Так! <Icon name="star" size={14}/></div>
+                    <div className="result-sub">Ви погодились! Відправник дізнається автоматично <Icon name="check" size={14}/></div>
+                  </>
+                )
               )}
               {answerStatus === 'declined' && (
-                <>
-                  <span className="result-icon"><Icon name="heart-crack" size={32}/></span>
-                  <div className="result-title" style={{color:'var(--red)'}}>Відмовлено</div>
-                  <div className="result-sub">Ви відмовились. Відправник дізнається автоматично.</div>
-                </>
+                isCreator ? (
+                  <>
+                    <span className="result-icon"><Icon name="heart-crack" size={32}/></span>
+                    <div className="result-title" style={{color:'var(--red)'}}>Отримувач відмовився</div>
+                    <div className="result-sub">На жаль, отримувач відхилив ваше запрошення.</div>
+                  </>
+                ) : (
+                  <>
+                    <span className="result-icon"><Icon name="heart-crack" size={32}/></span>
+                    <div className="result-title" style={{color:'var(--red)'}}>Відмовлено</div>
+                    <div className="result-sub">Ви відмовились. Відправник дізнається автоматично.</div>
+                  </>
+                )
               )}
               {answerStatus === 'reschedule' && (
-                <>
-                  <span className="result-icon"><Icon name="calendar-blank" size={32}/></span>
-                  <div className="result-title" style={{color:'var(--gold)'}}>Пропозицію надіслано!</div>
-                  <div className="result-sub">Відправник отримає ваш варіант часу і зв'яжеться з вами.</div>
-                </>
+                isCreator ? (
+                  <>
+                    <span className="result-icon"><Icon name="calendar-blank" size={32}/></span>
+                    <div className="result-title" style={{color:'var(--gold)'}}>Запит на перенесення</div>
+                    <div className="result-sub">
+                      {rescheduleData 
+                        ? `Отримувач пропонує перенести на: ${rescheduleData.date || '—'}${rescheduleData.time ? ` о ${rescheduleData.time}` : ''}`
+                        : 'Отримувач запропонував перенести зустріч.'
+                      }
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <span className="result-icon"><Icon name="calendar-blank" size={32}/></span>
+                    <div className="result-title" style={{color:'var(--gold)'}}>Пропозицію надіслано!</div>
+                    <div className="result-sub">Відправник отримає ваш варіант часу і зв'яжеться з вами.</div>
+                  </>
+                )
               )}
             </div>
           ) : (
@@ -231,12 +310,44 @@ export default function ClientInvitePage({ id }: { id: string }) {
               </div>
             ) : (
               <div className="action-section-wrap">
-                <div className="answer-wrap">
-                  <button className="btn-yes" onClick={() => handleAnswer('accepted')}><Icon name="check" size={14}/> Так, я приду!</button>
-                  <button className="btn-reschedule" onClick={() => handleAnswer('reschedule')}><Icon name="calendar-blank" size={14}/> Перенести</button>
-                  <button className="btn-no" onClick={() => handleAnswer('declined')}><Icon name="x" size={14}/> Ні</button>
-                </div>
-              </div>
+                 <div className="answer-wrap">
+                   <button className="btn-yes" onClick={() => handleAnswer('accepted')}><Icon name="check" size={14}/> Так, я приду!</button>
+                   <button className={`btn-reschedule ${showRescheduleForm ? 'active' : ''}`} onClick={() => setShowRescheduleForm(!showRescheduleForm)}><Icon name="calendar-blank" size={14}/> Перенести</button>
+                   <button className="btn-no" onClick={() => handleAnswer('declined')}><Icon name="x" size={14}/> Ні</button>
+                 </div>
+
+                 {showRescheduleForm && (
+                   <div className="reschedule-form-block" style={{ marginTop: '16px', animation: 'fadeIn .2s ease' }}>
+                     <div className="reschedule-form" style={{ padding: '16px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--warm)' }}>
+                       <p style={{ fontSize: '.84rem', fontWeight: 500, marginBottom: '12px' }}>Запропонуйте інший час:</p>
+                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                         <div>
+                           <label className="lbl">Нова дата</label>
+                           <input
+                             type="date"
+                             style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--paper)', color: 'var(--ink)', fontSize: '0.9rem' }}
+                             value={rescheduleDate}
+                             min={new Date().toISOString().split('T')[0]}
+                             onChange={(e) => setRescheduleDate(e.target.value)}
+                           />
+                         </div>
+                         <div>
+                           <label className="lbl">Новий час</label>
+                           <input
+                             type="time"
+                             style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--paper)', color: 'var(--ink)', fontSize: '0.9rem' }}
+                             value={rescheduleTime}
+                             onChange={(e) => setRescheduleTime(e.target.value)}
+                           />
+                         </div>
+                       </div>
+                       <button className="btn btn-gold btn-full" style={{ width: '100%', padding: '10px' }} onClick={submitReschedule}>
+                         Надіслати пропозицію →
+                       </button>
+                     </div>
+                   </div>
+                 )}
+               </div>
             )
           )}
 

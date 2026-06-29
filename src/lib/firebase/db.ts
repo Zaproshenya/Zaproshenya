@@ -143,6 +143,16 @@ export async function deleteInvite(invId: string, uid?: string, isGroup?: boolea
   }
 }
 
+export async function saveReschedule(invId: string, data: { date: string; time: string }) {
+  await set(ref(db, 'reschedule/' + invId), { ...data, ts: Date.now() });
+  await set(ref(db, 'statuses/' + invId), 'reschedule');
+}
+
+export async function getReschedule(invId: string) {
+  const snap = await get(ref(db, 'reschedule/' + invId));
+  return snap.exists() ? snap.val() : null;
+}
+
 // ── Group Invites ──
 export async function createGroupInvite(inv: any) {
   await set(ref(db, 'group-invites/' + inv.id), inv);
