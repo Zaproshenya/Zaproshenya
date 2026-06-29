@@ -5,6 +5,7 @@ import { timeAgo } from '@/lib/utils';
 import {
   changeUserUniqueId,
   autoAssignRoleIds,
+  previewAutoAssignRoleIds,
   updateUserRole,
   updateModeratorPermissions,
   listenStaffActionLog,
@@ -100,11 +101,12 @@ export default function AdminRoles({
   const handleAutoPreview = async () => {
     setAutoLoading(true);
     try {
-      const snap = await import('@/lib/firebase/db').then(m => m.autoAssignRoleIds());
-      if (snap.preview.length === 0) {
-        toast('Всі ID вже відповідають ролям ✦', 'success');
+      // Only CALCULATE what would change — does NOT apply anything
+      const preview = await previewAutoAssignRoleIds();
+      if (preview.length === 0) {
+        toast('Всі ID вже відповідають ролям ❖', 'success');
       } else {
-        setAutoPreview(snap.preview);
+        setAutoPreview(preview);
       }
     } catch (e: any) {
       toast(e.message || 'Помилка', 'error');

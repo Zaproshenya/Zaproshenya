@@ -3,10 +3,10 @@ import { useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { TYPE_MAP } from '@/lib/utils';
 import Link from 'next/link';
-import { deleteInvite } from '@/lib/firebase/db';
+import { deleteInvite, logStaffAction } from '@/lib/firebase/db';
 import { ConfirmModal } from '@/components/ConfirmModal';
 
-export default function AdminModeration({ invites, users, reload }: { invites: any[], users: any[], reload?: () => void }) {
+export default function AdminModeration({ invites, users, profile, reload }: { invites: any[], users: any[], profile: any, reload?: () => void }) {
   const [inviteSearch, setInviteSearch] = useState('');
   const [invitePage, setInvitePage] = useState(0);
   const [confirmModal, setConfirmModal] = useState<{ show: boolean; title: string; message: string; onConfirm: () => void; isDanger?: boolean }>({ show: false, title: '', message: '', onConfirm: () => {} });
@@ -71,6 +71,12 @@ export default function AdminModeration({ invites, users, reload }: { invites: a
                         isDanger: true,
                         onConfirm: async () => {
                           await deleteInvite(inv.id, inv.creatorUid, inv.isGroup);
+                          await logStaffAction(
+                            profile.uid, profile.name,
+                            `Видалив запрошення (${inv.isGroup ? 'групове' : 'особисте'}: ${inv.title || inv.to || inv.id})`,
+                            inv.creatorUid,
+                            inv.from || inv.creatorName
+                          );
                           if(reload) reload();
                         }
                       });

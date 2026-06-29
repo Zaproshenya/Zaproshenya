@@ -2,12 +2,12 @@
 import { useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { timeAgo } from '@/lib/utils';
-import { resolveReport } from '@/lib/firebase/db';
+import { resolveReport, logStaffAction } from '@/lib/firebase/db';
 import Link from 'next/link';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { toast } from '@/components/Toast';
 
-export default function AdminReports({ reports, reload }: { reports: any[], reload: () => void }) {
+export default function AdminReports({ reports, profile, reload }: { reports: any[], profile: any, reload: () => void }) {
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
   const [confirmModal, setConfirmModal] = useState<{ show: boolean; title: string; message: string; onConfirm: () => void; isDanger?: boolean }>({ show: false, title: '', message: '', onConfirm: () => {} });
   const pending = reports.filter(r => r.status === 'pending');
@@ -23,6 +23,12 @@ export default function AdminReports({ reports, reload }: { reports: any[], relo
       onConfirm: async () => {
         try {
           await resolveReport(id, status);
+          const report = reports.find((r: any) => r.id === id);
+          await logStaffAction(
+            profile.uid, profile.name,
+            `${isResolved ? 'Схвалив' : 'Відхилив'} скаргу (${report?.reason || id})`,
+            report?.reporterUid
+          );
           reload();
           toast('Статус скарги змінено', 'success');
         } catch (err: any) {

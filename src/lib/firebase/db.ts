@@ -787,17 +787,16 @@ export async function changeUserUniqueId(uid: string, oldId: string, newId: stri
   await update(ref(db), updates);
 }
 
-// ── Auto-assign role-based IDs to all privileged users ──
-export async function autoAssignRoleIds(): Promise<{ updated: number; skipped: number; preview: Array<{ uid: string; name: string; role: string; oldId: string; newId: string }> }> {
+// ── Preview role ID changes WITHOUT applying ──
+export async function previewAutoAssignRoleIds(): Promise<Array<{ uid: string; name: string; role: string; oldId: string; newId: string }>> {
   const { genRoleUserId } = await import('@/lib/utils');
 
   const snap = await get(ref(db, 'users'));
-  if (!snap.exists()) return { updated: 0, skipped: 0, preview: [] };
+  if (!snap.exists()) return [];
 
   const users: any[] = [];
   snap.forEach(c => { users.push(c.val()); });
 
-  // Sort moderators by createdAt to assign consistent indices
   const moderators = users.filter(u => u.role === 'moderator').sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
   const techAdmins = users.filter(u => u.role === 'tech-admin');
   const founders = users.filter(u => u.role === 'founder');
@@ -810,22 +809,22 @@ export async function autoAssignRoleIds(): Promise<{ updated: number; skipped: n
       toUpdate.push({ uid: u.uid, name: u.name || '', role: 'moderator', oldId: u.uniqueId || '', newId: expectedId });
     }
   });
-
   techAdmins.forEach(u => {
     const expectedId = genRoleUserId('tech-admin');
-    if (u.uniqueId !== expectedId) {
-      toUpdate.push({ uid: u.uid, name: u.name || '', role: 'tech-admin', oldId: u.uniqueId || '', newId: expectedId });
-    }
+    if (u.uniqueId !== expectedId) toUpdate.push({ uid: u.uid, name: u.name || '', role: 'tech-admin', oldId: u.uniqueId || '', newId: expectedId });
   });
-
   founders.forEach(u => {
     const expectedId = genRoleUserId('founder');
-    if (u.uniqueId !== expectedId) {
-      toUpdate.push({ uid: u.uid, name: u.name || '', role: 'founder', oldId: u.uniqueId || '', newId: expectedId });
-    }
+    if (u.uniqueId !== expectedId) toUpdate.push({ uid: u.uid, name: u.name || '', role: 'founder', oldId: u.uniqueId || '', newId: expectedId });
   });
 
-  // Apply all changes
+  return toUpdate;
+}
+
+// ── Apply role-based IDs to all privileged users ──
+export async function autoAssignRoleIds(): Promise<{ updated: number; skipped: number }> {
+  const toUpdate = await previewAutoAssignRoleIds();
+
   let updated = 0;
   for (const item of toUpdate) {
     try {
@@ -836,7 +835,7 @@ export async function autoAssignRoleIds(): Promise<{ updated: number; skipped: n
     }
   }
 
-  return { updated, skipped: (moderators.length + techAdmins.length + founders.length) - updated, preview: toUpdate };
+  return { updated, skipped: toUpdate.length - updated };
 }
 
 // ── Staff Action Logging ──

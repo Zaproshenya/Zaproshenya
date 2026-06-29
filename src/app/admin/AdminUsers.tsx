@@ -104,6 +104,7 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
         onConfirm: async () => {
           try {
             await banUser(u.uid, false, null);
+            await logStaffAction(profile.uid, profile.name, 'Розблокував користувача', u.uid, u.name);
             reload();
             toast('Користувача розблоковано', 'success');
           } catch (e: any) {
@@ -127,6 +128,7 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
         try {
           const { adminDeleteAccount } = await import('@/lib/firebase/db');
           await adminDeleteAccount(u.uid, u.login, u.uniqueId);
+          await logStaffAction(profile.uid, profile.name, `Видалив акаунт @${u.login}`, u.uid, u.name);
           reload();
           toast('Акаунт успішно видалено', 'success');
         } catch (err: any) {
@@ -144,6 +146,8 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
         until = Date.now() + hours * 60 * 60 * 1000;
       }
       await banUser(banTarget.uid, true, until);
+      const banDesc = hours >= 999999 ? 'назавжди' : `на ${hours} год`;
+      await logStaffAction(profile.uid, profile.name, `Заблокував користувача ${banDesc}`, banTarget.uid, banTarget.name);
       setBanModalOpen(false);
       setBanTarget(null);
       reload();

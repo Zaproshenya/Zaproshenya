@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { timeAgo } from '@/lib/utils';
-import { resolveSupportTicket } from '@/lib/firebase/db';
+import { resolveSupportTicket, logStaffAction } from '@/lib/firebase/db';
 import { createPortal } from 'react-dom';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { toast } from '@/components/Toast';
@@ -16,7 +16,8 @@ export default function AdminSupport({
   ticketReply, 
   setTicketReply, 
   sendSupportReply,
-  users
+  users,
+  profile
 }: any) {
   const [confirmModal, setConfirmModal] = useState<{ show: boolean; title: string; message: string; onConfirm: () => void; isDanger?: boolean }>({ show: false, title: '', message: '', onConfirm: () => {} });
   const pending = supportTickets.filter((t: any) => t.status === 'pending' || (t.status === 'open' && t.unreadBySupport));
@@ -33,6 +34,13 @@ export default function AdminSupport({
       onConfirm: async () => {
         try {
           await resolveSupportTicket(id, status);
+          const ticket = supportTickets.find((t: any) => t.id === id);
+          await logStaffAction(
+            profile.uid, profile.name,
+            `${isResolved ? 'Вирішив' : 'Закрив'} звернення (${ticket?.subject || id})`,
+            ticket?.authorUid,
+            ticket?.authorName
+          );
           reload();
           if (openTicket && openTicket.id === id) setOpenTicket(null);
           toast('Статус звернення оновлено', 'success');

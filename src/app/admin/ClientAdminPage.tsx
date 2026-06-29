@@ -300,12 +300,13 @@ export default function ClientAdminPage() {
               {dashTab === 'overview' && <AdminOverview stats={stats} users={users} />}
               {dashTab === 'users' && <AdminUsers users={users} profile={profile} reload={loadData} />}
               {dashTab === 'roles' && !isModeOnly && <AdminRoles users={users} profile={profile} reload={loadData} />}
-              {dashTab === 'moderation' && <AdminModeration invites={invites} users={users} reload={loadData} />}
-              {dashTab === 'reports' && <AdminReports reports={reports} reload={loadData} />}
+              {dashTab === 'moderation' && <AdminModeration invites={invites} users={users} profile={profile} reload={loadData} />}
+              {dashTab === 'reports' && <AdminReports reports={reports} profile={profile} reload={loadData} />}
               {dashTab === 'support' && (
                 <AdminSupport 
                   supportTickets={supportTickets} 
                   users={users}
+                  profile={profile}
                   reload={loadData} 
                   openTicket={openTicket} 
                   setOpenTicket={setOpenTicket} 
