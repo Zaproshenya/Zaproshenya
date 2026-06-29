@@ -80,7 +80,10 @@ export const TYPES = [
   { v: 'custom', l: 'Своє', e: '✦' },
 ];
 
-export const TYPE_MAP = Object.fromEntries(TYPES.map(t => [t.v, t]));
+export const TYPE_MAP: Record<string, { v?: string; l: string; e: string }> = {
+  ...Object.fromEntries(TYPES.map(t => [t.v, t])),
+  other: { v: 'other', l: 'Подія', e: '✨' }
+};
 
 // ── Confetti effect ──
 export function boom() {
