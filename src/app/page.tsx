@@ -17,6 +17,8 @@ const DEFAULT_CONFIG: LandingPageConfig = {
   emoji: '✉️',
   eventType: 'Зустріч',
   demoText: 'Зустрінемось на каву? Давно не бачились, маю купу новин!',
+  demoName: 'Олена',
+  demoSender: 'Максима',
   demoLabel: 'Дата',
   demoValue: 'Субота, 21 червня',
   demoPlace: 'Kyiv Coffee, Хрещатик',
@@ -118,8 +120,8 @@ export default function LandingPage({ config }: { config?: LandingPageConfig }) 
               <div className="envelope-top">
                 <span className="envelope-emoji">{cfg.emoji}</span>
                 <div className="envelope-type">{cfg.eventType}</div>
-                <div className="envelope-to">Олена</div>
-                <div className="envelope-from">від <strong>Максима</strong></div>
+                <div className="envelope-to">{cfg.demoName}</div>
+                <div className="envelope-from">від <strong>{cfg.demoSender}</strong></div>
               </div>
 
               <div className="envelope-body">
