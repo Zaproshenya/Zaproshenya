@@ -81,6 +81,21 @@ export async function createInvite(inv: any) {
   }
 }
 
+// ── Custom presets ──
+export async function saveCustomPreset(uid: string, preset: { id: string; label: string; emoji: string }) {
+  await set(ref(db, `user-custom-presets/${uid}/${preset.id}`), preset);
+}
+
+export async function getCustomPresets(uid: string): Promise<{ id: string; label: string; emoji: string }[]> {
+  const snap = await get(ref(db, `user-custom-presets/${uid}`));
+  if (!snap.exists()) return [];
+  return Object.values(snap.val()) as { id: string; label: string; emoji: string }[];
+}
+
+export async function deleteCustomPreset(uid: string, presetId: string) {
+  await remove(ref(db, `user-custom-presets/${uid}/${presetId}`));
+}
+
 export async function getInvite(invId: string) {
   const snap = await get(ref(db, 'invites/' + invId));
   return snap.exists() ? snap.val() : null;

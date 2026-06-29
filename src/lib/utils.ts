@@ -77,7 +77,7 @@ export const TYPES = [
   { v: 'sport', l: 'Спорт / Активність', e: '⚽' },
   { v: 'meeting', l: 'Ділова зустріч', e: '💼' },
   { v: 'travel', l: 'Подорож', e: '✈️' },
-  { v: 'other', l: 'Інше', e: '✨' },
+  { v: 'custom', l: 'Своє', e: '✦' },
 ];
 
 export const TYPE_MAP = Object.fromEntries(TYPES.map(t => [t.v, t]));

@@ -1092,6 +1092,181 @@
   font-weight: 600;
   box-shadow: 0 0 0 3px rgba(var(--gold-rgb),.12);
 }
+/* "Своє" button special style */
+.type-option.custom-type-btn {
+  background: linear-gradient(135deg, var(--gold-dim) 0%, rgba(var(--gold-rgb),.04) 100%);
+  border-style: dashed;
+  border-color: var(--gold-border);
+  color: var(--gold);
+}
+.type-option.custom-type-btn.selected {
+  border-style: solid;
+  border-color: var(--gold);
+  color: var(--ink);
+}
+
+/* ── Custom type bottom sheet ── */
+.custom-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 900;
+  animation: fadeIn .2s ease;
+}
+@keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+
+.custom-sheet {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 901;
+  background: var(--surface);
+  border-radius: 22px 22px 0 0;
+  padding: 0 0 env(safe-area-inset-bottom, 16px);
+  box-shadow: 0 -8px 40px rgba(0,0,0,.15);
+  transform: translateY(100%);
+  transition: transform .32s cubic-bezier(.32,1,.55,1);
+  max-width: 520px;
+  margin: 0 auto;
+}
+.custom-sheet.open {
+  transform: translateY(0);
+}
+
+.custom-sheet-handle {
+  width: 40px; height: 4px;
+  background: var(--border);
+  border-radius: 99px;
+  margin: 12px auto 0;
+}
+
+.custom-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px 0;
+}
+.custom-sheet-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  font-family: var(--font-display);
+}
+.custom-sheet-close {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted);
+  transition: all .15s;
+}
+.custom-sheet-close:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.custom-sheet-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 12px 20px 0;
+  border-bottom: 1.5px solid var(--border);
+}
+.custom-sheet-tab {
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: .85rem;
+  font-weight: 500;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all .15s;
+}
+.custom-sheet-tab.active {
+  color: var(--ink);
+  border-bottom-color: var(--gold);
+  font-weight: 600;
+}
+
+.custom-sheet-body {
+  padding: 16px 20px 20px;
+  overflow-y: auto;
+  max-height: 65vh;
+}
+
+/* Emoji quick-pick grid */
+.custom-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.custom-emoji-btn {
+  width: 100%; aspect-ratio: 1;
+  border-radius: 9px;
+  border: 1.5px solid transparent;
+  background: var(--surface-2);
+  font-size: 1.15rem;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+}
+.custom-emoji-btn:hover {
+  border-color: var(--gold-border);
+  background: var(--gold-dim);
+  transform: scale(1.1);
+}
+.custom-emoji-btn.selected {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+  box-shadow: 0 0 0 2px rgba(var(--gold-rgb),.2);
+  transform: scale(1.12);
+}
+
+/* Action row inside sheet */
+.custom-sheet-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Saved presets list */
+.custom-presets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.custom-preset-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  transition: border-color .15s;
+}
+.custom-preset-row:hover { border-color: var(--gold-border); }
+.custom-preset-emoji { font-size: 1.6rem; flex-shrink: 0; }
+.custom-preset-label {
+  flex: 1;
+  font-size: .9rem;
+  font-weight: 500;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.custom-preset-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+
 
 /* Date/time row */
 .datetime-row {
