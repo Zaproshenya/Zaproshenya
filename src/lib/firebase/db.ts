@@ -31,6 +31,28 @@ export async function getAllUsers(limit = 100): Promise<UserProfile[]> {
 
 export async function updateUserRole(uid: string, newRole: string) {
   await set(ref(db, 'users/' + uid + '/role'), newRole);
+
+  // If demoting to regular user — replace privileged ID with a random one
+  if (newRole === 'user') {
+    const snap = await get(ref(db, 'users/' + uid));
+    if (snap.exists()) {
+      const profile = snap.val();
+      const oldId: string | undefined = profile.uniqueId;
+      if (oldId) {
+        const { genUserId, isReservedId } = await import('@/lib/utils');
+        if (isReservedId(oldId)) {
+          // Generate a fresh random ID
+          let newId = genUserId();
+          let check = await get(ref(db, 'ids/' + newId));
+          while (check.exists()) {
+            newId = genUserId();
+            check = await get(ref(db, 'ids/' + newId));
+          }
+          await changeUserUniqueId(uid, oldId, newId);
+        }
+      }
+    }
+  }
 }
 
 export async function banUser(uid: string, banned: boolean, until: number | null = null) {
@@ -749,4 +771,141 @@ export async function adminDeleteAccount(uid: string, login?: string, uniqueId?:
   await remove(ref(db, 'friends/' + uid));
   await remove(ref(db, 'friend-requests/' + uid));
   await remove(ref(db, 'user-invites/' + uid));
+}
+
+// ── Change user uniqueId atomically across the whole database ──
+export async function changeUserUniqueId(uid: string, oldId: string, newId: string) {
+  const updates: Record<string, any> = {};
+
+  // Update user profile
+  updates['users/' + uid + '/uniqueId'] = newId;
+
+  // Swap ids/ index
+  updates['ids/' + oldId.trim()] = null;
+  updates['ids/' + newId.trim()] = uid;
+
+  await update(ref(db), updates);
+}
+
+// ── Auto-assign role-based IDs to all privileged users ──
+export async function autoAssignRoleIds(): Promise<{ updated: number; skipped: number; preview: Array<{ uid: string; name: string; role: string; oldId: string; newId: string }> }> {
+  const { genRoleUserId } = await import('@/lib/utils');
+
+  const snap = await get(ref(db, 'users'));
+  if (!snap.exists()) return { updated: 0, skipped: 0, preview: [] };
+
+  const users: any[] = [];
+  snap.forEach(c => { users.push(c.val()); });
+
+  // Sort moderators by createdAt to assign consistent indices
+  const moderators = users.filter(u => u.role === 'moderator').sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+  const techAdmins = users.filter(u => u.role === 'tech-admin');
+  const founders = users.filter(u => u.role === 'founder');
+
+  const toUpdate: Array<{ uid: string; name: string; role: string; oldId: string; newId: string }> = [];
+
+  moderators.forEach((u, i) => {
+    const expectedId = genRoleUserId('moderator', i + 1);
+    if (u.uniqueId !== expectedId) {
+      toUpdate.push({ uid: u.uid, name: u.name || '', role: 'moderator', oldId: u.uniqueId || '', newId: expectedId });
+    }
+  });
+
+  techAdmins.forEach(u => {
+    const expectedId = genRoleUserId('tech-admin');
+    if (u.uniqueId !== expectedId) {
+      toUpdate.push({ uid: u.uid, name: u.name || '', role: 'tech-admin', oldId: u.uniqueId || '', newId: expectedId });
+    }
+  });
+
+  founders.forEach(u => {
+    const expectedId = genRoleUserId('founder');
+    if (u.uniqueId !== expectedId) {
+      toUpdate.push({ uid: u.uid, name: u.name || '', role: 'founder', oldId: u.uniqueId || '', newId: expectedId });
+    }
+  });
+
+  // Apply all changes
+  let updated = 0;
+  for (const item of toUpdate) {
+    try {
+      await changeUserUniqueId(item.uid, item.oldId, item.newId);
+      updated++;
+    } catch (e) {
+      console.error('autoAssignRoleIds: failed to update', item.uid, e);
+    }
+  }
+
+  return { updated, skipped: (moderators.length + techAdmins.length + founders.length) - updated, preview: toUpdate };
+}
+
+// ── Staff Action Logging ──
+
+export async function logStaffAction(adminUid: string, adminName: string, action: string, targetUid?: string, targetName?: string) {
+  const logRef = push(ref(db, 'staff_logs'));
+  await set(logRef, {
+    id: logRef.key,
+    adminUid,
+    adminName,
+    action,
+    targetUid: targetUid || null,
+    targetName: targetName || null,
+    createdAt: Date.now(),
+    pinned: false,
+  });
+
+  // Rotate: keep only 50 non-pinned entries
+  try {
+    const allSnap = await get(ref(db, 'staff_logs'));
+    if (allSnap.exists()) {
+      const all: any[] = [];
+      allSnap.forEach(c => { all.push({ key: c.key, ...c.val() }); });
+
+      const nonPinned = all.filter(l => !l.pinned).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+      if (nonPinned.length > 50) {
+        const toDelete = nonPinned.slice(0, nonPinned.length - 50);
+        const delUpdates: Record<string, null> = {};
+        toDelete.forEach(l => { delUpdates['staff_logs/' + l.key] = null; });
+        await update(ref(db), delUpdates);
+      }
+    }
+  } catch (e) {
+    console.warn('logStaffAction: rotation failed', e);
+  }
+}
+
+export async function pinStaffLog(logId: string, pinned: boolean) {
+  await set(ref(db, 'staff_logs/' + logId + '/pinned'), pinned);
+}
+
+export async function getStaffActionLog(): Promise<any[]> {
+  const snap = await get(ref(db, 'staff_logs'));
+  if (!snap.exists()) return [];
+  const list: any[] = [];
+  snap.forEach(c => { list.push({ key: c.key, ...c.val() }); });
+  // Pinned first, then by date desc
+  return list.sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return (b.createdAt || 0) - (a.createdAt || 0);
+  });
+}
+
+export function listenStaffActionLog(callback: (logs: any[]) => void) {
+  const logsRef = ref(db, 'staff_logs');
+  onValue(logsRef, snap => {
+    const list: any[] = [];
+    if (snap.exists()) snap.forEach(c => { list.push({ key: c.key, ...c.val() }); });
+    callback(list.sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return (b.createdAt || 0) - (a.createdAt || 0);
+    }));
+  });
+  return () => off(logsRef);
+}
+
+// ── Moderator Permissions ──
+export async function updateModeratorPermissions(uid: string, permissions: Record<string, boolean>) {
+  await set(ref(db, 'users/' + uid + '/permissions'), permissions);
 }

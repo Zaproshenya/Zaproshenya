@@ -11,6 +11,31 @@ export function genUserId(): string {
   return 'ZAP-' + id;
 }
 
+// ── Generate role-based user ID ──
+// role: 'moderator' | 'tech-admin' | 'founder'
+// moderIndex: порядковий номер модератора (починаючи з 1), потрібен лише для 'moderator'
+export function genRoleUserId(role: string, moderIndex?: number): string {
+  if (role === 'moderator') {
+    const n = moderIndex ?? 1;
+    return 'ZAP-MODER' + n;
+  }
+  if (role === 'tech-admin') return 'ZAP-TECADM';
+  if (role === 'founder') return 'ZAP-FONDER';
+  return genUserId();
+}
+
+// ── Check if a uniqueId matches a reserved/role pattern ──
+// Blocks normal users from getting IDs like ZAP-MODER1, ZAP-TECADM, ZAP-FONDER
+export function isReservedId(id: string): boolean {
+  if (!id) return false;
+  const upper = id.toUpperCase();
+  if (upper === 'ZAP-TECADM') return true;
+  if (upper === 'ZAP-FONDER') return true;
+  // ZAP-MODER followed by one or more digits
+  if (/^ZAP-MODER\d+$/.test(upper)) return true;
+  return false;
+}
+
 // ── HTML escape ──
 export function esc(s: string): string {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;')

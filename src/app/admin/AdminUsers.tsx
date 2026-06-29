@@ -3,9 +3,16 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Icon } from '@/components/Icon';
 import { timeAgo } from '@/lib/utils';
-import { updateUserRole, banUser } from '@/lib/firebase/db';
+import { updateUserRole, banUser, logStaffAction } from '@/lib/firebase/db';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { toast } from '@/components/Toast';
+
+const ROLE_LABELS: Record<string, string> = {
+  founder: 'FOUNDER',
+  'tech-admin': 'TECH-ADMIN',
+  moderator: 'MODERATOR',
+  user: 'USER',
+};
 
 export default function AdminUsers({ users, profile, reload }: { users: any[], profile: any, reload: () => void }) {
   const [userSearch, setUserSearch] = useState('');
@@ -66,13 +73,15 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
   const handleRoleChange = (uid: string, e: any) => {
     const newRole = e.target.value;
     const oldRole = e.target.defaultValue;
+    const targetUser = users.find(u => u.uid === uid);
     setConfirmModal({
       show: true,
       title: 'Зміна ролі',
-      message: `Ви дійсно хочете змінити роль користувача на "${newRole}"?`,
+      message: `Ви дійсно хочете змінити роль користувача на "${ROLE_LABELS[newRole] || newRole}"?`,
       onConfirm: async () => {
         try {
           await updateUserRole(uid, newRole);
+          await logStaffAction(profile.uid, profile.name, `Змінив роль → ${newRole}`, uid, targetUser?.name);
           reload();
           toast('Роль успішно змінено', 'success');
         } catch (err: any) {
@@ -175,12 +184,12 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
                 const canBan = myRank > uRank; // cannot ban equal or higher rank
                 
                 const roleOptions = [
-                  {v:'user', l:'Користувач'},
-                  {v:'moderator', l:'Модератор'},
-                  {v:'tech-admin', l:'Тех-адмін'}
+                  {v:'user', l:'USER'},
+                  {v:'moderator', l:'MODERATOR'},
+                  {v:'tech-admin', l:'TECH-ADMIN'}
                 ];
                 if (isSuperAdmin || u.role === 'founder') {
-                  roleOptions.push({v:'founder', l:'Засновник'});
+                  roleOptions.push({v:'founder', l:'FOUNDER'});
                 }
 
                 return (
@@ -208,8 +217,8 @@ export default function AdminUsers({ users, profile, reload }: { users: any[], p
                           {roleOptions.map(opt => <option key={opt.v} value={opt.v}>{opt.l}</option>)}
                         </select>
                       ) : (
-                        <div style={{fontSize:'.8rem',padding:'4px 8px',borderRadius:'6px',background:'var(--border)',display:'inline-block'}}>
-                          {roleOptions.find(o => o.v === (u.role || 'user'))?.l || u.role || 'user'}
+                        <div style={{fontSize:'.8rem',padding:'4px 8px',borderRadius:'6px',background:'var(--border)',display:'inline-block',fontWeight:600,letterSpacing:'.04em'}}>
+                          {ROLE_LABELS[u.role || 'user'] || (u.role || 'user').toUpperCase()}
                         </div>
                       )}
                     </td>

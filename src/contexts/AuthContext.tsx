@@ -213,10 +213,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (loginCheck.exists()) throw new Error("Цей логін вже зайнятий");
 
       // Generate unique ID
-      const { genUserId } = await import('@/lib/utils');
+      const { genUserId, isReservedId } = await import('@/lib/utils');
       let uniqueId = genUserId();
+      // Regenerate if ID matches a reserved role pattern or already exists
       let idCheck = await get(ref(db, 'ids/' + uniqueId));
-      while (idCheck.exists()) {
+      while (idCheck.exists() || isReservedId(uniqueId)) {
         uniqueId = genUserId();
         idCheck = await get(ref(db, 'ids/' + uniqueId));
       }

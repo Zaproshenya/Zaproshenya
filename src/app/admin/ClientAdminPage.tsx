@@ -29,6 +29,7 @@ import AdminUsers from './AdminUsers';
 import AdminModeration from './AdminModeration';
 import AdminReports from './AdminReports';
 import AdminSupport from './AdminSupport';
+import AdminRoles from './AdminRoles';
 
 export default function ClientAdminPage() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function ClientAdminPage() {
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [dashTab, setDashTab] = useState('overview'); // 'overview' | 'users' | 'reports' | 'support' | 'moderation'
+  const [dashTab, setDashTab] = useState('overview'); // 'overview' | 'users' | 'roles' | 'reports' | 'support' | 'moderation'
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // Real-time Database States
@@ -240,6 +241,11 @@ export default function ClientAdminPage() {
         <button className={`sidebar-item ${dashTab === 'users' ? 'active' : ''}`} onClick={() => { setDashTab('users'); setSidebarOpen(false); }}>
           <span className="sidebar-item-icon"><Icon name="users" size={20}/></span> Користувачі
         </button>
+        {!isModeOnly && (
+          <button className={`sidebar-item ${dashTab === 'roles' ? 'active' : ''}`} onClick={() => { setDashTab('roles'); setSidebarOpen(false); }}>
+            <span className="sidebar-item-icon"><Icon name="shield-star" size={20}/></span> Управління ролями
+          </button>
+        )}
         <button className={`sidebar-item ${dashTab === 'moderation' ? 'active' : ''}`} onClick={() => { setDashTab('moderation'); setSidebarOpen(false); }}>
           <span className="sidebar-item-icon"><Icon name="shield" size={20}/></span> Модерація
         </button>
@@ -264,7 +270,7 @@ export default function ClientAdminPage() {
             </div>
             <div>
               <div style={{color:'#fff',fontSize:'.85rem',fontWeight:500}}>{profile?.name}</div>
-              <div style={{fontSize:'.7rem',color:'rgba(255,255,255,.4)'}}>{profile?.role}</div>
+              <div style={{fontSize:'.7rem',color:'rgba(255,255,255,.4)'}}>{(profile?.role || '').toUpperCase()}</div>
             </div>
           </div>
         </div>
@@ -283,6 +289,7 @@ export default function ClientAdminPage() {
                 <h1 className="page-title" style={{marginBottom:0}}>
                   {dashTab === 'overview' && 'Огляд'}
                   {dashTab === 'users' && 'Користувачі'}
+                  {dashTab === 'roles' && 'Управління ролями'}
                   {dashTab === 'moderation' && 'Модерація'}
                   {dashTab === 'reports' && 'Скарги'}
                   {dashTab === 'support' && 'Підтримка'}
@@ -292,6 +299,7 @@ export default function ClientAdminPage() {
 
               {dashTab === 'overview' && <AdminOverview stats={stats} users={users} />}
               {dashTab === 'users' && <AdminUsers users={users} profile={profile} reload={loadData} />}
+              {dashTab === 'roles' && !isModeOnly && <AdminRoles users={users} profile={profile} reload={loadData} />}
               {dashTab === 'moderation' && <AdminModeration invites={invites} users={users} reload={loadData} />}
               {dashTab === 'reports' && <AdminReports reports={reports} reload={loadData} />}
               {dashTab === 'support' && (
