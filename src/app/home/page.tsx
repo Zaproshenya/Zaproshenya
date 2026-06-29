@@ -195,9 +195,16 @@ export default function HomePage() {
                     )}
                   </div>
                   <div className="home-inv-meta">
-                    {t.l}
-                    {inv.date && ` · ${inv.date}`}
-                    {inv.time && ` · ${inv.time}`}
+                    <span className="home-inv-meta-type">{t.l}</span>
+                    {(inv.date || inv.time) && (
+                      <span className="home-inv-meta-date">
+                        <Icon name="calendar-blank" size={13} />
+                        <span>
+                          {inv.date && inv.date}
+                          {inv.time && ` · ${inv.time}`}
+                        </span>
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="home-inv-right">
@@ -235,7 +242,7 @@ export default function HomePage() {
                 style={{ animationDelay: `${i * 35}ms` }}
               >
                 <div className="home-inv-emoji">
-                  <Icon name="paper-plane-tilt" size={24} />
+                  <Icon name="paper-plane-tilt" size={20} />
                 </div>
                 <div className="home-inv-body">
                   <div className="home-inv-title">
@@ -247,7 +254,13 @@ export default function HomePage() {
                     )}
                   </div>
                   <div className="home-inv-meta">
-                    {inv.body || `Від ${inv.fromName || 'когось'}`}
+                    <span className="home-inv-meta-type">
+                      {inv.type === 'group-invite' ? 'Група' : 'Запрошення'}
+                    </span>
+                    <span className="home-inv-meta-date">
+                      <Icon name="user" size={13} />
+                      <span>{inv.body || `Від ${inv.fromName || 'когось'}`}</span>
+                    </span>
                   </div>
                 </div>
                 <div className="home-inv-right">
