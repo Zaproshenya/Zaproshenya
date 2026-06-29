@@ -25,11 +25,14 @@ export const metadata: Metadata = {
     default: "Запрошення ✦ Зустрічі, які справді відбуваються",
     template: "%s | Запрошення ✦"
   },
-  description: "Надсилайте красиві запрошення з датою, часом і місцем. Отримуйте чіткі відповіді — без «ну давай якось» у чаті. Безкоштовний додаток українською.",
-  keywords: ["запрошення", "зустріч", "запросити друга", "календар", "події", "дн", "кава", "побачення"],
+  description: "Надсилайте красиві запрошення з датою, часом і місцем. Отримуйте чіткі відповіді — без «ну давай якось» у чаті. Безкоштовний додаток українською. Зареєструйтесь або увійдіть → zaproshenya.site",
+  keywords: ["запрошення", "зустрічі", "запросити друга", "календар", "події", "кава", "побачення", "запрошення сайт"],
   authors: [{ name: "Запрошення" }],
   creator: "Запрошення",
   publisher: "Запрошення",
+  alternates: {
+    canonical: 'https://zaproshenya.site',
+  },
   formatDetection: {
     email: false,
     address: false,
@@ -39,7 +42,7 @@ export const metadata: Metadata = {
     title: "Запрошення ✦ Зустрічі, які справді відбуваються",
     description: "Надсилайте красиві запрошення з датою, часом і місцем. Отримуйте чіткі відповіді — без «ну давай якось» у чаті.",
     url: "https://zaproshenya.site",
-    siteName: "Запрошення ✦",
+    siteName: "Запрошення",
     locale: "uk_UA",
     type: "website",
     images: [
@@ -61,7 +64,7 @@ export const metadata: Metadata = {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
       { url: '/favicon.png', type: 'image/png', sizes: '96x96' },
-      { url: '/icon.png', type: 'image/png', sizes: '192x192' }
+      { url: '/icon.png', type: 'image/png', sizes: '512x512' }
     ],
     shortcut: '/favicon.ico',
     apple: [
@@ -91,7 +94,17 @@ export default function RootLayout({
               "@type": "WebSite",
               "name": "Запрошення",
               "alternateName": ["Запрошення ✦", "Zaproshenya"],
-              "url": "https://zaproshenya.site"
+              "url": "https://zaproshenya.site",
+              "description": "Надсилайте красиві запрошення з датою, часом і місцем.",
+              "inLanguage": "uk",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": {
+                  "@type": "EntryPoint",
+                  "urlTemplate": "https://zaproshenya.site/login"
+                },
+                "query": "Увійти"
+              }
             })
           }}
         />

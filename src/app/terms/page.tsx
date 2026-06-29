@@ -1,6 +1,19 @@
 /* eslint-disable react/no-unescaped-entities */
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Icon } from '@/components/Icon';
+
+export const metadata: Metadata = {
+  title: 'Умови використання | Запрошення ✦',
+  description: 'Умови використання сервісу Запрошення — правила та умови роботи з платформою.',
+  robots: {
+    index: false,
+    follow: true,
+  },
+  alternates: {
+    canonical: 'https://zaproshenya.site/terms',
+  },
+};
 
 export default function TermsPage() {
   return (

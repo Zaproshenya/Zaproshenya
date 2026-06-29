@@ -1,6 +1,19 @@
 /* eslint-disable react/no-unescaped-entities */
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Icon } from '@/components/Icon';
+
+export const metadata: Metadata = {
+  title: 'Політика конфіденційності | Запрошення ✦',
+  description: 'Політика конфіденційності сервісу Запрошення — як ми збираємо, використовуємо та захищаємо ваші дані.',
+  robots: {
+    index: false,
+    follow: true,
+  },
+  alternates: {
+    canonical: 'https://zaproshenya.site/privacy',
+  },
+};
 
 export default function PrivacyPage() {
   return (
