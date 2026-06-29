@@ -282,6 +282,7 @@ export default function CreatePage() {
   );
 
   return (
+    <>
     <div className="wrap">
       <div className="create-header">
         <h1 className="create-title">Нове запрошення</h1>
@@ -563,15 +564,17 @@ export default function CreatePage() {
           </button>
         </div>
       </div>
+    </div>
 
-      {/* ── Custom type bottom sheet ── */}
-      {showCustomSheet && (
-        <div
-          className="custom-sheet-backdrop"
-          onClick={() => setShowCustomSheet(false)}
-        />
-      )}
-      <div className={`custom-sheet ${showCustomSheet ? 'open' : ''}`}>
+    {/* ── Custom type bottom sheet ── */}
+    {showCustomSheet && (
+      <div
+        className="custom-sheet-backdrop"
+        onClick={() => setShowCustomSheet(false)}
+      />
+    )}
+    {showCustomSheet && (
+      <div className="custom-sheet open">
         <div className="custom-sheet-handle" />
         <div className="custom-sheet-header">
           <div className="custom-sheet-title">✦ Своя подія</div>
@@ -684,6 +687,7 @@ export default function CreatePage() {
           </div>
         )}
       </div>
-    </div>
+    )}
+    </>
   );
 }
