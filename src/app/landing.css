@@ -977,3 +977,27 @@
       font-size: .75rem !important;
       width: 12px; height: 12px;
     }
+
+    /* ── Category Link Cards ── */
+    .category-link-card {
+      display: flex;
+      align-items: center;
+      padding: 14px 18px;
+      background: var(--card);
+      border: 1.5px solid var(--gold-border);
+      border-radius: var(--r);
+      color: var(--ink);
+      text-decoration: none;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: all 0.2s var(--ease);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .category-link-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+      color: var(--gold);
+    }

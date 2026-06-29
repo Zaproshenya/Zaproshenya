@@ -22,7 +22,7 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://zaproshenya.site'),
   title: {
-    default: "Запрошення ✦ Зустрічі, які справді відбуваються",
+    default: "Запрошення ✦ Безкоштовне створення запрошень",
     template: "%s | Запрошення ✦"
   },
   description: "Надсилайте красиві запрошення з датою, часом і місцем. Отримуйте чіткі відповіді — без «ну давай якось» у чаті. Безкоштовний додаток українською. Зареєструйтесь або увійдіть → zaproshenya.site",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    title: "Запрошення ✦ Зустрічі, які справді відбуваються",
+    title: "Запрошення ✦ Безкоштовне створення запрошень",
     description: "Надсилайте красиві запрошення з датою, часом і місцем. Отримуйте чіткі відповіді — без «ну давай якось» у чаті.",
     url: "https://zaproshenya.site",
     siteName: "Запрошення",

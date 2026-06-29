@@ -1,9 +1,10 @@
 import { MetadataRoute } from 'next';
+import { LANDING_PAGES } from '@/lib/landing-pages';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://zaproshenya.site';
   
-  return [
+  const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: new Date(),
@@ -35,4 +36,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.5,
     },
   ];
+
+  const landingRoutes: MetadataRoute.Sitemap = Object.keys(LANDING_PAGES).map((slug) => ({
+    url: `${baseUrl}/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly',
+    priority: 0.8,
+  }));
+
+  return [...staticRoutes, ...landingRoutes];
 }

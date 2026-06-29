@@ -5,8 +5,24 @@ import Link from 'next/link';
 import './landing.css';
 import { useEffect } from 'react';
 import { Icon } from '@/components/Icon';
+import { LandingPageConfig } from '@/lib/landing-pages';
 
-export default function LandingPage() {
+const DEFAULT_CONFIG: LandingPageConfig = {
+  slug: '',
+  metaTitle: 'Запрошення ✦ Безкоштовне створення запрошень',
+  metaDesc: 'Надсилайте красиві запрошення з датою, часом і місцем. Отримуйте чіткі відповіді — без «ну давай якось» у чаті.',
+  heroTitlePrefix: 'Безкоштовне\nстворення',
+  heroTitleHighlight: 'запрошень',
+  heroDesc: 'Надсилайте красиві запрошення з датою, часом і місцем. Отримуйте чіткі відповіді — без «ну давай якось» у чаті.',
+  emoji: '✉️',
+  eventType: 'Зустріч',
+  demoText: 'Зустрінемось на каву? Давно не бачились, маю купу новин!',
+  demoLabel: 'Дата',
+  demoValue: 'Субота, 21 червня',
+};
+
+export default function LandingPage({ config }: { config?: LandingPageConfig }) {
+  const cfg = config || DEFAULT_CONFIG;
   useEffect(() => {
     const revealEls = document.querySelectorAll('[data-reveal]');
     if ('IntersectionObserver' in window) {
@@ -34,10 +50,17 @@ export default function LandingPage() {
       <div className="hero-content">
         <div className="hero-eyebrow">Безкоштовно &nbsp;·&nbsp; Українською</div>
         <h1 className="hero-title">
-          Зустрічі,<br />які справді<br /><em>відбуваються</em>
+          {cfg.heroTitlePrefix.split('\n').map((line, i) => (
+            <span key={i}>
+              {line}
+              {i < cfg.heroTitlePrefix.split('\n').length - 1 && <br />}
+            </span>
+          ))}
+          <br />
+          <em>{cfg.heroTitleHighlight}</em>
         </h1>
         <p className="hero-desc">
-          Надсилайте красиві запрошення з датою, часом і місцем. Отримуйте чіткі відповіді — без «ну давай якось» у чаті.
+          {cfg.heroDesc}
         </p>
         <div className="hero-ctas">
           <Link href="/login" className="btn-landing-primary">
@@ -73,21 +96,21 @@ export default function LandingPage() {
           <div className="landing-demo-card" style={{ width: '100%', position: 'relative', zIndex: 2 }}>
             <div className="invite-envelope" style={{animation: 'float 4.5s ease-in-out infinite', margin: '0 auto', boxShadow: 'var(--shadow-lg)', width: '100%'}}>
               <div className="envelope-top">
-                <span className="envelope-emoji">☕</span>
-                <div className="envelope-type">Кава</div>
+                <span className="envelope-emoji">{cfg.emoji}</span>
+                <div className="envelope-type">{cfg.eventType}</div>
                 <div className="envelope-to">Олена</div>
                 <div className="envelope-from">від <strong>Максима</strong></div>
               </div>
 
               <div className="envelope-body">
                 <div className="msg-block">
-                  <p className="msg-text">Зустрінемось на каву? Давно не бачились, маю купу новин!</p>
+                  <p className="msg-text">{cfg.demoText}</p>
                 </div>
 
                 <div className="detail-chips">
                   <div className="detail-chip">
                     <span className="detail-chip-icon"><Icon name="calendar-blank" size={16}/></span>
-                    <div><div className="detail-chip-label">Дата</div><div className="detail-chip-value">Субота, 21 червня</div></div>
+                    <div><div className="detail-chip-label">{cfg.demoLabel}</div><div className="detail-chip-value">{cfg.demoValue}</div></div>
                   </div>
                   <div className="detail-chip">
                     <span className="detail-chip-icon"><Icon name="clock" size={16}/></span>
@@ -248,6 +271,34 @@ export default function LandingPage() {
         <a href="https://send.monobank.ua/jar/5se11GGQ5i" target="_blank" rel="noreferrer" className="btn-landing-support">
           <Icon name="heart" size={16}/> Підтримати розвиток
         </a>
+      </div>
+    </section>
+
+    {/* ── Популярні категорії запрошень (для SEO) ── */}
+    <section className="section-wrap categories-section" aria-label="Популярні категорії запрошень" style={{ maxWidth: '1100px', margin: '0 auto', paddingTop: '20px', paddingBottom: '40px' }}>
+      <div className="section-head" data-reveal style={{ textAlign: 'center', marginBottom: '24px' }}>
+        <span className="eyebrow">Швидкий старт</span>
+        <h2 className="section-title" style={{ fontSize: '1.8rem', marginTop: '10px' }}>Популярні категорії запрошень</h2>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px', maxWidth: '1000px', margin: '0 auto' }}>
+        <Link href="/stvoriti-zaproshennya-na-vesillya" className="category-link-card">
+          <span style={{ marginRight: '8px', fontSize: '1.25rem' }}>💍</span> Весільні запрошення
+        </Link>
+        <Link href="/stvoriti-zaproshennya-na-den-narodzhennya" className="category-link-card">
+          <span style={{ marginRight: '8px', fontSize: '1.25rem' }}>🎂</span> День народження
+        </Link>
+        <Link href="/stvoriti-zaproshennya-na-pobachennya" className="category-link-card">
+          <span style={{ marginRight: '8px', fontSize: '1.25rem' }}>🌹</span> Романтичне побачення
+        </Link>
+        <Link href="/stvoriti-zaproshennya-na-vechirku" className="category-link-card">
+          <span style={{ marginRight: '8px', fontSize: '1.25rem' }}>🥂</span> Вечірки та свята
+        </Link>
+        <Link href="/stvoriti-zaproshennya-na-kavu" className="category-link-card">
+          <span style={{ marginRight: '8px', fontSize: '1.25rem' }}>☕</span> Зустрічі на каву
+        </Link>
+        <Link href="/stvoriti-zaproshennya-na-zustrich" className="category-link-card">
+          <span style={{ marginRight: '8px', fontSize: '1.25rem' }}>🤝</span> Ділові & особисті зустрічі
+        </Link>
       </div>
     </section>
 
