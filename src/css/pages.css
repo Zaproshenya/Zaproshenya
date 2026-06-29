@@ -1201,35 +1201,6 @@
 }
 
 /* Emoji quick-pick grid */
-.custom-emoji-grid {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 4px;
-  margin-bottom: 4px;
-}
-.custom-emoji-btn {
-  width: 100%; aspect-ratio: 1;
-  border-radius: 9px;
-  border: 1.5px solid transparent;
-  background: var(--surface-2);
-  font-size: 1.15rem;
-  cursor: pointer;
-  transition: all .15s;
-  display: flex; align-items: center; justify-content: center;
-  line-height: 1;
-}
-.custom-emoji-btn:hover {
-  border-color: var(--gold-border);
-  background: var(--gold-dim);
-  transform: scale(1.1);
-}
-.custom-emoji-btn.selected {
-  border-color: var(--gold);
-  background: var(--gold-dim);
-  box-shadow: 0 0 0 2px rgba(var(--gold-rgb),.2);
-  transform: scale(1.12);
-}
-
 /* Action row inside sheet */
 .custom-sheet-actions {
   display: flex;

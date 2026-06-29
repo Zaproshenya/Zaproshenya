@@ -173,7 +173,7 @@ export default function HomePage() {
           </div>
         ) : (
           shown.map((inv, i) => {
-            const t = TYPE_MAP[inv.type] || TYPE_MAP.other;
+            const t = TYPE_MAP[inv.type] || { v: inv.type, l: inv.customLabel || inv.type, e: inv.customEmoji || '✨' };
             const link = typeof window !== 'undefined'
               ? `${window.location.origin}/${inv.isGroup ? 'g' : 'i'}/${inv.id}`
               : '';

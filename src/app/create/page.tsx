@@ -600,32 +600,25 @@ export default function CreatePage() {
 
         {customSheetTab === 'create' ? (
           <div className="custom-sheet-body">
-            {/* Emoji picker */}
             <label className="lbl" style={{marginBottom:'8px'}}>Іконка події</label>
-            <div className="custom-emoji-grid">
-              {POPULAR_EMOJIS.map(em => (
-                <button
-                  key={em}
-                  type="button"
-                  className={`custom-emoji-btn ${customEmoji === em ? 'selected' : ''}`}
-                  onClick={() => setCustomEmoji(em)}
-                >{em}</button>
-              ))}
-            </div>
-            <div style={{display:'flex', alignItems:'center', gap:'8px', marginTop:'8px'}}>
+            <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
               <div style={{fontSize:'1.6rem', width:'40px', height:'40px', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--surface-2)', borderRadius:'10px', flexShrink:0}}>
                 {customEmoji || '?'}
               </div>
               <input
-                placeholder="Або введіть будь-який емодзі…"
+                placeholder="Вставте емодзі…"
                 value={customEmoji}
                 maxLength={4}
-                onChange={e => setCustomEmoji(e.target.value)}
+                onChange={e => {
+                  const val = e.target.value;
+                  const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
+                  const filtered = [...val].filter(ch => emojiRegex.test(ch)).join('');
+                  setCustomEmoji(filtered);
+                }}
                 style={{flex:1, fontSize:'1.1rem'}}
               />
             </div>
 
-            {/* Label */}
             <label className="lbl" style={{marginTop:'16px', marginBottom:'8px'}}>Назва події</label>
             <input
               placeholder="Наприклад: Кіно з друзями…"
