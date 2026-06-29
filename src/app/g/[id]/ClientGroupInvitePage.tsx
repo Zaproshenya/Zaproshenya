@@ -114,7 +114,9 @@ export default function ClientGroupInvitePage({ id }: { id: string }) {
     );
   }
 
-  const t = TYPE_MAP[groupData.type] || TYPE_MAP.other;
+  const t = groupData.type === 'custom'
+    ? { v: 'custom', l: groupData.customLabel || 'Своє', e: groupData.customEmoji || '✦' }
+    : (TYPE_MAP[groupData.type] || TYPE_MAP.other);
   const membersList = groupData.members ? Object.values(groupData.members as Record<string, any>) : [];
   const acceptedMembers = membersList.filter(m => m.status === 'accepted');
   const otherMembers = membersList.filter(m => m.status !== 'accepted');

@@ -30,7 +30,9 @@ export default async function Image({ params }: { params: Promise<{ id: string }
     );
   }
 
-  const t = TYPE_MAP[inv.type] || TYPE_MAP.other;
+  const t = inv.type === 'custom'
+    ? { v: 'custom', l: inv.customLabel || 'Своє', e: inv.customEmoji || '✦' }
+    : (TYPE_MAP[inv.type] || TYPE_MAP.other);
   const membersCount = inv.members ? Object.keys(inv.members).length : 0;
 
   return new ImageResponse(

@@ -114,7 +114,9 @@ export default function ClientInvitePage({ id }: { id: string }) {
     );
   }
 
-  const t = TYPE_MAP[invData.type] || TYPE_MAP.other;
+  const t = invData.type === 'custom'
+    ? { v: 'custom', l: invData.customLabel || 'Своє', e: invData.customEmoji || '✦' }
+    : (TYPE_MAP[invData.type] || TYPE_MAP.other);
   const isCreator = user && user.uid === invData.creatorUid;
 
   const submitReport = async () => {

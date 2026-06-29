@@ -22,7 +22,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     const inv = await res.json();
     if (!inv) return { title: 'Запрошення не знайдено' };
     
-    const t = TYPE_MAP[inv.type] || TYPE_MAP.other;
+    const t = inv.type === 'custom'
+      ? { v: 'custom', l: inv.customLabel || 'Своє', e: inv.customEmoji || '✦' }
+      : (TYPE_MAP[inv.type] || TYPE_MAP.other);
     const title = `${t.e} Запрошення на: ${t.l}`;
     let desc = `Для: ${inv.to}`;
     if (inv.date) desc += ` | Коли: ${inv.date} ${inv.time || ''}`;

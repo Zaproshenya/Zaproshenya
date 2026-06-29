@@ -58,7 +58,9 @@ export async function middleware(request: NextRequest) {
       : 'Вам надіслано приватне запрошення 💌\n\nНатисніть, щоб відкрити та дізнатися деталі!';
 
     if (inv) {
-      const t = TYPE_MAP[inv.type] || TYPE_MAP.other;
+      const t = inv.type === 'custom'
+        ? { l: inv.customLabel || 'Своє', e: inv.customEmoji || '✦' }
+        : (TYPE_MAP[inv.type] || TYPE_MAP.other);
       if (isGroup) {
         title = `${t.e} ${inv.title || 'Групове запрошення'}`;
       } else {

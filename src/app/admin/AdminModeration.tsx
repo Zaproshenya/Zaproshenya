@@ -46,7 +46,9 @@ export default function AdminModeration({ invites, users, profile, reload }: { i
       ) : (
         <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
           {paged.map(inv => {
-            const t = TYPE_MAP[inv.type] || TYPE_MAP.other;
+            const t = inv.type === 'custom'
+              ? { v: 'custom', l: inv.customLabel || 'Своє', e: inv.customEmoji || '✦' }
+              : (TYPE_MAP[inv.type] || TYPE_MAP.other);
             const creator = getProfile(inv.creatorUid);
             const creatorText = creator ? `(${creator.uniqueId}, @${creator.login})` : `(ID: ${inv.creatorUid})`;
             const recipientHtml = inv.isGroup
