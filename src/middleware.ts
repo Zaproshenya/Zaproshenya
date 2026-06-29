@@ -18,6 +18,7 @@ const TYPE_MAP: Record<string, { l: string; e: string }> = {
   trip: { l: 'Подорож', e: '✈️' },
   sport: { l: 'Спорт', e: '⚽' },
   games: { l: 'Ігри', e: '🎮' },
+  dinner: { l: 'Обід / Вечеря', e: '🍽️' },
 };
 
 export async function middleware(request: NextRequest) {

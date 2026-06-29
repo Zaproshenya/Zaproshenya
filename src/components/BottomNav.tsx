@@ -10,7 +10,9 @@ export function BottomNav() {
 
   if (!user) return null;
 
-  const isHiddenPage = pathname === '/' || pathname === '/login' || pathname === '/register' || pathname?.startsWith('/i/') || pathname?.startsWith('/g/');
+  const pathnameKey = pathname ? pathname.substring(1) : '';
+  const isLanding = pathname === '/' || pathnameKey === 'stvoriti-zaproshennya' || pathnameKey.startsWith('stvoriti-zaproshennya-') || pathnameKey.startsWith('zaproshennya-');
+  const isHiddenPage = isLanding || pathname === '/login' || pathname === '/register' || pathname?.startsWith('/i/') || pathname?.startsWith('/g/');
   if (isHiddenPage) return null;
 
   const isActive = (path: string) => pathname === path ? 'on' : '';

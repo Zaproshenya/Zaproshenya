@@ -68,10 +68,14 @@ export function timeAgo(timestamp: number): string {
 export const TYPES = [
   { v: 'date', l: 'Побачення', e: '🌹' },
   { v: 'walk', l: 'Прогулянка', e: '🍃' },
+  { v: 'wedding', l: 'Весілля', e: '💍' },
   { v: 'birthday', l: 'День народження', e: '🎂' },
   { v: 'party', l: 'Свято / Вечірка', e: '🥂' },
   { v: 'cinema', l: 'Кіно', e: '🎬' },
   { v: 'coffee', l: 'Кава', e: '☕' },
+  { v: 'dinner', l: 'Обід / Вечеря', e: '🍽️' },
+  { v: 'sport', l: 'Спорт / Активність', e: '⚽' },
+  { v: 'meeting', l: 'Ділова зустріч', e: '💼' },
   { v: 'travel', l: 'Подорож', e: '✈️' },
   { v: 'other', l: 'Інше', e: '✨' },
 ];

@@ -8,10 +8,10 @@ export function Navbar() {
   const { user, profile, unreadCount, adminUnreadCount } = useAuth();
   const pathname = usePathname();
 
-  const isHiddenPage = pathname === '/login' || pathname === '/register' || pathname?.startsWith('/i/') || pathname?.startsWith('/g/');
+  const pathnameKey = pathname ? pathname.substring(1) : '';
+  const isLanding = pathname === '/' || pathnameKey === 'stvoriti-zaproshennya' || pathnameKey.startsWith('stvoriti-zaproshennya-') || pathnameKey.startsWith('zaproshennya-');
+  const isHiddenPage = pathname === '/login' || pathname === '/register' || pathname?.startsWith('/i/') || pathname?.startsWith('/g/') || isLanding;
   if (isHiddenPage) return null;
-
-  if (pathname === '/') return null; // Landing uses its own structure
 
   const isActive = (path: string) => pathname === path ? 'on' : '';
 

@@ -10,150 +10,283 @@ export interface LandingPageConfig {
   demoText: string;
   demoLabel: string;
   demoValue: string;
+  demoPlace: string;
 }
 
-export const LANDING_PAGES: Record<string, LandingPageConfig> = {
-  'stvoriti-zaproshennya': {
-    slug: 'stvoriti-zaproshennya',
-    metaTitle: 'Безкоштовне створення запрошень онлайн | Запрошення ✦',
-    metaDesc: 'Створюйте красиві онлайн-запрошення на будь-які події абсолютно безкоштовно. Швидко, зручно та українською мовою.',
-    heroTitlePrefix: 'Безкоштовне\nстворення',
-    heroTitleHighlight: 'запрошень онлайн',
-    heroDesc: 'Створюйте красиві онлайн-запрошення з датою, часом і місцем. Отримуйте чіткі відповіді від гостей — без довгих переписок у чатах.',
-    emoji: '✉️',
-    eventType: 'Зустріч',
-    demoText: 'Привіт! Створив це запрошення за допомогою зручного онлайн-конструктора. Запрошую тебе приєднатися до нашої зустрічі!',
-    demoLabel: 'Подія',
-    demoValue: 'Субота, 21 червня',
-  },
-  'stvoriti-zaproshennya-na-vesillya': {
-    slug: 'stvoriti-zaproshennya-na-vesillya',
-    metaTitle: 'Створити запрошення на весілля онлайн | Запрошення ✦',
-    metaDesc: 'Безкоштовний конструктор весільних запрошень. Створіть красиве онлайн запрошення на весілля за 1 хвилину та надішліть гостям.',
-    heroTitlePrefix: 'Створити\nзапрошення',
-    heroTitleHighlight: 'на весілля онлайн',
-    heroDesc: 'Безкоштовний та зручний конструктор весільних запрошень. Створіть власне запрошення за хвилину та надішліть посиланням усім гостям.',
+// Base configurations for different event types to generate 60+ variations
+interface BaseEventTemplate {
+  key: string;
+  nameAccusative: string; // e.g. "на весілля"
+  nameNominative: string; // e.g. "Весілля"
+  emoji: string;
+  demoText: string;
+  demoPlace: string;
+  descriptionKeyword: string;
+}
+
+const BASE_EVENTS: BaseEventTemplate[] = [
+  {
+    key: 'vesillya',
+    nameAccusative: 'на весілля',
+    nameNominative: 'Весілля',
     emoji: '💍',
-    eventType: 'Весілля',
     demoText: 'Кохані та дорогі друзі! Ми неймовірно раді запросити вас розділити з нами цей особливий та найщасливіший день нашого життя.',
-    demoLabel: 'Дата весілля',
-    demoValue: 'Субота, 12 вересня',
+    demoPlace: 'Заміський комплекс «Grand Hall»',
+    descriptionKeyword: 'весільних запрошень'
   },
-  'zaproshennya-na-vesillya': {
-    slug: 'zaproshennya-na-vesillya',
-    metaTitle: 'Запрошення на весілля онлайн безкоштовно | Запрошення ✦',
-    metaDesc: 'Красиві онлайн запрошення на весілля. Створіть персональні весільні запрошення для гостей та отримуйте підтвердження в один клік.',
-    heroTitlePrefix: 'Запрошення\nна весілля',
-    heroTitleHighlight: 'онлайн безкоштовно',
-    heroDesc: 'Створюйте персональні весільні запрошення для гостей та отримуйте підтвердження в один клік — без зайвих турбот.',
-    emoji: '💍',
-    eventType: 'Весілля',
-    demoText: 'Кохані та дорогі друзі! Ми неймовірно раді запросити вас розділити з нами цей особливий та найщасливіший день нашого життя.',
-    demoLabel: 'Дата весілля',
-    demoValue: 'Субота, 12 вересня',
-  },
-  'stvoriti-zaproshennya-na-den-narodzhennya': {
-    slug: 'stvoriti-zaproshennya-na-den-narodzhennya',
-    metaTitle: 'Створити запрошення на день народження онлайн | Запрошення ✦',
-    metaDesc: 'Конструктор запрошень на день народження чи ювілей. Створіть яскраве онлайн запрошення та надішліть друзям у месенджерах.',
-    heroTitlePrefix: 'Створити\nзапрошення',
-    heroTitleHighlight: 'на день народження',
-    heroDesc: 'Плануєте свято чи ювілей? Створіть яскраве онлайн запрошення на день народження та надішліть друзям у месенджерах за секунди.',
+  {
+    key: 'den-narodzhennya',
+    nameAccusative: 'на день народження',
+    nameNominative: 'День народження',
     emoji: '🎂',
-    eventType: 'День народження',
     demoText: 'Привіт! Запрошую тебе на святкування мого дня народження! Буде весело, смачно та атмосферно. Чекаю на тебе!',
-    demoLabel: 'Дата свята',
-    demoValue: 'П\'ятниця, 17 липня',
+    demoPlace: 'Лофт-простір «Party Room»',
+    descriptionKeyword: 'запрошень на день народження'
   },
-  'zaproshennya-na-den-narodzhennya': {
-    slug: 'zaproshennya-na-den-narodzhennya',
-    metaTitle: 'Запрошення на день народження онлайн безкоштовно | Запрошення ✦',
-    metaDesc: 'Зручний конструктор запрошень на день народження. Створюйте персональні запрошення для друзів та близьких.',
-    heroTitlePrefix: 'Запрошення на\nдень народження',
-    heroTitleHighlight: 'онлайн безкоштовно',
-    heroDesc: 'Зручний конструктор запрошень на день народження. Створюйте персональні запрошення для друзів та близьких онлайн.',
-    emoji: '🎂',
-    eventType: 'День народження',
-    demoText: 'Привіт! Запрошую тебе на святкування мого дня народження! Буде весело, смачно та атмосферно. Чекаю на тебе!',
-    demoLabel: 'Дата свята',
-    demoValue: 'П\'ятниця, 17 липня',
-  },
-  'stvoriti-zaproshennya-na-pobachennya': {
-    slug: 'stvoriti-zaproshennya-na-pobachennya',
-    metaTitle: 'Створити запрошення на побачення онлайн | Запрошення ✦',
-    metaDesc: 'Оригінальний спосіб запросити на побачення. Створіть романтичне онлайн-запрошення для особливої людини.',
-    heroTitlePrefix: 'Створити\nзапрошення',
-    heroTitleHighlight: 'на побачення',
-    heroDesc: 'Оригінальний та романтичний спосіб запросити на побачення. Надішліть особливій людині красиве онлайн-запрошення.',
+  {
+    key: 'pobachennya',
+    nameAccusative: 'на побачення',
+    nameNominative: 'Побачення',
     emoji: '🌹',
-    eventType: 'Побачення',
     demoText: 'Привіт! Пропоную провести цей вечір разом за смачною вечерею та цікавою розмовою. Давай зустрінемось?',
-    demoLabel: 'Побачення',
-    demoValue: 'Субота, 21 червня',
+    demoPlace: 'Італійський ресторанчик «Prego»',
+    descriptionKeyword: 'оригінальних запрошень на побачення'
   },
-  'zaproshennya-na-pobachennya': {
-    slug: 'zaproshennya-na-pobachennya',
-    metaTitle: 'Запрошення на побачення онлайн безкоштовно | Запрошення ✦',
-    metaDesc: 'Створіть романтичне та красиве онлайн-запрошення на побачення за 1 хвилину. Отримайте швидку та чітку відповідь.',
-    heroTitlePrefix: 'Запрошення на\nпобачення',
-    heroTitleHighlight: 'онлайн безкоштовно',
-    heroDesc: 'Створіть романтичне та красиве онлайн-запрошення на побачення за 1 хвилину. Отримайте швидку відповідь.',
-    emoji: '🌹',
-    eventType: 'Побачення',
-    demoText: 'Привіт! Пропоную провести цей вечір разом за смачною вечерею та цікавою розмовою. Давай зустрінемось?',
-    demoLabel: 'Побачення',
-    demoValue: 'Субота, 21 червня',
-  },
-  'stvoriti-zaproshennya-na-vechirku': {
-    slug: 'stvoriti-zaproshennya-na-vechirku',
-    metaTitle: 'Створити запрошення на вечірку онлайн | Запрошення ✦',
-    metaDesc: 'Плануєте паті або вечірку з друзями? Створіть стильне та безкоштовне онлайн-запрошення для всіх гостей.',
-    heroTitlePrefix: 'Створити\nзапрошення',
-    heroTitleHighlight: 'на вечірку онлайн',
-    heroDesc: 'Плануєте паті, вечірку чи зустріч випускників? Створіть стильне та безкоштовне онлайн-запрошення для всіх гостей.',
+  {
+    key: 'vechirku',
+    nameAccusative: 'на вечірку',
+    nameNominative: 'Вечірка',
     emoji: '🥂',
-    eventType: 'Вечірка',
-    demoText: 'Хей! Збираємось на круту вечірку! Крута музика, приємна компанія та відмінний настрій гарантовані. Приходь обов\'ятьково!',
-    demoLabel: 'Вечірка',
-    demoValue: 'Субота, 28 червня',
+    demoText: 'Хей! Збираємось на круту вечірку! Крута музика, приємна компанія та відмінний настрій гарантовані. Приходь обов\'язково!',
+    demoPlace: 'Арт-простір «Платформа»',
+    descriptionKeyword: 'запрошень на паті та вечірки'
   },
-  'zaproshennya-na-vechirku': {
-    slug: 'zaproshennya-na-vechirku',
-    metaTitle: 'Запрошення на вечірку онлайн безкоштовно | Запрошення ✦',
-    metaDesc: 'Сучасні та красиві запрошення на вечірку. Надсилайте посилання гостям та відстежуйте відповіді в реальному часі.',
-    heroTitlePrefix: 'Запрошення на вечірку',
-    heroTitleHighlight: 'онлайн безкоштовно',
-    heroDesc: 'Сучасні та красиві запрошення на вечірку. Надсилайте посилання гостям та відстежуйте відповіді в реальному часі.',
-    emoji: '🥂',
-    eventType: 'Вечірка',
-    demoText: 'Хей! Збираємось на круту вечірку! Крута музика, приємна компанія та відмінний настрій гарантовані. Приходь обов\'ятьково!',
-    demoLabel: 'Вечірка',
-    demoValue: 'Субота, 28 червня',
-  },
-  'stvoriti-zaproshennya-na-kavu': {
-    slug: 'stvoriti-zaproshennya-na-kavu',
-    metaTitle: 'Запросити на каву онлайн | Запрошення ✦',
-    metaDesc: 'Хочете зустрітися та поспілкуватися? Створіть швидке та привабливе запрошення на каву для колеги чи друга.',
-    heroTitlePrefix: 'Запросити на каву',
-    heroTitleHighlight: 'онлайн безкоштовно',
-    heroDesc: 'Хочете зустрітися та поспілкуватися? Створіть швидке та привабливе запрошення на каву для друга чи колеги за хвилину.',
+  {
+    key: 'kavu',
+    nameAccusative: 'на каву',
+    nameNominative: 'Кава',
     emoji: '☕',
-    eventType: 'Кава',
     demoText: 'Привіт! Маю вільну годину та купу цікавих новин. Зустрінемось на філіжанку кави чи чаю сьогодні або на вихідних?',
-    demoLabel: 'Кава',
-    demoValue: 'Субота, 21 червня',
+    demoPlace: 'Kyiv Coffee, Хрещатик',
+    descriptionKeyword: 'швидких запрошень на каву'
   },
-  'stvoriti-zaproshennya-na-zustrich': {
-    slug: 'stvoriti-zaproshennya-na-zustrich',
-    metaTitle: 'Створити запрошення на зустріч онлайн | Запрошення ✦',
-    metaDesc: 'Організовуйте ділові чи особисті зустрічі легко. Створіть онлайн-запрошення з точним часом і місцем.',
-    heroTitlePrefix: 'Створити запрошення',
-    heroTitleHighlight: 'на зустріч онлайн',
-    heroDesc: 'Організовуйте ділові чи особисті зустрічі легко та просто. Створіть онлайн-запрошення з точним часом і місцем.',
+  {
+    key: 'zustrich',
+    nameAccusative: 'на зустріч',
+    nameNominative: 'Зустріч',
     emoji: '🤝',
-    eventType: 'Зустріч',
-    demoText: 'Вітаю! Пропоную провести коротку зустріч для обговорення наших поточних планів та подальшої співпраці.',
-    demoLabel: 'Зустріч',
-    demoValue: 'Понеділок, 23 червня',
+    demoText: 'Вітаю! Пропоную провести зустріч для обговорення наших планів, обміну ідеями та просто приємної розмови.',
+    demoPlace: 'Коворкінг «Beehive»',
+    descriptionKeyword: 'запрошень на особисті зустрічі'
+  },
+  {
+    key: 'yuviley',
+    nameAccusative: 'на ювілей',
+    nameNominative: 'Ювілей',
+    emoji: '✨',
+    demoText: 'Дорогі гості! Запрошую вас на урочисте святкування мого ювілею. Буду радий бачити кожного з вас!',
+    demoPlace: 'Банкетний зал «Едем»',
+    descriptionKeyword: 'запрошень на ювілей'
+  },
+  {
+    key: 'hrestini',
+    nameAccusative: 'на хрестини',
+    nameNominative: 'Хрестини',
+    emoji: '👼',
+    demoText: 'Дорогі близькі! Запрошуємо вас розділити світлу радість таїнства хрещення нашої дитини.',
+    demoPlace: 'Храм Святого Миколая',
+    descriptionKeyword: 'запрошень на хрещення дитини'
+  },
+  {
+    key: 'noviy-rik',
+    nameAccusative: 'на Новий рік',
+    nameNominative: 'Новий рік',
+    emoji: '🎄',
+    demoText: 'Зустрічаємо Новий рік разом! На вас чекає святкова ялинка, бенгальські вогні, шампанське та новорічне диво.',
+    demoPlace: 'Котедж у лісі',
+    descriptionKeyword: 'новорічних запрошень'
+  },
+  {
+    key: 'korporativ',
+    nameAccusative: 'на корпоратив',
+    nameNominative: 'Корпоратив',
+    emoji: '💼',
+    demoText: 'Шановні колеги! Запрошуємо вас на наш святковий корпоративний вечір. Підіб\'ємо підсумки та відпочинемо разом!',
+    demoPlace: 'Ресторан «Terrace»',
+    descriptionKeyword: 'запрошень на корпоративні події'
+  },
+  {
+    key: 'devischnik',
+    nameAccusative: 'на дівич-вечір',
+    nameNominative: 'Дівич-вечір',
+    emoji: '💄',
+    demoText: 'Дівчата! Мої останні дні холостяцького життя треба відсвяткувати незабутньо! Чекаю на вас на моєму дівич-вечорі.',
+    demoPlace: 'SPA-комплекс або Караоке',
+    descriptionKeyword: 'запрошень на дівич-вечір'
+  },
+  {
+    key: 'malchishnik',
+    nameAccusative: 'на парубоцьку вечірку',
+    nameNominative: 'Парубоцька вечірка',
+    emoji: '🍺',
+    demoText: 'Брати! Збираю вас на свою парубоцьку вечірку. Відірвемося на повну перед моїм одруженням!',
+    demoPlace: 'Спорт-бар «Офсайд»',
+    descriptionKeyword: 'запрошень на парубоцьку вечірку'
+  },
+  {
+    key: 'novosillya',
+    nameAccusative: 'на новосілля',
+    nameNominative: 'Новосілля',
+    emoji: '🔑',
+    demoText: 'Ми нарешті переїхали! Запрошуємо вас оглянути наше нове гніздечко, посмакувати піцою та відсвяткувати новосілля.',
+    demoPlace: 'Наша нова квартира',
+    descriptionKeyword: 'запрошень на новосілля'
+  },
+  {
+    key: 'vipuskniy',
+    nameAccusative: 'на випускний',
+    nameNominative: 'Випускний',
+    emoji: '🎓',
+    demoText: 'Ура, ми це зробили! Запрошуємо викладачів, батьків та друзів на урочисту церемонію випуску та святковий бал.',
+    demoPlace: 'Актова зала університету',
+    descriptionKeyword: 'запрошень на випускний вечір'
+  },
+  {
+    key: 'vecheryu',
+    nameAccusative: 'на вечерю',
+    nameNominative: 'Вечеря',
+    emoji: '🍽️',
+    demoText: 'Запрошую вас до себе в гості на домашню вечерю. Приготую фірмову страву, відкриємо пляшку вина та душевно поспілкуємось.',
+    demoPlace: 'У мене вдома',
+    descriptionKeyword: 'запрошень на обід чи вечерю'
+  },
+  {
+    key: 'piknik',
+    nameAccusative: 'на пікнік',
+    nameNominative: 'Пікнік',
+    emoji: '🧺',
+    demoText: 'Погода просто чудова! Збираємось на пікнік у парку. Беріть пледи, гарний настрій та смаколики.',
+    demoPlace: 'Ботанічний сад, центральна галявина',
+    descriptionKeyword: 'запрошень на пікнік'
+  },
+  {
+    key: 'shashliki',
+    nameAccusative: 'на шашлики',
+    nameNominative: 'Шашлики',
+    emoji: '🔥',
+    demoText: 'Сезон відкрито! Запрошуємо на шашлики та барбекю на свіжому повітрі. М\'ясо маринується, чекаємо тільки на вас!',
+    demoPlace: 'Альтанки біля озера',
+    descriptionKeyword: 'запрошень на шашлики та барбекю'
+  },
+  {
+    key: 'kino',
+    nameAccusative: 'в кіно',
+    nameNominative: 'Кіно',
+    emoji: '🎬',
+    demoText: 'Вийшов крутий фільм, який обов\'язково треба подивитися на великому екрані. Пішли в кіно разом?',
+    demoPlace: 'Кінотеатр «Multiplex»',
+    descriptionKeyword: 'запрошень на перегляд фільмів'
+  },
+  {
+    key: 'igri',
+    nameAccusative: 'на настільні ігри',
+    nameNominative: 'Настільні ігри',
+    emoji: '🎮',
+    demoText: 'Влаштовуємо вечір настілок! Будемо грати в Мафію, Монополію та інші цікаві ігри. Готуйте тактику!',
+    demoPlace: 'Гейм-кафе «Play»',
+    descriptionKeyword: 'запрошень на настільні ігри'
+  },
+  {
+    key: 'sport',
+    nameAccusative: 'на спорт',
+    nameNominative: 'Спорт / Активність',
+    emoji: '⚽',
+    demoText: 'Збираємо команду для гри у футбол / баскетбол / теніс. Приєднуйся до нас, розімнемось та пограємо!',
+    demoPlace: 'Спортивний майданчик',
+    descriptionKeyword: 'запрошень на тренування та спорт'
+  },
+  {
+    key: 'master-klas',
+    nameAccusative: 'на майстер-клас',
+    nameNominative: 'Майстер-клас',
+    emoji: '🎨',
+    demoText: 'Запрошуємо вас на захоплюючий творчий майстер-клас, де ви зможете створити власний шедевр та навчитися новому.',
+    demoPlace: 'Арт-студія «Колорит»',
+    descriptionKeyword: 'запрошень на майстер-класи'
   }
+];
+
+// Initialize and generate the full 60+ list programmatically
+const generatedLandingPages: Record<string, LandingPageConfig> = {};
+
+// Add general landing page as a base
+generatedLandingPages['stvoriti-zaproshennya'] = {
+  slug: 'stvoriti-zaproshennya',
+  metaTitle: 'Безкоштовне створення запрошень онлайн | Запрошення ✦',
+  metaDesc: 'Створюйте красиві онлайн-запрошення на будь-які події абсолютно безкоштовно. Швидко, зручно та українською мовою.',
+  heroTitlePrefix: 'Безкоштовне\nстворення',
+  heroTitleHighlight: 'запрошень онлайн',
+  heroDesc: 'Створюйте красиві онлайн-запрошення з датою, часом і місцем. Отримуйте чіткі відповіді від гостей — без довгих переписок у чатах.',
+  emoji: '✉️',
+  eventType: 'Зустріч',
+  demoText: 'Привіт! Створив це запрошення за допомогою зручного онлайн-конструктора. Запрошую тебе приєднатися до нашої зустрічі!',
+  demoLabel: 'Подія',
+  demoValue: 'Субота, 21 червня',
+  demoPlace: 'Затишне кафе в центрі',
 };
+
+// Generate pages dynamically
+BASE_EVENTS.forEach((event) => {
+  // Variation 1: stvoriti-zaproshennya-na-[event]
+  const slug1 = `stvoriti-zaproshennya-na-${event.key}`;
+  generatedLandingPages[slug1] = {
+    slug: slug1,
+    metaTitle: `Створити запрошення ${event.nameAccusative} онлайн | Запрошення ✦`,
+    metaDesc: `Безкоштовний конструктор ${event.descriptionKeyword}. Створіть красиве онлайн запрошення ${event.nameAccusative} за 1 хвилину та надішліть гостям.`,
+    heroTitlePrefix: `Створити\nзапрошення`,
+    heroTitleHighlight: `${event.nameAccusative} онлайн`,
+    heroDesc: `Безкоштовний та зручний конструктор для швидкого створення запрошень ${event.nameAccusative}. Створіть власне запрошення та надішліть посиланням гостям.`,
+    emoji: event.emoji,
+    eventType: event.nameNominative,
+    demoText: event.demoText,
+    demoLabel: 'Дата',
+    demoValue: 'Субота, 21 червня',
+    demoPlace: event.demoPlace,
+  };
+
+  // Variation 2: zaproshennya-na-[event]
+  const slug2 = `zaproshennya-na-${event.key}`;
+  generatedLandingPages[slug2] = {
+    slug: slug2,
+    metaTitle: `Запрошення ${event.nameAccusative} онлайн безкоштовно | Запрошення ✦`,
+    metaDesc: `Красиві онлайн запрошення ${event.nameAccusative}. Створіть персональні шаблони для гостей та отримуйте підтвердження в один клік.`,
+    heroTitlePrefix: `Запрошення\n${event.nameAccusative}`,
+    heroTitleHighlight: `онлайн безкоштовно`,
+    heroDesc: `Створюйте персональні онлайн запрошення ${event.nameAccusative} для гостей. Отримуйте чіткі відповіді в реальному часі без зайвих турбот.`,
+    emoji: event.emoji,
+    eventType: event.nameNominative,
+    demoText: event.demoText,
+    demoLabel: 'Дата',
+    demoValue: 'Субота, 21 червня',
+    demoPlace: event.demoPlace,
+  };
+
+  // Variation 3: bezkoshtovne-zaproshennya-na-[event]
+  const slug3 = `bezkoshtovne-zaproshennya-na-${event.key}`;
+  generatedLandingPages[slug3] = {
+    slug: slug3,
+    metaTitle: `Безкоштовне запрошення ${event.nameAccusative} | Запрошення ✦`,
+    metaDesc: `Шукаєте безкоштовне запрошення ${event.nameAccusative}? Створіть стильне інтерактивне запрошення за секунди без оплати та реклами.`,
+    heroTitlePrefix: `Безкоштовне\nзапрошення`,
+    heroTitleHighlight: `${event.nameAccusative}`,
+    heroDesc: `Створюйте та надсилайте стильні інтерактивні запрошення ${event.nameAccusative} абсолютно безкоштовно. Миттєві сповіщення про відповіді гостей.`,
+    emoji: event.emoji,
+    eventType: event.nameNominative,
+    demoText: event.demoText,
+    demoLabel: 'Дата',
+    demoValue: 'Субота, 21 червня',
+    demoPlace: event.demoPlace,
+  };
+});
+
+export const LANDING_PAGES = generatedLandingPages;

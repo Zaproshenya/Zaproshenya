@@ -3,7 +3,7 @@
 'use client';
 import Link from 'next/link';
 import './landing.css';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { LandingPageConfig } from '@/lib/landing-pages';
 
@@ -19,11 +19,31 @@ const DEFAULT_CONFIG: LandingPageConfig = {
   demoText: 'Зустрінемось на каву? Давно не бачились, маю купу новин!',
   demoLabel: 'Дата',
   demoValue: 'Субота, 21 червня',
+  demoPlace: 'Kyiv Coffee, Хрещатик',
 };
 
 export default function LandingPage({ config }: { config?: LandingPageConfig }) {
   const cfg = config || DEFAULT_CONFIG;
+  const [randomDate, setRandomDate] = useState('Субота, 21 червня');
+  const [randomTime, setRandomTime] = useState('11:00');
+
   useEffect(() => {
+    const dates = [
+      "Понеділок, 14 вересня",
+      "Вівторок, 5 травня",
+      "Середа, 22 липня",
+      "Четвер, 18 червня",
+      "П'ятниця, 30 жовтня",
+      "Субота, 12 грудня",
+      "Неділя, 8 листопада",
+      "Субота, 20 червня",
+      "Неділя, 5 липня",
+      "П'ятниця, 14 серпня"
+    ];
+    const times = ["10:00", "11:30", "12:00", "13:00", "14:15", "15:30", "16:00", "17:00", "18:30", "19:00", "19:45", "20:00"];
+    setRandomDate(dates[Math.floor(Math.random() * dates.length)]);
+    setRandomTime(times[Math.floor(Math.random() * times.length)]);
+
     const revealEls = document.querySelectorAll('[data-reveal]');
     if ('IntersectionObserver' in window) {
       const io = new IntersectionObserver((entries) => {
@@ -110,15 +130,15 @@ export default function LandingPage({ config }: { config?: LandingPageConfig }) 
                 <div className="detail-chips">
                   <div className="detail-chip">
                     <span className="detail-chip-icon"><Icon name="calendar-blank" size={16}/></span>
-                    <div><div className="detail-chip-label">{cfg.demoLabel}</div><div className="detail-chip-value">{cfg.demoValue}</div></div>
+                    <div><div className="detail-chip-label">{cfg.demoLabel}</div><div className="detail-chip-value">{randomDate}</div></div>
                   </div>
                   <div className="detail-chip">
                     <span className="detail-chip-icon"><Icon name="clock" size={16}/></span>
-                    <div><div className="detail-chip-label">Час</div><div className="detail-chip-value">11:00</div></div>
+                    <div><div className="detail-chip-label">Час</div><div className="detail-chip-value">{randomTime}</div></div>
                   </div>
                   <div className="detail-chip full">
                     <span className="detail-chip-icon"><Icon name="map-pin" size={16}/></span>
-                    <div><div className="detail-chip-label">Місце</div><div className="detail-chip-value">Kyiv Coffee, Хрещатик</div></div>
+                    <div><div className="detail-chip-label">Місце</div><div className="detail-chip-value">{cfg.demoPlace}</div></div>
                   </div>
                 </div>
 
@@ -232,6 +252,10 @@ export default function LandingPage({ config }: { config?: LandingPageConfig }) 
           <span className="type-name">Прогулянка</span>
         </div>
         <div className="type-pill">
+          <span className="type-emoji">💍</span>
+          <span className="type-name">Весілля</span>
+        </div>
+        <div className="type-pill">
           <span className="type-emoji">🎂</span>
           <span className="type-name">День народження</span>
         </div>
@@ -246,6 +270,18 @@ export default function LandingPage({ config }: { config?: LandingPageConfig }) 
         <div className="type-pill">
           <span className="type-emoji">☕</span>
           <span className="type-name">Кава</span>
+        </div>
+        <div className="type-pill">
+          <span className="type-emoji">🍽️</span>
+          <span className="type-name">Обід / Вечеря</span>
+        </div>
+        <div className="type-pill">
+          <span className="type-emoji">⚽</span>
+          <span className="type-name">Спорт / Активність</span>
+        </div>
+        <div className="type-pill">
+          <span className="type-emoji">💼</span>
+          <span className="type-name">Ділова зустріч</span>
         </div>
         <div className="type-pill">
           <span className="type-emoji">✈️</span>
@@ -271,34 +307,6 @@ export default function LandingPage({ config }: { config?: LandingPageConfig }) 
         <a href="https://send.monobank.ua/jar/5se11GGQ5i" target="_blank" rel="noreferrer" className="btn-landing-support">
           <Icon name="heart" size={16}/> Підтримати розвиток
         </a>
-      </div>
-    </section>
-
-    {/* ── Популярні категорії запрошень (для SEO) ── */}
-    <section className="section-wrap categories-section" aria-label="Популярні категорії запрошень" style={{ maxWidth: '1100px', margin: '0 auto', paddingTop: '20px', paddingBottom: '40px' }}>
-      <div className="section-head" data-reveal style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <span className="eyebrow">Швидкий старт</span>
-        <h2 className="section-title" style={{ fontSize: '1.8rem', marginTop: '10px' }}>Популярні категорії запрошень</h2>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px', maxWidth: '1000px', margin: '0 auto' }}>
-        <Link href="/stvoriti-zaproshennya-na-vesillya" className="category-link-card">
-          <span style={{ marginRight: '8px', fontSize: '1.25rem' }}>💍</span> Весільні запрошення
-        </Link>
-        <Link href="/stvoriti-zaproshennya-na-den-narodzhennya" className="category-link-card">
-          <span style={{ marginRight: '8px', fontSize: '1.25rem' }}>🎂</span> День народження
-        </Link>
-        <Link href="/stvoriti-zaproshennya-na-pobachennya" className="category-link-card">
-          <span style={{ marginRight: '8px', fontSize: '1.25rem' }}>🌹</span> Романтичне побачення
-        </Link>
-        <Link href="/stvoriti-zaproshennya-na-vechirku" className="category-link-card">
-          <span style={{ marginRight: '8px', fontSize: '1.25rem' }}>🥂</span> Вечірки та свята
-        </Link>
-        <Link href="/stvoriti-zaproshennya-na-kavu" className="category-link-card">
-          <span style={{ marginRight: '8px', fontSize: '1.25rem' }}>☕</span> Зустрічі на каву
-        </Link>
-        <Link href="/stvoriti-zaproshennya-na-zustrich" className="category-link-card">
-          <span style={{ marginRight: '8px', fontSize: '1.25rem' }}>🤝</span> Ділові & особисті зустрічі
-        </Link>
       </div>
     </section>
 
