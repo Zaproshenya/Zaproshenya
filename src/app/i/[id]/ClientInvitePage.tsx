@@ -57,13 +57,17 @@ export default function ClientInvitePage({ id }: { id: string }) {
     };
   }, [id, user]);
 
-  const [rescheduleData, setRescheduleData] = useState<any>(null);
+  const [rescheduleData, setRescheduleData] = useState<any | null | undefined>(undefined);
 
   useEffect(() => {
     if (answerStatus === 'reschedule') {
+      setRescheduleData(undefined);
       import('@/lib/firebase/db').then(({ getReschedule }) => {
         getReschedule(id).then((res) => {
-          setRescheduleData(res);
+          setRescheduleData(res || null);
+        }).catch((err) => {
+          console.error(err);
+          setRescheduleData(null);
         });
       });
     } else {
@@ -281,10 +285,13 @@ export default function ClientInvitePage({ id }: { id: string }) {
                     <span className="result-icon"><Icon name="calendar-blank" size={32}/></span>
                     <div className="result-title" style={{color:'var(--gold)'}}>Запит на перенесення</div>
                     <div className="result-sub">
-                      {rescheduleData 
-                        ? `Отримувач пропонує перенести на: ${rescheduleData.date || '—'}${rescheduleData.time ? ` о ${rescheduleData.time}` : ''}`
-                        : 'Отримувач запропонував перенести зустріч.'
-                      }
+                      {rescheduleData === undefined ? (
+                        'Завантаження...'
+                      ) : rescheduleData ? (
+                        `Отримувач пропонує перенести на: ${rescheduleData.date || '—'}${rescheduleData.time ? ` о ${rescheduleData.time}` : ''}`
+                      ) : (
+                        'Отримувач запропонував перенести зустріч.'
+                      )}
                     </div>
                   </>
                 ) : (

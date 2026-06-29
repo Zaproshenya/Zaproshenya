@@ -17,13 +17,17 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState<'outgoing' | 'incoming'>('outgoing');
   const [filter, setFilter] = useState('all');
   const [selectedInvite, setSelectedInvite] = useState<any | null>(null);
-  const [rescheduleData, setRescheduleData] = useState<any | null>(null);
+  const [rescheduleData, setRescheduleData] = useState<any | null | undefined>(undefined);
 
   useEffect(() => {
     if (selectedInvite && selectedInvite.status === 'reschedule') {
+      setRescheduleData(undefined);
       import('@/lib/firebase/db').then(({ getReschedule }) => {
         getReschedule(selectedInvite.id).then((res) => {
-          setRescheduleData(res);
+          setRescheduleData(res || null);
+        }).catch((err) => {
+          console.error(err);
+          setRescheduleData(null);
         });
       });
     } else {
@@ -147,7 +151,8 @@ export default function HomePage() {
   const shown = filter === 'all' ? invites : invites.filter(i => i.status === filter);
 
   return (
-    <div className="wrap">
+    <>
+      <div className="wrap">
       <div className="home-header">
         <div className="home-header-left">
           <h1 className="home-title">Мої запрошення</h1>
@@ -322,6 +327,7 @@ export default function HomePage() {
           })
         )
       )}
+      </div>
 
       {selectedInvite && (() => {
         const t = selectedInvite.type === 'custom'
@@ -383,10 +389,16 @@ export default function HomePage() {
                       <Icon name="calendar-blank" size={14} /> Пропозиція отримувача
                     </div>
                     <div style={{ fontSize: '.92rem', fontWeight: 500, color: 'var(--ink)' }}>
-                      {rescheduleData 
-                        ? `${rescheduleData.date || '—'}${rescheduleData.time ? ` о ${rescheduleData.time}` : ''}`
-                        : 'Завантаження...'
-                      }
+                      {rescheduleData === undefined ? (
+                        <span>Завантаження...</span>
+                      ) : rescheduleData ? (
+                        <span>
+                          {rescheduleData.date || '—'}
+                          {rescheduleData.time && ` о ${rescheduleData.time}`}
+                        </span>
+                      ) : (
+                        <span>Деталі не вказані</span>
+                      )}
                     </div>
                   </div>
                 )}
@@ -430,6 +442,6 @@ export default function HomePage() {
           </div>
         );
       })()}
-    </div>
+    </>
   );
 }
