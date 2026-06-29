@@ -49,19 +49,19 @@
     "statuses": {
       ".read": true,
       "$invId": {
-        ".write": "(auth != null && (root.child('invites').child($invId).child('creatorUid').val() === auth.uid || root.child('invites').child($invId).child('recipientUid').val() === auth.uid || root.child('group-invites').child($invId).child('creatorUid').val() === auth.uid)) || (root.child('invites').child($invId).exists() && root.child('invites').child($invId).child('requireAuth').val() !== true)"
+        ".write": "(auth != null && (root.child('invites').child($invId).child('creatorUid').val() === auth.uid || root.child('invites').child($invId).child('recipientUid').val() === auth.uid || root.child('group-invites').child($invId).child('creatorUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')) || (root.child('invites').child($invId).exists() && root.child('invites').child($invId).child('requireAuth').val() !== true)"
       }
     },
     "reschedule": {
       "$invId": {
         ".read": "auth != null || (root.child('invites').child($invId).exists() && root.child('invites').child($invId).child('requireAuth').val() !== true)",
-        ".write": "(auth != null && (root.child('invites').child($invId).child('creatorUid').val() === auth.uid || root.child('invites').child($invId).child('recipientUid').val() === auth.uid || root.child('group-invites').child($invId).child('creatorUid').val() === auth.uid)) || (root.child('invites').child($invId).exists() && root.child('invites').child($invId).child('requireAuth').val() !== true)"
+        ".write": "(auth != null && (root.child('invites').child($invId).child('creatorUid').val() === auth.uid || root.child('invites').child($invId).child('recipientUid').val() === auth.uid || root.child('group-invites').child($invId).child('creatorUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')) || (root.child('invites').child($invId).exists() && root.child('invites').child($invId).child('requireAuth').val() !== true)"
       }
     },
     "user-invites": {
       "$uid": {
-        ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin'",
-        ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin')"
+        ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'",
+        ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')"
       }
     },
     "friends": {

@@ -72,14 +72,18 @@ export default function AdminModeration({ invites, users, profile, reload }: { i
                         message: `Ви дійсно хочете видалити це запрошення? Цю дію не можна буде скасувати.`,
                         isDanger: true,
                         onConfirm: async () => {
-                          await deleteInvite(inv.id, inv.creatorUid, inv.isGroup);
-                          logStaffAction(
-                            profile.uid, profile.name,
-                            `Видалив запрошення (${inv.isGroup ? 'групове' : 'особисте'}: ${inv.title || inv.to || inv.id})`,
-                            inv.creatorUid,
-                            inv.from || inv.creatorName
-                          ).catch(() => {});
-                          if(reload) reload();
+                          try {
+                            await deleteInvite(inv.id, inv.creatorUid, inv.isGroup, true);
+                            await logStaffAction(
+                              profile.uid, profile.name,
+                              `Видалив запрошення (${inv.isGroup ? 'групове' : 'особисте'}: ${inv.title || inv.to || inv.id})`,
+                              inv.creatorUid,
+                              inv.from || inv.creatorName
+                            );
+                            if(reload) reload();
+                          } catch (err) {
+                            console.error('Moderator action failed:', err);
+                          }
                         }
                       });
                     }}>

@@ -118,9 +118,9 @@ export async function updateInviteStatus(invId: string, status: string, uid?: st
   }
 }
 
-export async function deleteInvite(invId: string, uid?: string, isGroup?: boolean) {
+export async function deleteInvite(invId: string, uid?: string, isGroup?: boolean, isModeratorAction: boolean = false) {
   const path = isGroup ? 'group-invites/' : 'invites/';
-  if (uid) {
+  if (uid && isModeratorAction) {
     try {
       const inviteSnap = await get(ref(db, path + invId));
       if (inviteSnap.exists()) {
@@ -154,10 +154,22 @@ export async function deleteInvite(invId: string, uid?: string, isGroup?: boolea
     }
   }
   await remove(ref(db, path + invId));
-  await remove(ref(db, 'statuses/' + invId));
-  await remove(ref(db, 'reschedule/' + invId));
+  try {
+    await remove(ref(db, 'statuses/' + invId));
+  } catch (e) {
+    console.error('Failed to remove status:', e);
+  }
+  try {
+    await remove(ref(db, 'reschedule/' + invId));
+  } catch (e) {
+    console.error('Failed to remove reschedule:', e);
+  }
   if (uid) {
-    await remove(ref(db, 'user-invites/' + uid + '/' + invId));
+    try {
+      await remove(ref(db, 'user-invites/' + uid + '/' + invId));
+    } catch (e) {
+      console.error('Failed to remove user-invite:', e);
+    }
   }
 }
 
