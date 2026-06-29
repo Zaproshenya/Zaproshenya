@@ -880,6 +880,9 @@
 .notif-icon-wrap.type-group-invite { background: rgba(124,58,237,.1); color: var(--purple); }
 .notif-icon-wrap.type-invite-response { background: rgba(45,122,79,.1); color: var(--green); }
 .notif-icon-wrap.type-invite-reschedule { background: var(--gold-dim); color: #a07620; }
+.notif-icon-wrap.type-support-reply { background: var(--blue-bg); color: var(--blue); }
+.notif-icon-wrap.type-invite-moderated { background: var(--red-bg); color: var(--red); }
+.notif-icon-wrap.type-system { background: var(--blue-bg); color: var(--blue); }
 .notif-icon-wrap.type-default { background: var(--warm); color: var(--ink); }
 
 .notif-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 2px; }

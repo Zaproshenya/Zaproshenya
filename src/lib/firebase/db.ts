@@ -125,10 +125,28 @@ export async function deleteInvite(invId: string, uid?: string, isGroup?: boolea
       const inviteSnap = await get(ref(db, path + invId));
       if (inviteSnap.exists()) {
         const inviteVal = inviteSnap.val();
+        const labelMap: Record<string, string> = {
+          'date': 'Побачення',
+          'walk': 'Прогулянка',
+          'wedding': 'Весілля',
+          'birthday': 'День народження',
+          'party': 'Свято / Вечірка',
+          'cinema': 'Кіно',
+          'coffee': 'Кава',
+          'dinner': 'Обід / Вечеря',
+          'sport': 'Спорт / Активність',
+          'meeting': 'Ділова зустріч',
+          'travel': 'Подорож',
+          'custom': 'Своє'
+        };
+        const localizedType = inviteVal.type === 'custom'
+          ? (inviteVal.customLabel || 'Своє')
+          : (labelMap[inviteVal.type] || inviteVal.type || 'запрошення');
+        const inviteName = inviteVal.title || inviteVal.to || localizedType;
         await addNotification(uid, {
           type: 'invite-moderated',
           title: 'Запрошення видалено модератором',
-          body: `Ваше запрошення "${inviteVal.title || inviteVal.type || 'без назви'}" було видалено модератором через скаргу або порушення правил.`
+          body: `Ваше запрошення "${inviteName}" було видалено модератором через скаргу або порушення правил.`
         });
       }
     } catch (e) {

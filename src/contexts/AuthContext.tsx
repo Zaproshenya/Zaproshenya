@@ -1,6 +1,6 @@
 'use client';
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase/config';
 import { loadProfile, UserProfile } from '@/lib/firebase/auth';
@@ -33,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [adminUnreadCount, setAdminUnreadCount] = useState(0);
   const pathname = usePathname();
+  const router = useRouter();
 
   const [is2faPending, setIs2faPending] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
@@ -432,7 +433,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         notifs.forEach(n => {
           if (!n.read && !shownNotifs.current.has(n.id) && Date.now() - (n.createdAt || 0) < 30000) {
             shownNotifs.current.add(n.id);
-            toast(`🔔 ${n.title}: ${n.body}`, 'info');
+            toast(`🔔 ${n.title}: ${n.body}`, 'info', 5000, () => {
+              router.push('/notifications');
+            });
           }
         });
       } else {
