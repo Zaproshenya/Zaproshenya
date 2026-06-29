@@ -24,9 +24,29 @@ export default function HomePage() {
       return;
     }
 
-    const unsubInvites = listenUserInvites(user.uid, (data) => {
+    const unsubInvites = listenUserInvites(user.uid, async (data) => {
       setInvites(data);
       setLoading(false);
+
+      // Self-healing migration for custom invites that lack custom fields in user-invites node
+      for (const inv of data) {
+        if (inv.type === 'custom' && (!inv.customLabel || !inv.customEmoji)) {
+          try {
+            const { getInvite, getGroupInvite } = await import('@/lib/firebase/db');
+            const { db } = await import('@/lib/firebase/config');
+            const { ref, update } = await import('firebase/database');
+            const fullInv = inv.isGroup ? await getGroupInvite(inv.id) : await getInvite(inv.id);
+            if (fullInv && (fullInv.customLabel || fullInv.customEmoji)) {
+              await update(ref(db, `user-invites/${user.uid}/${inv.id}`), {
+                customLabel: fullInv.customLabel || null,
+                customEmoji: fullInv.customEmoji || null,
+              });
+            }
+          } catch (err) {
+            console.error('Failed to migrate custom invite fields:', err);
+          }
+        }
+      }
     });
 
     const unsubNotifs = listenNotifications(user.uid, (notifs) => {

@@ -77,6 +77,8 @@ export async function createInvite(inv: any) {
       date: inv.date, time: inv.time, status: 'pending',
       created: inv.created,
       recipientUid: inv.recipientUid || null,
+      customLabel: inv.customLabel || null,
+      customEmoji: inv.customEmoji || null,
     });
   }
 }
@@ -149,6 +151,8 @@ export async function createGroupInvite(inv: any) {
       id: inv.id, type: inv.type, date: inv.date, time: inv.time,
       status: 'pending', created: inv.created, isGroup: true,
       title: inv.title || '',
+      customLabel: inv.customLabel || null,
+      customEmoji: inv.customEmoji || null,
     });
   }
 }
