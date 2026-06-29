@@ -201,6 +201,13 @@ export default function ClientAdminPage() {
       if (openTicket.unreadBySupport) {
         markTicketReadBySupport(openTicket.id).catch(() => {});
       }
+      // Log ticket view action
+      logStaffAction(
+        user?.uid || '', profile?.name || '',
+        `Відкрив звернення: ${openTicket.subject || openTicket.id}`,
+        openTicket.authorUid,
+        openTicket.authorName
+      ).catch(() => {});
       listenTicketMessages(openTicket.id, (msgs) => setTicketMessages(msgs));
       return () => stopListeningTicket(openTicket.id);
     }
@@ -219,7 +226,7 @@ export default function ClientAdminPage() {
       // Log the reply action (fire-and-forget, never breaks send)
       logStaffAction(
         user?.uid || '', profile?.name || '',
-        `Відпів у зверненні: ${openTicket.subject || openTicket.id}`,
+        `Відповів у зверненні: ${openTicket.subject || openTicket.id}`,
         openTicket.authorUid,
         openTicket.authorName
       ).catch(() => {});

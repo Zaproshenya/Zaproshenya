@@ -48,6 +48,34 @@ const PERMISSION_LABELS: Record<string, string> = {
   canBan: 'Може банити',
 };
 
+// Format a full date+time string (e.g. "29 чер 2026, 16:42")
+function formatFullDate(ts: number): string {
+  const d = new Date(ts);
+  const day = d.getDate();
+  const months = ['січ', 'лют', 'бер', 'кві', 'тра', 'чер', 'лип', 'сер', 'вер', 'жов', 'лис', 'гру'];
+  const mon = months[d.getMonth()];
+  const year = d.getFullYear();
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  return `${day} ${mon} ${year}, ${h}:${m}`;
+}
+
+// Determine icon, color and label for a log action string
+function getActionMeta(action: string): { icon: string; color: string; label: string } {
+  const a = (action || '').toLowerCase();
+  if (a.includes('заблок') || a.includes('бан')) return { icon: 'prohibit', color: '#e05c5c', label: 'Блокування' };
+  if (a.includes('розблок')) return { icon: 'lock-open', color: '#6db87a', label: 'Розблокування' };
+  if (a.includes('видалив акаунт') || a.includes('видалив користувача')) return { icon: 'user-minus', color: '#e05c5c', label: 'Видалення акаунту' };
+  if (a.includes('роль')) return { icon: 'shield-star', color: '#5a8fd4', label: 'Роль' };
+  if (a.includes('дозвол') || a.includes('пермі')) return { icon: 'sliders', color: '#9b7de8', label: 'Дозволи' };
+  if (a.includes('id') || a.includes('ідентифікатор')) return { icon: 'identification-badge', color: '#c9922a', label: 'Ідентифікатор' };
+  if (a.includes('автопризначення')) return { icon: 'magic-wand', color: '#c9922a', label: 'Автопризначення' };
+  if (a.includes('видалив запрошення')) return { icon: 'trash', color: '#e05c5c', label: 'Видалення запрошення' };
+  if (a.includes('скарг') || a.includes('схвалив') || a.includes('відхилив скарг')) return { icon: 'warning', color: '#e05c5c', label: 'Скарга' };
+  if (a.includes('зверненн') || a.includes('відпів') || a.includes('тікет') || a.includes('вирішив зверн') || a.includes('закрив зверн')) return { icon: 'chat-circle-dots', color: '#c9922a', label: 'Підтримка' };
+  return { icon: 'clipboard-text', color: 'var(--muted)', label: 'Дія' };
+}
+
 function isOnline(lastSeen: number) {
   return Date.now() - lastSeen < 3 * 60 * 1000;
 }
@@ -434,53 +462,103 @@ export default function AdminRoles({
 
       {/* ── Action log ── */}
       <div>
-        <div style={{ fontSize: '.78rem', fontWeight: 700, letterSpacing: '.08em', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '12px' }}>
-          Лог дій стафу
+        <div style={{ fontSize: '.78rem', fontWeight: 700, letterSpacing: '.08em', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Icon name="clipboard-text" size={14} /> Лог дій стафу <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>({logs.length})</span>
         </div>
         {logs.length === 0 ? (
-          <div style={{ color: 'var(--muted)', fontSize: '.88rem', padding: '20px', textAlign: 'center' }}>
-            Лог порожній
+          <div style={{ color: 'var(--muted)', fontSize: '.88rem', padding: '32px', textAlign: 'center', background: 'var(--card)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+            <Icon name="clipboard-text" size={28} />
+            <div style={{ marginTop: '10px' }}>Лог порожній — жодної дії ще не виконано</div>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {logs.map(log => (
-              <div key={log.key} style={{
-                display: 'flex', alignItems: 'center', gap: '12px',
-                padding: '10px 14px', borderRadius: '10px',
-                background: log.pinned ? 'rgba(201,146,42,0.06)' : 'var(--card)',
-                border: `1px solid ${log.pinned ? 'rgba(201,146,42,0.25)' : 'var(--border)'}`,
-                fontSize: '.83rem',
-              }}>
-                {log.pinned && (
-                  <span style={{ color: 'var(--gold)', fontSize: '.75rem' }}>📌</span>
-                )}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ fontWeight: 600, color: 'var(--ink)' }}>{log.adminName}</span>
-                  {' · '}
-                  <span style={{ color: 'var(--muted)' }}>{log.action}</span>
-                  {log.targetName && (
-                    <span style={{ color: 'var(--muted)' }}> → <span style={{ color: 'var(--ink)' }}>{log.targetName}</span></span>
-                  )}
+            {logs.map(log => {
+              const actionMeta = getActionMeta(log.action);
+              const fullDate = log.createdAt ? formatFullDate(log.createdAt) : null;
+              return (
+                <div key={log.key} style={{
+                  borderRadius: '12px',
+                  background: log.pinned ? 'rgba(201,146,42,0.05)' : 'var(--card)',
+                  border: `1px solid ${log.pinned ? 'rgba(201,146,42,0.3)' : 'var(--border)'}`,
+                  overflow: 'hidden',
+                  transition: 'border-color .15s',
+                }}>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    padding: '11px 14px',
+                    fontSize: '.83rem',
+                  }}>
+                    {/* Action icon badge */}
+                    <div style={{
+                      width: 30, height: 30, borderRadius: '8px', flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: `${actionMeta.color}18`,
+                      color: actionMeta.color,
+                    }}>
+                      <Icon name={actionMeta.icon} size={14} />
+                    </div>
+
+                    {/* Main text */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        {log.pinned && (
+                          <span style={{
+                            fontSize: '.65rem', fontWeight: 700, letterSpacing: '.06em',
+                            padding: '1px 6px', borderRadius: '10px',
+                            background: 'rgba(201,146,42,0.15)', color: 'var(--gold)',
+                            border: '1px solid rgba(201,146,42,0.3)',
+                            textTransform: 'uppercase',
+                          }}>ЗАКРІПЛЕНО</span>
+                        )}
+                        <span style={{ fontWeight: 600, color: 'var(--ink)', fontSize: '.85rem' }}>{log.adminName}</span>
+                        <span style={{ fontSize: '.75rem', padding: '1px 7px', background: `${actionMeta.color}12`, borderRadius: '8px', color: actionMeta.color, fontWeight: 600, border: `1px solid ${actionMeta.color}25` }}>{actionMeta.label}</span>
+                      </div>
+                      <div style={{ color: 'var(--muted)', marginTop: '2px', fontSize: '.8rem' }}>
+                        {log.action}
+                        {log.targetName && (
+                          <> → <span style={{ color: 'var(--ink)', fontWeight: 500 }}>{log.targetName}</span></>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Time */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', flexShrink: 0 }}>
+                      <span style={{ color: 'var(--ink)', fontSize: '.78rem', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                        {log.createdAt ? timeAgo(log.createdAt) : '—'}
+                      </span>
+                      {fullDate && (
+                        <span style={{ color: 'var(--muted)', fontSize: '.7rem', whiteSpace: 'nowrap' }}>{fullDate}</span>
+                      )}
+                    </div>
+
+                    {/* Pin button */}
+                    {isSuperAdmin && (
+                      <button
+                        onClick={() => handlePin(log)}
+                        disabled={logPinLoading === log.key}
+                        title={log.pinned ? 'Відкріпити' : 'Закріпити'}
+                        style={{
+                          background: log.pinned ? 'rgba(201,146,42,0.12)' : 'transparent',
+                          border: `1px solid ${log.pinned ? 'rgba(201,146,42,0.35)' : 'var(--border)'}`,
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          color: log.pinned ? 'var(--gold)' : 'var(--muted)',
+                          padding: '5px 7px',
+                          lineHeight: 1,
+                          flexShrink: 0,
+                          transition: 'all .15s',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        {logPinLoading === log.key
+                          ? <Icon name="spinner" size={13} />
+                          : <Icon name={log.pinned ? 'push-pin-slash' : 'push-pin'} size={13} />}
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <span style={{ color: 'var(--muted)', fontSize: '.75rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                  {log.createdAt ? timeAgo(log.createdAt) : '—'}
-                </span>
-                {isSuperAdmin && (
-                  <button
-                    onClick={() => handlePin(log)}
-                    disabled={logPinLoading === log.key}
-                    title={log.pinned ? 'Відкріпити' : 'Закріпити'}
-                    style={{
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      color: log.pinned ? 'var(--gold)' : 'var(--muted)',
-                      padding: '2px 4px', fontSize: '1rem', lineHeight: 1, flexShrink: 0,
-                    }}
-                  >
-                    {logPinLoading === log.key ? '...' : '📌'}
-                  </button>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
