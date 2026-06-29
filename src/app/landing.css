@@ -653,6 +653,10 @@
     .type-pill:nth-child(6) { background-color: #fbf7f4; border-color: rgba(160,82,45,0.22); --accent-color: #a0522d; --accent-dim: rgba(160,82,45,0.14); }
     .type-pill:nth-child(7) { background-color: #f2f8fc; border-color: rgba(52,152,219,0.22); --accent-color: #3498db; --accent-dim: rgba(52,152,219,0.14); }
     .type-pill:nth-child(8) { background-color: #f2faf7; border-color: rgba(22,160,133,0.22); --accent-color: #16a085; --accent-dim: rgba(22,160,133,0.14); }
+.type-pill:nth-child(9) { background-color: #e8f0fe; border-color: rgba(41,121,255,0.22); --accent-color: #2979ff; --accent-dim: rgba(41,121,255,0.14); }
+.type-pill:nth-child(10) { background-color: #f5f0e8; border-color: rgba(141,110,63,0.22); --accent-color: #8d6e3f; --accent-dim: rgba(141,110,63,0.14); }
+.type-pill:nth-child(11) { background-color: #e8f4fd; border-color: rgba(2,136,209,0.22); --accent-color: #0288d1; --accent-dim: rgba(2,136,209,0.14); }
+.type-pill:nth-child(12) { background-color: #fdf6e3; border-color: rgba(201,146,42,0.22); --accent-color: #c9922a; --accent-dim: rgba(201,146,42,0.14); }
 
     .type-pill:hover {
       background-color: #ffffff;
