@@ -422,10 +422,8 @@ export default function CreatePage() {
                 className={`type-option custom-type-btn`}
                 onClick={openCustomSheet}
               >
-                <span className="type-option-emoji" style={{ fontSize: '1.2rem' }}>
-                  {form.type === 'custom' && activeCustomType ? activeCustomType.emoji : '✦'}
-                </span>
-                <span>{form.type === 'custom' && activeCustomType ? activeCustomType.label : 'Своє'}</span>
+                <span className="type-option-emoji" style={{ fontSize: '1.2rem' }}>✦</span>
+                <span>Своє</span>
               </button>
             </div>
           </div>
