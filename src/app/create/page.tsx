@@ -30,7 +30,6 @@ export default function CreatePage() {
   const [customLabel, setCustomLabel] = useState('');
   const [customEmoji, setCustomEmoji] = useState('');
   const [customPresets, setCustomPresets] = useState<{id: string; label: string; emoji: string}[]>([]);
-  const [customSheetTab, setCustomSheetTab] = useState<'create' | 'saved'>('create');
   const [savingPreset, setSavingPreset] = useState(false);
   // Active custom type for current invite
   const [activeCustomType, setActiveCustomType] = useState<{label: string; emoji: string} | null>(null);
@@ -173,7 +172,6 @@ export default function CreatePage() {
   const openCustomSheet = () => {
     setCustomLabel('');
     setCustomEmoji('');
-    setCustomSheetTab('create');
     setShowCustomSheet(true);
   };
 
@@ -421,7 +419,7 @@ export default function CreatePage() {
               {/* The custom "Своє" button */}
               <button
                 type="button"
-                className={`type-option custom-type-btn ${form.type === 'custom' ? 'selected' : ''}`}
+                className={`type-option custom-type-btn`}
                 onClick={openCustomSheet}
               >
                 <span className="type-option-emoji" style={{ fontSize: '1.2rem' }}>
@@ -583,102 +581,53 @@ export default function CreatePage() {
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="custom-sheet-tabs">
-          <button
-            className={`custom-sheet-tab ${customSheetTab === 'create' ? 'active' : ''}`}
-            onClick={() => setCustomSheetTab('create')}
-          >Нова подія</button>
-          <button
-            className={`custom-sheet-tab ${customSheetTab === 'saved' ? 'active' : ''}`}
-            onClick={() => setCustomSheetTab('saved')}
-          >
-            Збережені
-            {customPresets.length > 0 && <span className="tab-count">{customPresets.length}</span>}
-          </button>
-        </div>
-
-        {customSheetTab === 'create' ? (
-          <div className="custom-sheet-body">
-            <label className="lbl" style={{marginBottom:'8px'}}>Іконка події</label>
-            <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
-              <div style={{fontSize:'1.6rem', width:'40px', height:'40px', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--surface-2)', borderRadius:'10px', flexShrink:0}}>
-                {customEmoji || '?'}
-              </div>
-              <input
-                placeholder="Вставте емодзі…"
-                value={customEmoji}
-                maxLength={4}
-                onChange={e => {
-                  const val = e.target.value;
-                  const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
-                  const filtered = [...val].filter(ch => emojiRegex.test(ch)).join('');
-                  setCustomEmoji(filtered);
-                }}
-                style={{flex:1, fontSize:'1.1rem'}}
-              />
+        <div className="custom-sheet-body">
+          <label className="lbl" style={{marginBottom:'8px'}}>Іконка події</label>
+          <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
+            <div style={{fontSize:'1.6rem', width:'40px', height:'40px', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--surface-2)', borderRadius:'10px', flexShrink:0}}>
+              {customEmoji || '?'}
             </div>
-
-            <label className="lbl" style={{marginTop:'16px', marginBottom:'8px'}}>Назва події</label>
             <input
-              placeholder="Наприклад: Кіно з друзями…"
-              value={customLabel}
-              maxLength={30}
-              onChange={e => setCustomLabel(e.target.value)}
+              placeholder="Вставте емодзі…"
+              value={customEmoji}
+              maxLength={4}
+              onChange={e => {
+                const val = e.target.value;
+                const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
+                const filtered = [...val].filter(ch => emojiRegex.test(ch)).join('');
+                setCustomEmoji(filtered);
+              }}
+              style={{flex:1, fontSize:'1.1rem'}}
             />
+          </div>
 
-            {/* Actions */}
-            <div className="custom-sheet-actions">
-              <button
-                className="btn btn-outline"
-                disabled={!customLabel.trim() || !customEmoji.trim() || savingPreset}
-                onClick={handleSavePreset}
-                style={{flex:1}}
-              >
-                <Icon name="bookmark-simple" size={14}/> {savingPreset ? 'Збереження…' : 'Зберегти пресет'}
-              </button>
-              <button
-                className="btn btn-dark"
-                disabled={!customLabel.trim() || !customEmoji.trim()}
-                onClick={() => applyCustomType(customLabel.trim(), customEmoji.trim())}
-                style={{flex:1}}
-              >
-                <Icon name="check" size={14}/> Застосувати
-              </button>
-            </div>
+          <label className="lbl" style={{marginTop:'16px', marginBottom:'8px'}}>Назва події</label>
+          <input
+            placeholder="Наприклад: Кіно з друзями…"
+            value={customLabel}
+            maxLength={30}
+            onChange={e => setCustomLabel(e.target.value)}
+          />
+
+          <div className="custom-sheet-actions">
+            <button
+              className="btn btn-outline"
+              disabled={!customLabel.trim() || !customEmoji.trim() || savingPreset}
+              onClick={handleSavePreset}
+              style={{flex:1}}
+            >
+              <Icon name="bookmark-simple" size={14}/> {savingPreset ? 'Збереження…' : 'Зберегти пресет'}
+            </button>
+            <button
+              className="btn btn-dark"
+              disabled={!customLabel.trim() || !customEmoji.trim()}
+              onClick={() => applyCustomType(customLabel.trim(), customEmoji.trim())}
+              style={{flex:1}}
+            >
+              <Icon name="check" size={14}/> Застосувати
+            </button>
           </div>
-        ) : (
-          <div className="custom-sheet-body">
-            {customPresets.length === 0 ? (
-              <div style={{textAlign:'center', padding:'32px 0', color:'var(--muted)', fontSize:'.9rem'}}>
-                <div style={{fontSize:'2rem', marginBottom:'8px'}}>✦</div>
-                Ще немає збережених пресетів.<br/>
-                <span style={{fontSize:'.82rem'}}>Створіть свою подію і збережіть її.</span>
-              </div>
-            ) : (
-              <div className="custom-presets-list">
-                {customPresets.map(p => (
-                  <div key={p.id} className="custom-preset-row">
-                    <span className="custom-preset-emoji">{p.emoji}</span>
-                    <span className="custom-preset-label">{p.label}</span>
-                    <div className="custom-preset-actions">
-                      <button
-                        className="btn btn-dark"
-                        style={{padding:'6px 14px', fontSize:'.82rem'}}
-                        onClick={() => applyCustomType(p.label, p.emoji)}
-                      >Використати</button>
-                      <button
-                        className="btn btn-outline"
-                        style={{padding:'6px 10px', fontSize:'.82rem'}}
-                        onClick={() => handleDeletePreset(p.id)}
-                      ><Icon name="trash" size={13}/></button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        </div>
       </div>
     )}
     </>

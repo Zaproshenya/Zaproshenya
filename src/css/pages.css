@@ -1132,6 +1132,24 @@
   transform: translateY(0);
 }
 
+@media (min-width: 768px) {
+  .custom-sheet {
+    top: 50%;
+    bottom: auto;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%) scale(0.95);
+    border-radius: 22px;
+    max-width: 440px;
+    width: 90vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+  }
+  .custom-sheet.open {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .custom-sheet-handle { display: none; }
+}
+
 .custom-sheet-handle {
   width: 40px; height: 4px;
   background: var(--border);
@@ -1166,77 +1184,17 @@
   color: var(--ink);
 }
 
-.custom-sheet-tabs {
-  display: flex;
-  gap: 4px;
-  padding: 12px 20px 0;
-  border-bottom: 1.5px solid var(--border);
-}
-.custom-sheet-tab {
-  padding: 8px 16px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-family: var(--font-body);
-  font-size: .85rem;
-  font-weight: 500;
-  color: var(--muted);
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1.5px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all .15s;
-}
-.custom-sheet-tab.active {
-  color: var(--ink);
-  border-bottom-color: var(--gold);
-  font-weight: 600;
-}
-
 .custom-sheet-body {
   padding: 16px 20px 20px;
   overflow-y: auto;
   max-height: 65vh;
 }
 
-/* Emoji quick-pick grid */
-/* Action row inside sheet */
 .custom-sheet-actions {
   display: flex;
   gap: 10px;
   margin-top: 20px;
 }
-
-/* Saved presets list */
-.custom-presets-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.custom-preset-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1.5px solid var(--border);
-  background: var(--surface-2);
-  transition: border-color .15s;
-}
-.custom-preset-row:hover { border-color: var(--gold-border); }
-.custom-preset-emoji { font-size: 1.6rem; flex-shrink: 0; }
-.custom-preset-label {
-  flex: 1;
-  font-size: .9rem;
-  font-weight: 500;
-  color: var(--ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.custom-preset-actions { display: flex; gap: 6px; flex-shrink: 0; }
-
 
 
 /* Date/time row */
