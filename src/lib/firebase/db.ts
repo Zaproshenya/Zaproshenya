@@ -841,36 +841,37 @@ export async function autoAssignRoleIds(): Promise<{ updated: number; skipped: n
 // ── Staff Action Logging ──
 
 export async function logStaffAction(adminUid: string, adminName: string, action: string, targetUid?: string, targetName?: string) {
+  if (!adminUid) return; // guard: skip if no admin uid
   const logRef = push(ref(db, 'staff_logs'));
+  // Write WITHOUT pinned field — avoids child-rule permission issues for moderators
   await set(logRef, {
     id: logRef.key,
     adminUid,
-    adminName,
+    adminName: adminName || '',
     action,
     targetUid: targetUid || null,
     targetName: targetName || null,
     createdAt: Date.now(),
-    pinned: false,
   });
 
-  // Rotate: keep only 50 non-pinned entries
-  try {
-    const allSnap = await get(ref(db, 'staff_logs'));
-    if (allSnap.exists()) {
-      const all: any[] = [];
-      allSnap.forEach(c => { all.push({ key: c.key, ...c.val() }); });
+  // Fire-and-forget rotation (never blocks the log write, never throws to caller)
+  rotateStaffLogs();
+}
 
-      const nonPinned = all.filter(l => !l.pinned).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
-      if (nonPinned.length > 50) {
-        const toDelete = nonPinned.slice(0, nonPinned.length - 50);
-        const delUpdates: Record<string, null> = {};
-        toDelete.forEach(l => { delUpdates['staff_logs/' + l.key] = null; });
-        await update(ref(db), delUpdates);
-      }
+function rotateStaffLogs() {
+  get(ref(db, 'staff_logs')).then(allSnap => {
+    if (!allSnap.exists()) return;
+    const all: any[] = [];
+    allSnap.forEach(c => { all.push({ key: c.key, ...c.val() }); });
+    // Keep pinned entries always; rotate non-pinned down to 50
+    const nonPinned = all.filter(l => !l.pinned).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    if (nonPinned.length > 50) {
+      const toDelete = nonPinned.slice(0, nonPinned.length - 50);
+      const delUpdates: Record<string, null> = {};
+      toDelete.forEach(l => { delUpdates['staff_logs/' + l.key] = null; });
+      update(ref(db), delUpdates).catch(() => {});
     }
-  } catch (e) {
-    console.warn('logStaffAction: rotation failed', e);
-  }
+  }).catch(() => {});
 }
 
 export async function pinStaffLog(logId: string, pinned: boolean) {

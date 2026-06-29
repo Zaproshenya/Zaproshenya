@@ -71,12 +71,12 @@ export default function AdminModeration({ invites, users, profile, reload }: { i
                         isDanger: true,
                         onConfirm: async () => {
                           await deleteInvite(inv.id, inv.creatorUid, inv.isGroup);
-                          await logStaffAction(
+                          logStaffAction(
                             profile.uid, profile.name,
                             `Видалив запрошення (${inv.isGroup ? 'групове' : 'особисте'}: ${inv.title || inv.to || inv.id})`,
                             inv.creatorUid,
                             inv.from || inv.creatorName
-                          );
+                          ).catch(() => {});
                           if(reload) reload();
                         }
                       });

@@ -24,11 +24,11 @@ export default function AdminReports({ reports, profile, reload }: { reports: an
         try {
           await resolveReport(id, status);
           const report = reports.find((r: any) => r.id === id);
-          await logStaffAction(
+          logStaffAction(
             profile.uid, profile.name,
             `${isResolved ? 'Схвалив' : 'Відхилив'} скаргу (${report?.reason || id})`,
             report?.reporterUid
-          );
+          ).catch(() => {});
           reload();
           toast('Статус скарги змінено', 'success');
         } catch (err: any) {

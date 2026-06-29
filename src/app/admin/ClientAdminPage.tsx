@@ -17,7 +17,8 @@ import {
   listenAdminReports,
   listenAdminSupportTickets,
   listenAdminStatuses,
-  listenAdminFriends
+  listenAdminFriends,
+  logStaffAction
 } from '@/lib/firebase/db';
 import { Icon } from '@/components/Icon';
 import Link from 'next/link';
@@ -215,6 +216,13 @@ export default function ClientAdminPage() {
         avatar: profile?.avatar || null,
         text: ticketReply.trim(),
       });
+      // Log the reply action (fire-and-forget, never breaks send)
+      logStaffAction(
+        user?.uid || '', profile?.name || '',
+        `Відпів у зверненні: ${openTicket.subject || openTicket.id}`,
+        openTicket.authorUid,
+        openTicket.authorName
+      ).catch(() => {});
       setTicketReply('');
     } catch (e) {
       toast('Помилка відправки', 'error');

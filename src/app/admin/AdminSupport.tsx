@@ -35,12 +35,12 @@ export default function AdminSupport({
         try {
           await resolveSupportTicket(id, status);
           const ticket = supportTickets.find((t: any) => t.id === id);
-          await logStaffAction(
+          logStaffAction(
             profile.uid, profile.name,
             `${isResolved ? 'Вирішив' : 'Закрив'} звернення (${ticket?.subject || id})`,
             ticket?.authorUid,
             ticket?.authorName
-          );
+          ).catch(() => {});
           reload();
           if (openTicket && openTicket.id === id) setOpenTicket(null);
           toast('Статус звернення оновлено', 'success');
