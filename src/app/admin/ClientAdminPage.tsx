@@ -31,6 +31,7 @@ import AdminModeration from './AdminModeration';
 import AdminReports from './AdminReports';
 import AdminSupport from './AdminSupport';
 import AdminRoles from './AdminRoles';
+import AdminPublisher from './AdminPublisher';
 
 export default function ClientAdminPage() {
   const router = useRouter();
@@ -95,6 +96,15 @@ export default function ClientAdminPage() {
       unsubFriends();
     };
   }, [user, profile, router]);
+
+  // Listen to query parameters to automatically open the publisher tab on OAuth redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab === 'publisher' || window.location.search.includes('oauth')) {
+      setDashTab('publisher');
+    }
+  }, []);
 
   // Derived state mapping
   const users = dbUsers;
@@ -253,6 +263,11 @@ export default function ClientAdminPage() {
             <span className="sidebar-item-icon"><Icon name="chart-bar" size={20}/></span> Огляд
           </button>
         )}
+        {!isModeOnly && (
+          <button className={`sidebar-item ${dashTab === 'publisher' ? 'active' : ''}`} onClick={() => { setDashTab('publisher'); setSidebarOpen(false); }}>
+            <span className="sidebar-item-icon"><Icon name="paper-plane-tilt" size={20}/></span> Публікатор
+          </button>
+        )}
         <button className={`sidebar-item ${dashTab === 'users' ? 'active' : ''}`} onClick={() => { setDashTab('users'); setSidebarOpen(false); }}>
           <span className="sidebar-item-icon"><Icon name="users" size={20}/></span> Користувачі
         </button>
@@ -308,6 +323,7 @@ export default function ClientAdminPage() {
                   {dashTab === 'moderation' && 'Модерація'}
                   {dashTab === 'reports' && 'Скарги'}
                   {dashTab === 'support' && 'Підтримка'}
+                  {dashTab === 'publisher' && 'Публікатор'}
                 </h1>
                 <button className="hamburger" onClick={() => setSidebarOpen(true)}><Icon name="list" size={20}/></button>
               </div>
@@ -317,6 +333,7 @@ export default function ClientAdminPage() {
               {dashTab === 'roles' && !isModeOnly && <AdminRoles users={users} profile={profile} reload={loadData} />}
               {dashTab === 'moderation' && <AdminModeration invites={invites} users={users} profile={profile} reload={loadData} />}
               {dashTab === 'reports' && <AdminReports reports={reports} profile={profile} reload={loadData} />}
+              {dashTab === 'publisher' && !isModeOnly && <AdminPublisher />}
               {dashTab === 'support' && (
                 <AdminSupport 
                   supportTickets={supportTickets} 

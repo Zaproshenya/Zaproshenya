@@ -132,6 +132,16 @@
       "$logId": {
         ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')"
       }
+    },
+    "autopost": {
+      "settings": {
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin')",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin')"
+      },
+      "jobs": {
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin')",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin')"
+      }
     }
   }
 }
