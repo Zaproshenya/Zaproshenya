@@ -415,6 +415,62 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 }
 .detail-chip:hover { background: var(--warm); }
 .detail-chip.full { grid-column: 1 / -1; }
+
+/* Clickable Detail Chips */
+button.detail-chip.clickable {
+  font-family: inherit;
+  color: inherit;
+  text-align: left;
+  width: 100%;
+}
+.detail-chip.clickable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: all 0.2s ease;
+  text-decoration: none; /* For link chips */
+}
+.detail-chip.clickable:hover {
+  background: var(--warm);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(201, 146, 42, 0.08);
+}
+.detail-chip.clickable:active {
+  transform: translateY(0);
+}
+.detail-chip-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.detail-chip-action-text {
+  font-size: 0.64rem;
+  font-weight: 600;
+  margin-top: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  line-height: 1;
+}
+.detail-chip-action-text i {
+  font-size: 0.75rem;
+}
+.detail-chip-action-text.gold {
+  color: var(--gold);
+}
+.detail-chip-action-text.green {
+  color: var(--green);
+}
+.detail-chip-icon.gold {
+  color: var(--gold);
+  opacity: 0.9;
+}
+.detail-chip-icon.green {
+  color: var(--green);
+  opacity: 0.9;
+}
+
 .detail-chip-icon {
   flex-shrink: 0;
   opacity: .75; color: var(--gold);

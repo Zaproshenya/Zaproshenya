@@ -25,6 +25,10 @@ export default function ClientInvitePage({ id }: { id: string }) {
   const [rescheduleDate, setRescheduleDate] = useState('');
   const [rescheduleTime, setRescheduleTime] = useState('');
 
+  // States for calendar integration
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
+
+
   useEffect(() => {
     if (user === undefined) return;
 
@@ -118,6 +122,86 @@ export default function ClientInvitePage({ id }: { id: string }) {
       toast('Сталася помилка при збереженні', 'error');
     }
   };
+
+  const getCalendarDates = (dateStr: string, timeStr: string) => {
+    if (!dateStr) return { start: '', end: '' };
+    const cleanDate = dateStr.replace(/-/g, '');
+    const cleanTime = timeStr ? timeStr.replace(/:/g, '') : '1200';
+    const start = `${cleanDate}T${cleanTime}00`;
+    let end = '';
+    try {
+      const parts = dateStr.split('-');
+      const timeParts = (timeStr || '12:00').split(':');
+      const d = new Date(
+        parseInt(parts[0]),
+        parseInt(parts[1]) - 1,
+        parseInt(parts[2]),
+        parseInt(timeParts[0]),
+        parseInt(timeParts[1])
+      );
+      d.setHours(d.getHours() + 1);
+      
+      const endYear = d.getFullYear();
+      const endMonth = String(d.getMonth() + 1).padStart(2, '0');
+      const endDay = String(d.getDate()).padStart(2, '0');
+      const endHour = String(d.getHours()).padStart(2, '0');
+      const endMin = String(d.getMinutes()).padStart(2, '0');
+      end = `${endYear}${endMonth}${endDay}T${endHour}${endMin}00`;
+    } catch {
+      end = `${cleanDate}T${String((parseInt(cleanTime.substring(0, 2)) + 1) % 24).padStart(2, '0')}${cleanTime.substring(2)}00`;
+    }
+    return { start, end };
+  };
+
+  const escapeIcsText = (str: string) => {
+    if (!str) return '';
+    return str
+      .replace(/\\/g, '\\\\')
+      .replace(/,/g, '\\,')
+      .replace(/;/g, '\\;')
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '');
+  };
+
+  const handleDownloadIcs = () => {
+    if (!invData?.date) return;
+    const { start, end } = getCalendarDates(invData.date, invData.time);
+    const eventTitle = invData.title || `Зустріч: ${t.l}`;
+    const descText = `${invData.msg ? invData.msg + '\n\n' : ''}Від кого: ${invData.senderName || 'Невідомий'}\nПосилання на запрошення: ${typeof window !== 'undefined' ? window.location.href : ''}`;
+    
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Zaproshenya//NONSGML Event//EN',
+      'BEGIN:VEVENT',
+      `DTSTART:${start}`,
+      `DTEND:${end}`,
+      `SUMMARY:${escapeIcsText(eventTitle)}`,
+      `DESCRIPTION:${escapeIcsText(descText)}`,
+      `LOCATION:${escapeIcsText(invData.place || '')}`,
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${t.l.replace(/\s+/g, '_')}_invite.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const getGoogleCalendarUrl = () => {
+    if (!invData) return '';
+    const { start, end } = getCalendarDates(invData.date, invData.time);
+    const eventTitle = encodeURIComponent(invData.title || `Зустріч: ${t.l}`);
+    const descText = `${invData.msg ? invData.msg + '\n\n' : ''}Від кого: ${invData.senderName || 'Невідомий'}\nПосилання на запрошення: ${typeof window !== 'undefined' ? window.location.href : ''}`;
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${eventTitle}&dates=${start}/${end}&details=${encodeURIComponent(descText)}&location=${encodeURIComponent(invData.place || '')}`;
+  };
+
 
   if (loading) {
     return (
@@ -231,21 +315,50 @@ export default function ClientInvitePage({ id }: { id: string }) {
           )}
 
           <div className="detail-chips">
-            <div className="detail-chip">
-              <span className="detail-chip-icon"><Icon name="calendar-blank" size={16}/></span>
-              <div><div className="detail-chip-label">Дата</div><div className="detail-chip-value">{invData.date}</div></div>
-            </div>
+            <button 
+              type="button" 
+              className="detail-chip clickable"
+              onClick={() => setShowCalendarModal(true)}
+              title="Додати в календар"
+            >
+              <span className="detail-chip-icon gold"><Icon name="calendar-plus" size={16}/></span>
+              <div className="detail-chip-content">
+                <div className="detail-chip-label">Дата</div>
+                <div className="detail-chip-value">{invData.date}</div>
+                <div className="detail-chip-action-text gold">
+                  <Icon name="plus" size={10}/>
+                  <span>Додати в календар</span>
+                </div>
+              </div>
+            </button>
             <div className="detail-chip">
               <span className="detail-chip-icon"><Icon name="clock" size={16}/></span>
-              <div><div className="detail-chip-label">Час</div><div className="detail-chip-value">{invData.time}</div></div>
+              <div className="detail-chip-content">
+                <div className="detail-chip-label">Час</div>
+                <div className="detail-chip-value">{invData.time}</div>
+              </div>
             </div>
             {invData.place && (
-              <div className="detail-chip full">
-                <span className="detail-chip-icon"><Icon name="map-pin" size={16}/></span>
-                <div><div className="detail-chip-label">Місце</div><div className="detail-chip-value">{invData.place}</div></div>
-              </div>
+              <a 
+                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(invData.place)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="detail-chip full clickable"
+                title="Побудувати маршрут у Google Maps"
+              >
+                <span className="detail-chip-icon green"><Icon name="navigation-arrow" size={16}/></span>
+                <div className="detail-chip-content">
+                  <div className="detail-chip-label">Місце</div>
+                  <div className="detail-chip-value">{invData.place}</div>
+                  <div className="detail-chip-action-text green">
+                    <Icon name="arrow-square-out" size={10}/>
+                    <span>Маршрут у Google Maps</span>
+                  </div>
+                </div>
+              </a>
             )}
           </div>
+
 
           {answered ? (
             <div className="result-screen" style={{animation:'pop .5s cubic-bezier(.34,1.56,.64,1) both'}}>
@@ -427,6 +540,51 @@ export default function ClientInvitePage({ id }: { id: string }) {
           </div>
         </div>
       )}
+
+      {showCalendarModal && (
+        <div className="overlay" onClick={() => setShowCalendarModal(false)} style={{zIndex: 9999}}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h3 className="modal-title" style={{display:'flex', alignItems:'center', gap:'8px'}}>
+              <Icon name="calendar-plus" size={20}/> Додати в календар
+            </h3>
+            <p style={{color:'var(--muted)', fontSize:'.9rem', marginBottom:'16px'}}>
+              Оберіть календар для події "<strong>{invData?.title || t.l}</strong>":
+            </p>
+            <div style={{display:'flex', flexDirection:'column', gap:'10px'}}>
+              <a 
+                href={getGoogleCalendarUrl()} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="btn btn-outline" 
+                style={{display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', width:'100%', textDecoration:'none', color: 'var(--ink)'}}
+                onClick={() => setShowCalendarModal(false)}
+              >
+                <Icon name="google-logo" size={18}/> Google Календар
+              </a>
+              <button 
+                className="btn btn-outline" 
+                style={{display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', width:'100%', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit'}}
+                onClick={() => {
+                  handleDownloadIcs();
+                  setShowCalendarModal(false);
+                }}
+              >
+                <Icon name="apple-logo" size={18}/> Apple / Outlook / Інші (.ics)
+              </button>
+            </div>
+            <div style={{marginTop:'18px'}}>
+              <button
+                className="btn btn-dark"
+                style={{width: '100%', cursor: 'pointer'}}
+                onClick={() => setShowCalendarModal(false)}
+              >
+                Скасувати
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
