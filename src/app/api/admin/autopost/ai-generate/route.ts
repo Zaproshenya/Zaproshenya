@@ -103,10 +103,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "ШІ повернув пусту відповідь" }, { status: 500 });
     }
 
-    // Parse the generated JSON block
+    // Parse the generated JSON block robustly
     try {
-      // Clean possible markdown code blocks if the model ignored responseMimeType
       let cleanedText = rawText.trim();
+      
+      // 1. Strip any conversational prefix/suffix text by extracting only the JSON curly brace object
+      const firstBrace = cleanedText.indexOf("{");
+      const lastBrace = cleanedText.lastIndexOf("}");
+      
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        cleanedText = cleanedText.substring(firstBrace, lastBrace + 1);
+      }
+
+      // 2. Clean possible markdown code blocks or escaped characters
       if (cleanedText.startsWith("```")) {
         cleanedText = cleanedText.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
       }
@@ -119,7 +128,30 @@ export async function POST(req: NextRequest) {
       });
     } catch (parseError) {
       console.error("Failed to parse Gemini JSON:", rawText, parseError);
-      // Fallback in case JSON parsing failed — put the entire raw text into description
+      
+      // 3. Regex Fallback: if JSON.parse fails, manually extract description and hashtags using Regex!
+      // This is extremely robust and will capture fields even if raw newlines or unescaped quotes break standard JSON.
+      let description = "";
+      let hashtags = "";
+
+      const descMatch = rawText.match(/"description"\s*:\s*"([\s\S]*?)"(?=\s*,\s*"hashtags"|\s*})/i);
+      const hashMatch = rawText.match(/"hashtags"\s*:\s*"([\s\S]*?)"/i);
+
+      if (descMatch) {
+        description = descMatch[1].replace(/\\n/g, "\n").replace(/\\"/g, '"');
+      }
+      if (hashMatch) {
+        hashtags = hashMatch[1].replace(/\\"/g, '"');
+      }
+
+      if (description) {
+        return NextResponse.json({
+          description,
+          hashtags
+        });
+      }
+
+      // Fallback in case everything else failed — put the entire raw text into description
       return NextResponse.json({
         description: rawText,
         hashtags: ""
