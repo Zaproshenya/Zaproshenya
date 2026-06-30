@@ -720,11 +720,15 @@ export function OnboardingGuide({ userName, onComplete }: OnboardingGuideProps) 
   const [exiting, setExiting] = useState(false);
   const isLast = step === STEPS.length - 1;
 
-  // Lock background page scrolling
+  // Lock background page scrolling completely on both PC and mobile
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
+    const lockClass = 'ob-lock-scroll';
+    document.documentElement.classList.add(lockClass);
+    document.body.classList.add(lockClass);
+
     return () => {
-      document.body.style.overflow = '';
+      document.documentElement.classList.remove(lockClass);
+      document.body.classList.remove(lockClass);
     };
   }, []);
 
@@ -741,7 +745,7 @@ export function OnboardingGuide({ userName, onComplete }: OnboardingGuideProps) 
   };
 
   return (
-    <div className="ob-overlay">
+    <div className="ob-overlay" onTouchMove={(e) => e.preventDefault()}>
       <div className="ob-modal">
         {/* Progress dots */}
         <div className="ob-progress">

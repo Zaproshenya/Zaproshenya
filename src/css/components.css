@@ -683,6 +683,13 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   animation: fadeIn .3s var(--ease) both;
 }
 
+/* Scroll lock utility to freeze background document scrolling */
+.ob-lock-scroll {
+  overflow: hidden !important;
+  height: 100% !important;
+  touch-action: none;
+}
+
 /* ── Modal card ── */
 .ob-modal {
   background: var(--card);
@@ -690,7 +697,7 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   box-shadow: 0 32px 80px rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.12);
   width: 100%;
   max-width: 480px;
-  height: 640px; /* Taller height to fit all content cleanly without scrolling */
+  height: 600px; /* Optimal tall height for both desktop and mobile */
   max-height: 95vh;
   display: flex;
   flex-direction: column;
@@ -748,14 +755,14 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 /* ── Content area ── */
 .ob-content {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden; /* Fully locks vertical scrolling inside modal steps */
   overflow-x: hidden;
   min-height: 0;
-  scrollbar-width: none; /* Hide scrollbars for a clean presentation */
+  scrollbar-width: none;
   -ms-overflow-style: none;
 }
 .ob-content::-webkit-scrollbar {
-  display: none; /* Hide scrollbar for Chrome, Safari and Opera */
+  display: none;
 }
 .ob-content-enter {
   animation: slideInRight .22s var(--ease) both;
@@ -1538,8 +1545,8 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 /* ─────────────── RESPONSIVE ─────────────── */
 @media (max-width: 520px) {
   .ob-modal {
-    height: 540px; /* Constrained fixed height on mobile */
-    max-height: 92vh;
+    height: 600px; /* Matching desktop height for proportional look on mobile */
+    max-height: 95vh;
   }
   .ob-welcome {
     padding: 20px 14px 16px;
