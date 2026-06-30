@@ -261,17 +261,7 @@ function CreateStep() {
         setAnimationPhase(2);
       }, 1000);
     } else if (animationPhase === 2) {
-      // Phase 2: Select event type "Кава" (index 0)
-      t1 = setTimeout(() => {
-        setTypeIdx(0);
-        t2 = setTimeout(() => setAnimationPhase(3), 900);
-      }, 300);
-      return () => {
-        clearTimeout(t1);
-        clearTimeout(t2);
-      };
-    } else if (animationPhase === 3) {
-      // Phase 3: Type Message
+      // Phase 2: Type Message
       const target = 'Кава разом ☕';
       let char = 0;
       const interval = setInterval(() => {
@@ -280,11 +270,21 @@ function CreateStep() {
           char++;
         } else {
           clearInterval(interval);
-          t2 = setTimeout(() => setAnimationPhase(4), 500);
+          t2 = setTimeout(() => setAnimationPhase(3), 500);
         }
       }, 60);
       return () => {
         clearInterval(interval);
+        clearTimeout(t2);
+      };
+    } else if (animationPhase === 3) {
+      // Phase 3: Select event type "Кава" (index 0)
+      t1 = setTimeout(() => {
+        setTypeIdx(0);
+        t2 = setTimeout(() => setAnimationPhase(4), 900);
+      }, 300);
+      return () => {
+        clearTimeout(t1);
         clearTimeout(t2);
       };
     } else if (animationPhase === 4) {
@@ -361,10 +361,10 @@ function CreateStep() {
         targetElement = recipientSectionRef.current;
         break;
       case 2:
-        targetElement = typeSectionRef.current;
+        targetElement = messageSectionRef.current;
         break;
       case 3:
-        targetElement = messageSectionRef.current;
+        targetElement = typeSectionRef.current;
         break;
       case 4:
       case 5:
@@ -375,6 +375,7 @@ function CreateStep() {
         targetElement = submitSectionRef.current;
         break;
     }
+
 
     if (targetElement) {
       const top = targetElement.offsetTop - container.offsetTop - 8;
