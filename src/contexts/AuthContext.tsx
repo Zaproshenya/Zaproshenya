@@ -521,7 +521,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(prev => prev ? { ...prev, ...updates } : null);
   };
 
+  // Show onboarding guide on first login
+  useEffect(() => {
+    if (!user || !profile || loading) return;
+    // Don't show if still in a blocking modal state
+    if (is2faPending || isRegistrationIncomplete || isEmailVerificationPending) return;
+    const key = `onboarding_done_${user.uid}`;
+    if (typeof window !== 'undefined' && !localStorage.getItem(key)) {
+      setShowOnboarding(true);
+    }
+  }, [user, profile, loading, is2faPending, isRegistrationIncomplete, isEmailVerificationPending]);
+
   const isAuthRequiredPage = pathname && (
+
     pathname === '/home' ||
     pathname === '/create' ||
     pathname === '/profile' ||
@@ -750,23 +762,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
   }
 
-  // Show onboarding guide on first login
-  useEffect(() => {
-    if (!user || !profile || loading) return;
-    // Don't show if still in a blocking modal state
-    if (is2faPending || isRegistrationIncomplete || isEmailVerificationPending) return;
-    const key = `onboarding_done_${user.uid}`;
-    if (typeof window !== 'undefined' && !localStorage.getItem(key)) {
-      setShowOnboarding(true);
-    }
-  }, [user, profile, loading, is2faPending, isRegistrationIncomplete, isEmailVerificationPending]);
-
   const handleOnboardingComplete = () => {
     if (user) {
       localStorage.setItem(`onboarding_done_${user.uid}`, 'true');
     }
     setShowOnboarding(false);
   };
+
 
   return (
     <AuthContext.Provider value={{ user, profile, loading, updateProfile, unreadCount, adminUnreadCount }}>
