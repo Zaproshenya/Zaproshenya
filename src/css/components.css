@@ -996,6 +996,7 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 .ob-wrap {
   padding: 18px 16px 16px;
   overflow-y: hidden; /* Fully locks scroll by default across all screens */
+  overflow-x: hidden !important; /* Prevents horizontal scrollbars during animations */
   flex: 1;
 }
 
