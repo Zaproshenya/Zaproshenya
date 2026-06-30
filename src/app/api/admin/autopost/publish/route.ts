@@ -65,10 +65,18 @@ async function runPublishWorkflow(jobId: string, payload: any, token: string) {
       // YouTube Upload logic
       // In a production app, we fetch the file as a buffer, and upload it via standard YouTube resumable uploads.
       // If we are in a sandbox developer account or have quotas/scopes limitations, we run a query and handle potential errors.
+      const title = isShorts 
+        ? `${config.title || "Публікація"} #Shorts`.substring(0, 100)
+        : (config.title || "Публікація").substring(0, 100);
+
+      const descriptionWithShorts = isShorts
+        ? `${caption}\n\n#Shorts`
+        : caption;
+
       const meta = {
         snippet: {
-          title: (config.title || "Публікація").substring(0, 100),
-          description: caption,
+          title,
+          description: descriptionWithShorts,
           categoryId: "22"
         },
         status: {
