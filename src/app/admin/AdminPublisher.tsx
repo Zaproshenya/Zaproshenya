@@ -304,6 +304,18 @@ export default function AdminPublisher() {
           toast('Публікація розпочалася!', 'success');
           setActiveJobId(data.jobId);
           subscribeToJob(data.jobId);
+
+          // Synchronously trigger the publish execution from client-side to keep connection active and prevent serverless freeze
+          fetch('/api/admin/autopost/publish', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ...payload,
+              executeJobId: data.jobId
+            })
+          }).catch((err) => {
+            console.error('Error executing publication job:', err);
+          });
         }
       } else {
         const err = await res.json();

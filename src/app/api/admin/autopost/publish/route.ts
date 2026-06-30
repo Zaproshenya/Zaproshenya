@@ -369,9 +369,19 @@ async function runPublishWorkflow(jobId: string, payload: any, token: string) {
 export async function POST(req: NextRequest) {
   try {
     const payload = await req.json();
-    const { uid, token, mediaUrl, description, hashtags, platforms, scheduledTime } = payload;
+    const { uid, token, mediaUrl, description, hashtags, platforms, scheduledTime, executeJobId } = payload;
 
-    if (!uid || !token || !platforms) {
+    if (!token) {
+      return NextResponse.json({ message: "Неповні параметри запиту" }, { status: 400 });
+    }
+
+    // ── Execute Job Mode (Client-driven Background Execution) ──
+    if (executeJobId) {
+      await runPublishWorkflow(executeJobId, payload, token).catch(console.error);
+      return NextResponse.json({ success: true });
+    }
+
+    if (!uid || !platforms) {
       return NextResponse.json({ message: "Неповні параметри запиту" }, { status: 400 });
     }
 
@@ -435,10 +445,6 @@ export async function POST(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(jobData)
     });
-
-    // Fire-and-forget the publication workflow so the API returns instantly and runs publishes concurrently in the background!
-    // This allows the admin interface to instantly switch to the tracking screen with live loading indicators!
-    runPublishWorkflow(jobId, payload, token).catch(console.error);
 
     return NextResponse.json({ 
       message: "Публікація розпочалася", 
