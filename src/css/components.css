@@ -1548,7 +1548,27 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
     height: 600px; /* Locked fixed height matching desktop style */
     max-height: 95vh;
   }
-  /* Step 1 Welcome page has NO overrides here, so it renders 1-to-1 matching desktop! */
+  .ob-welcome {
+    padding: 24px 16px 20px;
+  }
+  .ob-welcome-features {
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .ob-welcome-feature {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+  .ob-welcome-feature-icon-circle {
+    width: 24px;
+    height: 24px;
+  }
+  .ob-welcome-feature-icon-circle i {
+    font-size: 11px !important;
+  }
+  .ob-welcome-feature-label {
+    font-size: 0.72rem;
+  }
 
   .ob-wrap {
     padding: 14px 12px;

@@ -733,16 +733,27 @@ export function OnboardingGuide({ userName, onComplete }: OnboardingGuideProps) 
   }, []);
 
   const goNext = () => {
+    if (exiting) return; // Prevent double/rapid clicks from triggering state race condition
     if (isLast) { onComplete(); return; }
     setExiting(true);
-    setTimeout(() => { setStep(s => s + 1); setExiting(false); }, 220);
+    setTimeout(() => {
+      setStep(s => Math.min(s + 1, STEPS.length - 1));
+      setExiting(false);
+    }, 220);
   };
 
   const goPrev = () => {
+    if (exiting) return; // Prevent double/rapid clicks
     if (step === 0) return;
     setExiting(true);
-    setTimeout(() => { setStep(s => s - 1); setExiting(false); }, 220);
+    setTimeout(() => {
+      setStep(s => Math.max(s - 1, 0));
+      setExiting(false);
+    }, 220);
   };
+
+  // Safe fallback resolution to prevent out-of-bounds crashes
+  const currentStep = STEPS[step] || STEPS[0];
 
   return (
     <div className="ob-overlay" onTouchMove={(e) => e.preventDefault()}>
@@ -757,7 +768,7 @@ export function OnboardingGuide({ userName, onComplete }: OnboardingGuideProps) 
         {/* Step label */}
         <div className="ob-step-label">
           <span className="ob-step-num">{step + 1} / {STEPS.length}</span>
-          <span className="ob-step-name">{STEPS[step].label}</span>
+          <span className="ob-step-name">{currentStep.label}</span>
         </div>
 
         {/* Content */}
@@ -765,7 +776,7 @@ export function OnboardingGuide({ userName, onComplete }: OnboardingGuideProps) 
           {step === 0 ? (
             <WelcomeStep name={userName} />
           ) : (() => {
-            const C = STEPS[step].comp;
+            const C = currentStep.comp;
             return C ? <C /> : null;
           })()}
         </div>
