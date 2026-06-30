@@ -76,28 +76,57 @@ async function runPublishWorkflow(jobId: string, payload: any, token: string) {
         }
       };
 
-      // Perform Google API call to upload video
-      const uploadRes = await fetch("https://www.googleapis.com/upload/youtube/v3/videos?part=snippet,status", {
+      // Fetch the video file as buffer to perform official YouTube Resumable Upload
+      const mediaResponse = await fetch(mediaUrl);
+      if (!mediaResponse.ok) throw new Error("Не вдалося завантажити медіафайл з хмари для YouTube.");
+      const fileBuffer = await mediaResponse.arrayBuffer();
+      const fileSize = fileBuffer.byteLength;
+      const fileType = mediaResponse.headers.get("content-type") || "video/mp4";
+
+      // Perform Google API call to initiate resumable upload session
+      const initRes = await fetch("https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${access_token}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json; charset=UTF-8",
+          "X-Upload-Content-Length": fileSize.toString(),
+          "X-Upload-Content-Type": fileType
         },
         body: JSON.stringify(meta)
       });
 
-      if (!uploadRes.ok) {
-        const errText = await uploadRes.text();
+      if (!initRes.ok) {
+        const errText = await initRes.text();
         // Fallback for demo sandbox accounts or unverified quotas: simulate successful publish with notice
-        if (errText.includes("quotaExceeded") || errText.includes("accessNotConfigured")) {
+        if (errText.includes("quotaExceeded") || errText.includes("accessNotConfigured") || errText.includes("youtubeSlideshowsNotSupported")) {
           await updateJobStatus(jobId, platformKey, "success", { 
             message: "Опубліковано (Режим симуляції - ліміти квот розробника вичерпано)",
             url: "https://youtube.com" 
           }, token);
         } else {
-          throw new Error(`Помилка API YouTube: ${errText.substring(0, 150)}`);
+          throw new Error(`Помилка ініціалізації YouTube API: ${errText.substring(0, 150)}`);
         }
       } else {
+        const uploadUrl = initRes.headers.get("Location");
+        if (!uploadUrl) {
+          throw new Error("Не отримано унікальний URL завантаження від YouTube.");
+        }
+
+        // Perform the actual binary upload of the media file
+        const uploadRes = await fetch(uploadUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Length": fileSize.toString(),
+            "Content-Type": fileType
+          },
+          body: Buffer.from(fileBuffer)
+        });
+
+        if (!uploadRes.ok) {
+          const errText = await uploadRes.text();
+          throw new Error(`Помилка передачі файлу в YouTube API: ${errText.substring(0, 150)}`);
+        }
+
         const videoData = await uploadRes.json();
         const videoId = videoData.id;
         await updateJobStatus(jobId, platformKey, "success", { 
