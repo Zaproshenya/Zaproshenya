@@ -174,7 +174,7 @@ export default function AdminPublisher() {
   // Upload to Firebase Storage helper
   const uploadToStorage = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const tempPath = `temp_publisher/${user?.uid}_${Date.now()}_${file.name}`;
+      const tempPath = `temp_publisher/${user?.uid}/${Date.now()}_${file.name}`;
       const fileRef = sRef(storage, tempPath);
       const uploadTask = uploadBytesResumable(fileRef, file);
 
