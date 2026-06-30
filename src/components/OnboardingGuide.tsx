@@ -58,18 +58,15 @@ function WelcomeStep({ name }: { name: string }) {
       <div className="ob-welcome-features">
         {[
           { icon: 'house',           label: 'Мої запрошення' },
-          { icon: 'plus',            label: 'Створення запрошень' },
-          { icon: 'users',           label: 'Список друзів' },
-          { icon: 'bell',            label: 'Сповіщення та відповіді' },
+          { icon: 'plus',            label: 'Створення' },
+          { icon: 'users',           label: 'Друзі' },
+          { icon: 'bell',            label: 'Сповіщення' },
         ].map(f => (
           <div key={f.icon} className="ob-welcome-feature">
             <span className="ob-welcome-feature-icon-circle">
-              <Icon name={f.icon} size={15} />
+              <Icon name={f.icon} size={14} />
             </span>
             <span className="ob-welcome-feature-label">{f.label}</span>
-            <span className="ob-welcome-feature-arrow">
-              <Icon name="caret-right" size={14} />
-            </span>
           </div>
         ))}
       </div>
