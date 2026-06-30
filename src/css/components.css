@@ -859,18 +859,19 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 .ob-welcome-features {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
+  margin-bottom: 28px; /* Added spacing underneath features grid */
 }
 .ob-welcome-feature {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 8px;
+  gap: 10px;
   background: var(--warm);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 8px 12px;
+  padding: 14px 16px; /* Taller card design */
   transition: all .2s;
   text-align: left;
 }
@@ -879,8 +880,8 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   background: var(--gold-dim);
 }
 .ob-welcome-feature-icon-circle {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--gold-dim), var(--warm));
   border: 1px solid rgba(var(--gold-rgb),.2);
@@ -891,7 +892,7 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   flex-shrink: 0;
 }
 .ob-welcome-feature-label {
-  font-size: .8rem;
+  font-size: .84rem;
   font-weight: 600;
   color: var(--ink);
   white-space: nowrap;
@@ -1536,13 +1537,203 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 
 /* ─────────────── RESPONSIVE ─────────────── */
 @media (max-width: 520px) {
-  .ob-modal { max-height: 92vh; }
-  .ob-welcome { padding: 24px 18px 20px; }
-  .ob-welcome-title { font-size: 1.6rem; }
-  .ob-type-picker { grid-template-columns: repeat(2, 1fr); }
-  .ob-topbar { padding: 0 10px; }
-  .ob-topbar-logo { font-size: .95rem; }
-  .ob-nb { padding: 3px 7px; font-size: .7rem; }
+  .ob-modal {
+    height: 540px; /* Constrained fixed height on mobile */
+    max-height: 92vh;
+  }
+  .ob-welcome {
+    padding: 20px 14px 16px;
+  }
+  .ob-welcome-logo {
+    font-size: 2.2rem;
+    margin-bottom: 6px;
+  }
+  .ob-welcome-title {
+    font-size: 1.45rem;
+    margin-bottom: 6px;
+  }
+  .ob-welcome-desc {
+    margin-bottom: 16px;
+    font-size: 0.78rem;
+    line-height: 1.5;
+  }
+  .ob-welcome-features {
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .ob-welcome-feature {
+    padding: 8px 10px;
+  }
+  .ob-welcome-feature-icon-circle {
+    width: 26px;
+    height: 26px;
+  }
+  .ob-welcome-feature-label {
+    font-size: 0.74rem;
+  }
+  .ob-wrap {
+    padding: 10px 10px;
+  }
+  .ob-home-header {
+    margin-bottom: 8px;
+  }
+  .ob-home-title {
+    font-size: 1.25rem;
+  }
+  .ob-btn-create-fab {
+    padding: 6px 12px;
+    font-size: 0.72rem;
+  }
+  .ob-stats-row {
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .ob-stat-chip {
+    padding: 6px 4px 4px;
+  }
+  .ob-stat-num {
+    font-size: 1.05rem;
+  }
+  .ob-stat-label {
+    font-size: 0.52rem;
+  }
+  .ob-home-tabs {
+    margin-bottom: 8px;
+    padding: 2px;
+  }
+  .ob-home-tab {
+    padding: 6px 8px;
+    font-size: 0.74rem;
+  }
+  .ob-inv-card {
+    padding: 7px 10px;
+    margin-bottom: 5px;
+    border-radius: 10px;
+  }
+  .ob-inv-emoji {
+    width: 32px;
+    height: 32px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+  }
+  .ob-inv-title {
+    font-size: 0.82rem;
+    margin-bottom: 1px;
+  }
+  .ob-inv-meta {
+    font-size: 0.68rem;
+    gap: 4px;
+  }
+  .ob-badge {
+    font-size: 0.62rem;
+    padding: 2px 6px;
+  }
+  .ob-copy-btn {
+    width: 24px;
+    height: 24px;
+  }
+  .ob-type-picker {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .ob-topbar {
+    padding: 0 8px;
+    height: 44px;
+  }
+  .ob-topbar-logo {
+    font-size: 0.9rem;
+  }
+  .ob-nb {
+    padding: 2px 6px;
+    font-size: 0.65rem;
+  }
+  .ob-nb-icon {
+    width: 22px;
+    height: 22px;
+  }
+  .ob-topbar-avatar {
+    width: 22px;
+    height: 22px;
+    font-size: 0.65rem;
+  }
+  .ob-form-section {
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .ob-form-section-header {
+    padding: 8px 12px;
+  }
+  .ob-form-section-body {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  .ob-input-mock {
+    min-height: 34px;
+    font-size: 0.78rem;
+    padding: 6px 10px;
+  }
+  .ob-friend-chip {
+    width: 78px;
+    padding: 6px 8px;
+  }
+  .ob-friend-chip-name {
+    max-width: 64px;
+    font-size: 0.68rem;
+  }
+  .ob-friend-chip-id {
+    font-size: 0.52rem;
+  }
+  .ob-textarea-mock {
+    min-height: 48px;
+  }
+  .ob-page-header {
+    margin-bottom: 8px;
+  }
+  .ob-page-title {
+    font-size: 1.25rem;
+  }
+  .ob-page-subtitle {
+    font-size: 0.72rem;
+  }
+  .ob-friends-search {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .ob-btn-find {
+    padding: 8px 12px;
+    font-size: 0.74rem;
+  }
+  .ob-friend-row {
+    padding: 8px 10px;
+  }
+  .ob-friend-name {
+    font-size: 0.78rem;
+  }
+  .ob-friend-status {
+    font-size: 0.68rem;
+  }
+  .ob-notif-item {
+    padding: 8px 10px;
+    margin-bottom: 5px;
+    border-radius: 10px;
+  }
+  .ob-notif-icon-wrap {
+    width: 32px;
+    height: 32px;
+    font-size: 0.88rem;
+  }
+  .ob-notif-title {
+    font-size: 0.78rem;
+  }
+  .ob-notif-text {
+    font-size: 0.7rem;
+  }
+  .ob-notif-time {
+    font-size: 0.62rem;
+  }
+  .ob-status-text {
+    font-size: 0.7rem;
+    margin-top: 4px;
+  }
 }
 
 /* Onboarding Friend Selector & Textarea styles */

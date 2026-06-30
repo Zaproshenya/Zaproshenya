@@ -720,6 +720,14 @@ export function OnboardingGuide({ userName, onComplete }: OnboardingGuideProps) 
   const [exiting, setExiting] = useState(false);
   const isLast = step === STEPS.length - 1;
 
+  // Lock background page scrolling
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   const goNext = () => {
     if (isLast) { onComplete(); return; }
     setExiting(true);
