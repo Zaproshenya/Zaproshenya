@@ -1,11 +1,43 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Icon } from '@/components/Icon';
 
 /* ── Types ── */
 interface OnboardingGuideProps {
   userName: string;
   onComplete: () => void;
+}
+
+/* ══════════════════════════════════════════
+   Mock Topbar Navbar (Unified & Authentic)
+════════════════════════════════════════════ */
+interface MockTopbarProps {
+  activeTab: 'home' | 'create' | 'friends' | 'notifications';
+  bellPulse?: boolean;
+}
+
+function MockTopbar({ activeTab, bellPulse }: MockTopbarProps) {
+  return (
+    <div className="ob-topbar">
+      <span className="ob-topbar-logo">Запрошення ✦</span>
+      <div className="ob-topbar-nav">
+        <span className={`ob-nb ${activeTab === 'home' ? 'ob-nb-active' : ''}`}>
+          <Icon name="house" size={13} /> Мої
+        </span>
+        <span className={`ob-nb ${activeTab === 'create' ? 'ob-nb-active' : ''}`}>
+          <Icon name="plus" size={13} /> Нове
+        </span>
+        <span className={`ob-nb-icon ${activeTab === 'friends' ? 'ob-nb-active' : ''}`}>
+          <Icon name="users" size={14} />
+        </span>
+        <span className={`ob-nb-icon ${activeTab === 'notifications' ? 'ob-nb-active' : ''}`} style={{ position: 'relative' }}>
+          <Icon name="bell" size={14} />
+          {bellPulse && <span className="ob-notif-badge ob-badge-pulse">1</span>}
+        </span>
+        <div className="ob-topbar-avatar">О</div>
+      </div>
+    </div>
+  );
 }
 
 /* ══════════════════════════════════════════
@@ -26,15 +58,18 @@ function WelcomeStep({ name }: { name: string }) {
       <div className="ob-welcome-features">
         {[
           { icon: 'house',           label: 'Мої запрошення' },
-          { icon: 'plus-circle',     label: 'Створення' },
-          { icon: 'users',           label: 'Друзі' },
-          { icon: 'bell',            label: 'Сповіщення' },
+          { icon: 'plus',            label: 'Створення запрошень' },
+          { icon: 'users',           label: 'Список друзів' },
+          { icon: 'bell',            label: 'Сповіщення та відповіді' },
         ].map(f => (
           <div key={f.icon} className="ob-welcome-feature">
-            <span className="ob-welcome-feature-icon">
-              <Icon name={f.icon} size={18} />
+            <span className="ob-welcome-feature-icon-circle">
+              <Icon name={f.icon} size={15} />
             </span>
-            <span>{f.label}</span>
+            <span className="ob-welcome-feature-label">{f.label}</span>
+            <span className="ob-welcome-feature-arrow">
+              <Icon name="caret-right" size={14} />
+            </span>
           </div>
         ))}
       </div>
@@ -73,7 +108,7 @@ function HomeStep() {
     return () => clearInterval(t);
   }, []);
 
-  // Automatic copy simulation loop: Copy 1st -> Copy 2nd -> Copy 3rd -> Pause -> Repeat
+  // Automatic copy simulation loop
   useEffect(() => {
     let current = 0;
     const cycleCopy = () => {
@@ -82,29 +117,18 @@ function HomeStep() {
         setCopiedIdx(null);
       }, 1000);
 
-      current = (current + 1) % 4; // 0, 1, 2, 3 (3 is pause)
+      current = (current + 1) % 4; // Cycles with a pause
     };
 
     const t = setInterval(cycleCopy, 2000);
-    cycleCopy(); // Start immediately
+    cycleCopy();
 
     return () => clearInterval(t);
   }, []);
 
   return (
     <div className="ob-screen">
-      {/* Mock topbar */}
-      <div className="ob-topbar">
-        <span className="ob-topbar-logo">Запрошення ✦</span>
-        <div className="ob-topbar-nav">
-          <span className="ob-nb ob-nb-active">
-            <Icon name="house" size={14} /> Мої
-          </span>
-          <span className="ob-nb">
-            <Icon name="plus" size={14} /> Нове
-          </span>
-        </div>
-      </div>
+      <MockTopbar activeTab="home" />
 
       <div className="ob-wrap">
         {/* Header */}
@@ -163,7 +187,6 @@ function HomeStep() {
                   <Icon name={sm.icon} size={10} />
                   {sm.label}
                 </span>
-                {/* Simulated Copy button (pointer-events none to prevent user clicks) */}
                 <button
                   className={`ob-copy-btn ${isCopied ? 'ob-copy-ok' : ''}`}
                   style={{ pointerEvents: 'none' }}
@@ -181,7 +204,7 @@ function HomeStep() {
 }
 
 /* ══════════════════════════════════════════
-   STEP 3 — Create
+   STEP 3 — Create (With Auto-Scrolling)
 ════════════════════════════════════════════ */
 const EVENT_TYPES = [
   { v: 'coffee', e: '☕', l: 'Кава' },
@@ -197,14 +220,6 @@ const MOCK_FRIENDS = [
 ];
 
 function CreateStep() {
-  // Animation phases:
-  // 0: Initial clean state
-  // 1: Select friend chip (clicks "Андрій", selects chip, fills Кому with "Андрій")
-  // 2: Type message
-  // 3: Type date
-  // 4: Type time
-  // 5: Type place
-  // 6: Success state
   const [animationPhase, setAnimationPhase] = useState(0);
   const [typedTo, setTypedTo] = useState('');
   const [typedMsg, setTypedMsg] = useState('');
@@ -213,6 +228,14 @@ function CreateStep() {
   const [typedPlace, setTypedPlace] = useState('');
   const [selectedFriendUid, setSelectedFriendUid] = useState<string | null>(null);
   const [typeIdx, setTypeIdx] = useState(0);
+
+  // Refs for auto-scrolling
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const recipientSectionRef = useRef<HTMLDivElement>(null);
+  const messageSectionRef = useRef<HTMLDivElement>(null);
+  const typeSectionRef = useRef<HTMLDivElement>(null);
+  const detailsSectionRef = useRef<HTMLDivElement>(null);
+  const submitSectionRef = useRef<HTMLDivElement>(null);
 
   // Cycle selected event type
   useEffect(() => {
@@ -226,7 +249,6 @@ function CreateStep() {
     let t2: ReturnType<typeof setTimeout>;
 
     if (animationPhase === 0) {
-      // Clean everything
       setTypedTo('');
       setTypedMsg('');
       setTypedDate('');
@@ -234,18 +256,17 @@ function CreateStep() {
       setTypedPlace('');
       setSelectedFriendUid(null);
 
-      // Start selecting friend
       t1 = setTimeout(() => {
         setAnimationPhase(1);
       }, 800);
     } else if (animationPhase === 1) {
-      // Simulate clicking the "Андрій" chip
+      // Choose "Андрій"
       setSelectedFriendUid('f1');
       setTypedTo('Андрій');
 
       t1 = setTimeout(() => {
         setAnimationPhase(2);
-      }, 700);
+      }, 1000);
     } else if (animationPhase === 2) {
       // Type Message
       const target = 'Кава разом ☕';
@@ -256,7 +277,7 @@ function CreateStep() {
           char++;
         } else {
           clearInterval(interval);
-          t2 = setTimeout(() => setAnimationPhase(3), 400);
+          t2 = setTimeout(() => setAnimationPhase(3), 500);
         }
       }, 60);
       return () => {
@@ -307,7 +328,7 @@ function CreateStep() {
           char++;
         } else {
           clearInterval(interval);
-          t2 = setTimeout(() => setAnimationPhase(6), 600);
+          t2 = setTimeout(() => setAnimationPhase(6), 650);
         }
       }, 60);
       return () => {
@@ -315,7 +336,6 @@ function CreateStep() {
         clearTimeout(t2);
       };
     } else if (animationPhase === 6) {
-      // Done / Success -> Wait and restart
       t1 = setTimeout(() => {
         setAnimationPhase(0);
       }, 2500);
@@ -324,17 +344,43 @@ function CreateStep() {
     return () => clearTimeout(t1);
   }, [animationPhase]);
 
+  // Smooth scroll logic based on active animation phase
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    let targetElement: HTMLDivElement | null = null;
+
+    switch (animationPhase) {
+      case 0:
+      case 1:
+        targetElement = recipientSectionRef.current;
+        break;
+      case 2:
+        targetElement = messageSectionRef.current;
+        break;
+      case 3:
+      case 4:
+      case 5:
+        targetElement = detailsSectionRef.current;
+        break;
+      case 6:
+        targetElement = submitSectionRef.current;
+        break;
+    }
+
+    if (targetElement) {
+      const top = targetElement.offsetTop - container.offsetTop - 8;
+      container.scrollTo({ top, behavior: 'smooth' });
+    }
+  }, [animationPhase]);
+
   return (
     <div className="ob-screen">
-      <div className="ob-topbar">
-        <span className="ob-topbar-logo">Запрошення ✦</span>
-        <div className="ob-topbar-nav">
-          <span className="ob-nb"><Icon name="house" size={14} /> Мої</span>
-          <span className="ob-nb ob-nb-active"><Icon name="plus" size={14} /> Нове</span>
-        </div>
-      </div>
+      <MockTopbar activeTab="create" />
 
-      <div className="ob-wrap">
+      {/* Programmatic scroll locked container (overflowY: hidden) */}
+      <div className="ob-wrap" ref={scrollContainerRef} style={{ overflowY: 'hidden' }}>
         <div className="ob-create-header">
           <h2 className="ob-create-title">Нове запрошення</h2>
           <p className="ob-create-subtitle">Заповніть деталі — посилання буде готове миттєво</p>
@@ -350,8 +396,8 @@ function CreateStep() {
           </div>
         </div>
 
-        {/* 1. Отримувач Section (matches real create page) */}
-        <div className="ob-form-section">
+        {/* 1. Отримувач Section */}
+        <div className="ob-form-section" ref={recipientSectionRef}>
           <div className="ob-form-section-header">
             <div className="ob-form-section-icon"><Icon name="user" size={13} /></div>
             <span className="ob-form-section-label">Отримувач</span>
@@ -365,7 +411,6 @@ function CreateStep() {
               </div>
             </div>
 
-            {/* Friend Chips Grid (exactly as in create/page.tsx) */}
             <div style={{ marginTop: '8px' }}>
               <label className="ob-field-label" style={{ marginBottom: '6px', textTransform: 'none', letterSpacing: 'normal', fontSize: '0.78rem' }}>
                 Або обрати з друзів
@@ -394,7 +439,7 @@ function CreateStep() {
         </div>
 
         {/* 2. Повідомлення Section */}
-        <div className="ob-form-section">
+        <div className="ob-form-section" ref={messageSectionRef}>
           <div className="ob-form-section-header">
             <div className="ob-form-section-icon"><Icon name="chat-circle-dots" size={13} /></div>
             <span className="ob-form-section-label">Повідомлення</span>
@@ -408,7 +453,7 @@ function CreateStep() {
         </div>
 
         {/* 3. Тип події Section */}
-        <div className="ob-form-section">
+        <div className="ob-form-section" ref={typeSectionRef}>
           <div className="ob-form-section-header">
             <div className="ob-form-section-icon"><Icon name="sparkle" size={13} /></div>
             <span className="ob-form-section-label">Тип події</span>
@@ -426,7 +471,7 @@ function CreateStep() {
         </div>
 
         {/* 4. Коли та де Section */}
-        <div className="ob-form-section">
+        <div className="ob-form-section" ref={detailsSectionRef}>
           <div className="ob-form-section-header">
             <div className="ob-form-section-icon"><Icon name="calendar-blank" size={13} /></div>
             <span className="ob-form-section-label">Коли та де</span>
@@ -460,7 +505,7 @@ function CreateStep() {
         </div>
 
         {/* Submit */}
-        <div className={`ob-create-submit ${animationPhase === 6 ? 'ob-submit-pulse' : ''}`}>
+        <div className={`ob-create-submit ${animationPhase === 6 ? 'ob-submit-pulse' : ''}`} ref={submitSectionRef} style={{ marginBottom: '24px' }}>
           {animationPhase === 6
             ? <><Icon name="confetti" size={16} /> Запрошення створено!</>
             : <><Icon name="paper-plane-tilt" size={15} /> Надіслати запрошення</>
@@ -503,13 +548,7 @@ function FriendsStep() {
 
   return (
     <div className="ob-screen">
-      <div className="ob-topbar">
-        <span className="ob-topbar-logo">Запрошення ✦</span>
-        <div className="ob-topbar-nav">
-          <span className="ob-nb ob-nb-active"><Icon name="users" size={14} /> Друзі</span>
-          <span className="ob-nb"><Icon name="bell" size={14} /></span>
-        </div>
-      </div>
+      <MockTopbar activeTab="friends" />
 
       <div className="ob-wrap">
         <div className="ob-page-header">
@@ -607,16 +646,7 @@ function NotificationsStep() {
 
   return (
     <div className="ob-screen">
-      <div className="ob-topbar">
-        <span className="ob-topbar-logo">Запрошення ✦</span>
-        <div className="ob-topbar-nav">
-          <span className="ob-nb"><Icon name="house" size={14} /> Мої</span>
-          <span className="ob-nb ob-nb-active" style={{ position: 'relative' }}>
-            <Icon name="bell" size={14} />
-            {bellPulse && <span className="ob-notif-badge ob-badge-pulse">1</span>}
-          </span>
-        </div>
-      </div>
+      <MockTopbar activeTab="notifications" bellPulse={bellPulse} />
 
       <div className="ob-wrap">
         <div className="ob-page-header">

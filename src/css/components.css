@@ -690,6 +690,7 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   box-shadow: 0 32px 80px rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.12);
   width: 100%;
   max-width: 480px;
+  height: 560px; /* Fixed height for consistency across steps */
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -853,30 +854,49 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   max-width: 340px;
 }
 .ob-welcome-features {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   width: 100%;
 }
 .ob-welcome-feature {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   background: var(--warm);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 12px 14px;
-  font-size: .88rem;
-  font-weight: 500;
-  color: var(--ink);
+  padding: 10px 14px;
   transition: all .2s;
+  text-align: left;
 }
 .ob-welcome-feature:hover {
   border-color: var(--gold);
   background: var(--gold-dim);
 }
-.ob-welcome-feature-icon {
-  font-size: 1.2rem;
+.ob-welcome-feature-icon-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold-dim), var(--warm));
+  border: 1px solid rgba(var(--gold-rgb),.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.ob-welcome-feature-label {
+  flex: 1;
+  font-size: .88rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+.ob-welcome-feature-arrow {
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  opacity: .5;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -924,11 +944,44 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   transition: all .2s;
   position: relative;
   cursor: default;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 .ob-nb-active {
   background: var(--ink);
   color: var(--paper);
   border-color: var(--ink);
+}
+.ob-nb-icon {
+  background: none;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 26px; height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  transition: all .2s;
+}
+.ob-nb-icon.ob-nb-active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.ob-topbar-avatar {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold-dim), var(--warm));
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .7rem;
+  font-weight: 700;
+  color: var(--gold);
+  cursor: default;
 }
 
 /* Mock content wrap — like real .wrap */
