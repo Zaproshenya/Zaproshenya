@@ -79,34 +79,34 @@ button:focus-visible, .btn:focus-visible {
 
 @media (min-width: 600px) {
   .btn-yes, .btn-no, .btn-reschedule {
-    font-size: .85rem;
-    padding: 14px 13px;
-    gap: 7px;
-    border-radius: 11px;
+    font-size: 0.81rem; /* 5% reduction */
+    padding: 13px 12px; /* 5% reduction */
+    gap: 6.5px; /* 5% reduction */
+    border-radius: 10px; /* 5% reduction */
   }
   .btn-yes {
-    box-shadow: 0 4px 0 #1a4a2f, 0 5px 16px rgba(45,122,79,.24);
+    box-shadow: 0 3.8px 0 #1a4a2f, 0 4.75px 15px rgba(45,122,79,.24);
   }
   .btn-yes:hover {
-    box-shadow: 0 6px 0 #1a4a2f, 0 7px 24px rgba(45,122,79,.3);
+    box-shadow: 0 5.7px 0 #1a4a2f, 0 6.65px 23px rgba(45,122,79,.3);
   }
   .btn-no {
-    box-shadow: 0 4px 0 #8b2018, 0 5px 16px rgba(192,57,43,.24);
+    box-shadow: 0 3.8px 0 #8b2018, 0 4.75px 15px rgba(192,57,43,.24);
   }
   .btn-no:hover {
-    box-shadow: 0 6px 0 #8b2018, 0 7px 24px rgba(192,57,43,.3);
+    box-shadow: 0 5.7px 0 #8b2018, 0 6.65px 23px rgba(192,57,43,.3);
   }
   .btn-reschedule {
-    box-shadow: 0 4px 0 #8a5e0f, 0 5px 16px rgba(201,146,42,.24);
+    box-shadow: 0 3.8px 0 #8a5e0f, 0 4.75px 15px rgba(201,146,42,.24);
   }
   .btn-reschedule:hover {
-    box-shadow: 0 6px 0 #8a5e0f, 0 7px 24px rgba(201,146,42,.3);
+    box-shadow: 0 5.7px 0 #8a5e0f, 0 6.65px 23px rgba(201,146,42,.3);
   }
   .btn-yes i.ph, .btn-no i.ph, .btn-reschedule i.ph {
-    font-size: 1.3rem !important; /* Scale up action button icons on desktop */
+    font-size: 1.24rem !important; /* 5% reduction */
   }
   .answer-wrap {
-    gap: 11px;
+    gap: 10.5px; /* 5% reduction */
   }
 }
 
@@ -486,23 +486,23 @@ button.detail-chip.clickable {
 
 @media (min-width: 600px) {
   .detail-chips {
-    gap: 11px;
-    margin-bottom: 18px;
+    gap: 10px; /* 5% reduction */
+    margin-bottom: 17px; /* 5% reduction */
   }
   .detail-chip {
-    padding: 14px 18px;
-    gap: 13px;
-    border-radius: 11px;
+    padding: 13px 17px; /* 5% reduction */
+    gap: 12px; /* 5% reduction */
+    border-radius: 10px; /* 5% reduction */
   }
   .detail-chip-icon i.ph {
-    font-size: 1.66rem !important; /* Scaled up details icons on desktop */
+    font-size: 1.58rem !important; /* 5% reduction */
   }
   .detail-chip-label {
-    font-size: .67rem;
+    font-size: 0.64rem; /* 5% reduction */
     margin-bottom: 4px;
   }
   .detail-chip-value {
-    font-size: 1.03rem;
+    font-size: 0.98rem; /* 5% reduction */
   }
 }
 

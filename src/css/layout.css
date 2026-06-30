@@ -80,8 +80,8 @@
 }
 @media (min-width: 600px) {
   .invite-envelope {
-    min-height: 540px; /* Taller on PC */
-    max-width: 468px; /* Wider on PC */
+    min-height: 513px; /* Taller on PC, reduced by 5% */
+    max-width: 445px; /* Wider on PC, reduced by 5% */
   }
 }
 .envelope-top {
@@ -151,24 +151,24 @@
 
 /* --- Proportional Desktop Scaling --- */
 @media (min-width: 600px) {
-  .envelope-top { padding: 22px 32px 38px; }
-  .envelope-emoji { font-size: 3.06rem; margin-bottom: 11px; }
-  .envelope-type { font-size: .76rem; margin-bottom: 14px; letter-spacing: .25em; }
-  .envelope-to { font-size: 2.52rem; margin-bottom: 9px; }
-  .envelope-from { font-size: .85rem; padding-bottom: 22px; }
-  .envelope-body { padding: 11px 22px 0; }
+  .envelope-top { padding: 21px 30px 36px; }
+  .envelope-emoji { font-size: 2.91rem; margin-bottom: 10px; }
+  .envelope-type { font-size: 0.72rem; margin-bottom: 13px; letter-spacing: .25em; }
+  .envelope-to { font-size: 2.39rem; margin-bottom: 9px; }
+  .envelope-from { font-size: 0.81rem; padding-bottom: 21px; }
+  .envelope-body { padding: 10px 21px 0; }
   .action-section-wrap {
     padding-top: 4px;
-    padding-bottom: 22px; /* balances 18px margin-bottom from detail-chips, resulting in 22px gap on both sides */
+    padding-bottom: 21px; /* balances 17px margin-bottom from detail-chips, resulting in 21px gap on both sides */
   }
   .answer-wrap {
-    gap: 12px;
+    gap: 11px;
   }
   
   /* Scale message block on desktop */
-  .msg-block { padding: 16px 20px; margin-bottom: 16px; }
-  .msg-block::before { font-size: 4.32rem; top: -11px; left: 14px; }
-  .msg-text { font-size: 1.3rem; padding-left: 13px; line-height: 1.6; }
+  .msg-block { padding: 15px 19px; margin-bottom: 15px; }
+  .msg-block::before { font-size: 4.1rem; top: -10px; left: 13px; }
+  .msg-text { font-size: 1.24rem; padding-left: 12px; line-height: 1.6; }
 }
 
 /* ── Message block ── */
@@ -212,10 +212,10 @@
 }
 @media (min-width: 600px) {
   .envelope-footer {
-    padding: 18px 0;
+    padding: 17px 0;
   }
   .envelope-footer button {
-    font-size: .81rem;
+    font-size: 0.77rem;
   }
 }
 
@@ -229,7 +229,7 @@
 @media (min-width: 600px) {
   .result-screen {
     padding-top: 4px;
-    padding-bottom: 22px; /* balances 18px margin-bottom from detail-chips */
+    padding-bottom: 21px; /* balances 17px margin-bottom from detail-chips */
   }
 }
 .result-icon {
