@@ -129,12 +129,8 @@ export async function loginUser(loginOrEmail: string, password: string) {
 }
 
 export async function logoutUser() {
-  if (typeof window !== 'undefined') {
-    const uid = auth.currentUser?.uid;
-    if (uid) {
-      localStorage.removeItem('2fa_verified_' + uid);
-    }
-  }
+  // Do NOT remove '2fa_verified_' + uid on logout, so that trusted devices
+  // are remembered across login sessions, preventing repeated 2FA prompts.
   await signOut(auth);
 }
 
