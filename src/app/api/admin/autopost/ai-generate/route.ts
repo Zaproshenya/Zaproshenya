@@ -29,40 +29,70 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Помилка розшифрування ШІ API ключа" }, { status: 500 });
     }
 
-    // Determine model, default to gemini-1.5-flash for maximum speed and compatibility
-    let model = aiConfig.model || "gemini-1.5-flash";
-    // Strip "models/" prefix if user included it in settings
+    // Map and normalize model name, default to gemma-4-31b-it as requested
+    let model = aiConfig.model || "gemma-4-31b-it";
     if (model.startsWith("models/")) {
       model = model.replace("models/", "");
     }
+    
+    // Normalize Gemma 4 models: 31B (gemma-4-31b-it) and 26B (gemma-4-26b-a4b-it)
+    const lowerModel = model.toLowerCase().trim();
+    if (lowerModel.includes("26b") || lowerModel.includes("26")) {
+      model = "gemma-4-26b-a4b-it";
+    } else {
+      model = "gemma-4-31b-it";
+    }
 
-    // Structure our prompt to enforce clean JSON response format
-    const systemPrompt = `Ти — професійний копірайтер та SMM-спеціаліст. Твоє завдання — написати привабливий та залучаючий україномовний опис та підібрати релевантні хештеги для публікації у соціальних мережах (YouTube, Instagram, TikTok, Facebook) на основі запиту користувача.
+    // Structure our prompt to enforce clean JSON response format with rich project context
+    const systemPrompt = `Ти — професійний копірайтер та SMM-спеціаліст для інноваційного українського проекту «Запрошення ✦» (Zaproshenya).
+    
+Про проект «Запрошення ✦»:
+- Це зручний та сучасний веб-сервіс для створення інтерактивних електронних запрошень на будь-які події (дні народження, весілля, благодійні зустрічі, вечірки, кава-брейки, бізнес-івенти, дитячі свята тощо).
+- Сервіс допомагає організаторам керувати списками гостей, миттєво відстежувати їхні відповіді (погодився, відмовився, попросив перенести зустріч на інший час) в реальному часі.
+- Платформа робить організацію подій естетичною, легкою та позбавляє від зайвих турбот.
+
+Твоє завдання — напиши привабливий, емоційний та залучаючий україномовний опис та підібрати релевантні хештеги для публікацій у соціальних мережах (YouTube, Instagram, TikTok, Facebook) на основі запиту користувача, інтегруючи за необхідності контекст нашого проекту «Запрошення ✦» у дружньому та сучасному тоні.
+
 Запит користувача: "${prompt}"
 
 Ти ПОВИНЕН повернути результат у форматі JSON із двома полями:
-1. "description" — текст опису українською мовою з красивими абзацами та емодзі.
+1. "description" — текст опису українською мовою з красивими абзацами, структурованими списками та відповідними емодзі.
 2. "hashtags" — рядок релевантних хештегів через пробіл (наприклад: "#благодійність #запрошення #допомога").
 
 Поверни тільки сирий JSON без будь-якого додаткового тексту, вступів, висновків та без розмітки \`\`\`json ... \`\`\`.`;
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    // Gemma models do not support responseMimeType: "application/json" in Google's API,
+    // so we construct the request body conditionally.
+    const buildRequestBody = (modelName: string) => {
+      const isGemmaModel = modelName.toLowerCase().includes("gemma");
+      const body: any = {
+        contents: [{ parts: [{ text: systemPrompt }] }]
+      };
+      if (!isGemmaModel) {
+        body.generationConfig = {
+          responseMimeType: "application/json"
+        };
+      }
+      return body;
+    };
 
-    const response = await fetch(geminiUrl, {
+    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: systemPrompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json"
-        }
-      })
+      body: JSON.stringify(buildRequestBody(model))
     });
 
     if (!response.ok) {
       const errText = await response.text();
       console.error("Gemini API error response:", errText);
-      return NextResponse.json({ message: "Помилка звернення до API штучного інтелекту" }, { status: 502 });
+      let customMsg = "Помилка звернення до API штучного інтелекту.";
+      try {
+        const errObj = JSON.parse(errText);
+        if (errObj?.error?.message) {
+          customMsg += ` Деталі: ${errObj.error.message}`;
+        }
+      } catch (_) {}
+      return NextResponse.json({ message: customMsg }, { status: 502 });
     }
 
     const resData = await response.json();

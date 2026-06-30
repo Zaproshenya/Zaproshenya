@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
         facebook: { enabled: false, pageId: "", pageAccessToken: "" },
         youtube: { enabled: false, clientId: "", clientSecret: "", refreshToken: "" },
         tiktok: { enabled: false, clientKey: "", clientSecret: "", refreshToken: "" },
-        ai: { enabled: false, apiKey: "", model: "gemma2-27b-it" }
+        ai: { enabled: false, apiKey: "", model: "gemini-1.5-flash" }
       });
     }
 
