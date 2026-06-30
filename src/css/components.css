@@ -1491,3 +1491,57 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   .ob-topbar-logo { font-size: .95rem; }
   .ob-nb { padding: 3px 7px; font-size: .7rem; }
 }
+
+/* Onboarding Friend Selector & Textarea styles */
+.ob-friends-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.ob-friend-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  transition: all .2s var(--ease);
+  width: 90px;
+  cursor: default;
+}
+.ob-friend-chip-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  text-align: center;
+}
+.ob-friend-chip-name {
+  font-size: .75rem;
+  font-weight: 500;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 76px;
+}
+.ob-friend-chip-id {
+  font-size: .58rem;
+  color: var(--muted);
+  font-family: monospace;
+}
+.ob-friend-chip-on {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+  box-shadow: 0 0 0 3px rgba(var(--gold-rgb),.1);
+}
+.ob-textarea-mock {
+  min-height: 72px;
+  align-items: flex-start;
+  white-space: pre-wrap;
+  line-height: 1.4;
+  padding: 12px 14px;
+}

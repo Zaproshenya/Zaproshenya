@@ -47,6 +47,8 @@ function WelcomeStep({ name }: { name: string }) {
 ════════════════════════════════════════════ */
 function HomeStep() {
   const [statusIdx, setStatusIdx] = useState(0);
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+
   const statuses = ['pending', 'accepted', 'declined', 'reschedule'] as const;
 
   type StatusKey = typeof statuses[number];
@@ -63,19 +65,31 @@ function HomeStep() {
     { emoji: '🍕', name: 'Олена', type: 'Вечеря',  date: '10 лип · 19:00', si: 2 },
   ];
 
-  const [copied, setCopied] = useState<number | null>(null);
-
+  // Cycle statuses
   useEffect(() => {
     const t = setInterval(() => {
       setStatusIdx(i => (i + 1) % statuses.length);
-    }, 1400);
+    }, 1600);
     return () => clearInterval(t);
   }, []);
 
-  const handleCopy = (i: number) => {
-    setCopied(i);
-    setTimeout(() => setCopied(null), 1200);
-  };
+  // Automatic copy simulation loop: Copy 1st -> Copy 2nd -> Copy 3rd -> Pause -> Repeat
+  useEffect(() => {
+    let current = 0;
+    const cycleCopy = () => {
+      setCopiedIdx(current);
+      setTimeout(() => {
+        setCopiedIdx(null);
+      }, 1000);
+
+      current = (current + 1) % 4; // 0, 1, 2, 3 (3 is pause)
+    };
+
+    const t = setInterval(cycleCopy, 2000);
+    cycleCopy(); // Start immediately
+
+    return () => clearInterval(t);
+  }, []);
 
   return (
     <div className="ob-screen">
@@ -126,11 +140,11 @@ function HomeStep() {
           </div>
         </div>
 
-        {/* Invite cards — identical to real home-inv-card */}
+        {/* Invite cards */}
         {invites.map((inv, i) => {
           const st = statuses[(statusIdx + i) % statuses.length];
           const sm = statusMeta[st];
-          const isCopied = copied === i;
+          const isCopied = copiedIdx === i;
           return (
             <div key={i} className={`ob-inv-card ob-status-${st}`} style={{ animationDelay: `${i * 60}ms` }}>
               <div className="ob-inv-emoji">{inv.emoji}</div>
@@ -149,11 +163,11 @@ function HomeStep() {
                   <Icon name={sm.icon} size={10} />
                   {sm.label}
                 </span>
-                {/* Copy button — like real home-copy-btn */}
+                {/* Simulated Copy button (pointer-events none to prevent user clicks) */}
                 <button
                   className={`ob-copy-btn ${isCopied ? 'ob-copy-ok' : ''}`}
-                  title="Копіювати посилання"
-                  onClick={() => handleCopy(i)}
+                  style={{ pointerEvents: 'none' }}
+                  tabIndex={-1}
                 >
                   <Icon name={isCopied ? 'check' : 'link'} size={13} />
                 </button>
@@ -168,16 +182,7 @@ function HomeStep() {
 
 /* ══════════════════════════════════════════
    STEP 3 — Create
-   Правильний порядок: Кому → Повідомлення → Дата/Час → Місце
 ════════════════════════════════════════════ */
-const CREATE_STAGES = [
-  { field: 'to',    label: 'Кому',        placeholder: "Ім'я отримувача",          value: 'Андрій',               icon: 'user' },
-  { field: 'msg',   label: 'Повідомлення', placeholder: 'Ваше повідомлення',        value: 'Привіт! Запрошую 😊',  icon: 'chat-circle-dots' },
-  { field: 'date',  label: 'Дата',         placeholder: 'дд.мм.рррр',               value: '12.07.2025',           icon: 'calendar-blank' },
-  { field: 'time',  label: 'Час',          placeholder: 'гг:хх',                    value: '18:30',                icon: 'clock' },
-  { field: 'place', label: 'Місце',        placeholder: 'Де зустрічаємось?',        value: 'Кав\'ярня "Синій птах"', icon: 'map-pin' },
-] as const;
-
 const EVENT_TYPES = [
   { v: 'coffee', e: '☕', l: 'Кава' },
   { v: 'party',  e: '🎉', l: 'Вечірка' },
@@ -185,50 +190,139 @@ const EVENT_TYPES = [
   { v: 'date',   e: '💑', l: 'Побачення' },
 ];
 
+const MOCK_FRIENDS = [
+  { uid: 'f1', name: 'Андрій', uniqueId: 'ZAP-4721', letter: 'А' },
+  { uid: 'f2', name: 'Катя',   uniqueId: 'ZAP-1984', letter: 'К' },
+  { uid: 'f3', name: 'Богдан', uniqueId: 'ZAP-3329', letter: 'Б' },
+];
+
 function CreateStep() {
-  const [fieldIdx, setFieldIdx]   = useState(0);
-  const [charIdx, setCharIdx]     = useState(0);
-  const [phase, setPhase]         = useState<'typing' | 'done'>('typing');
-  const [vals, setVals]           = useState<string[]>(CREATE_STAGES.map(() => ''));
-  const [typeIdx, setTypeIdx]     = useState(0);
+  // Animation phases:
+  // 0: Initial clean state
+  // 1: Select friend chip (clicks "Андрій", selects chip, fills Кому with "Андрій")
+  // 2: Type message
+  // 3: Type date
+  // 4: Type time
+  // 5: Type place
+  // 6: Success state
+  const [animationPhase, setAnimationPhase] = useState(0);
+  const [typedTo, setTypedTo] = useState('');
+  const [typedMsg, setTypedMsg] = useState('');
+  const [typedDate, setTypedDate] = useState('');
+  const [typedTime, setTypedTime] = useState('');
+  const [typedPlace, setTypedPlace] = useState('');
+  const [selectedFriendUid, setSelectedFriendUid] = useState<string | null>(null);
+  const [typeIdx, setTypeIdx] = useState(0);
 
   // Cycle selected event type
   useEffect(() => {
-    const t = setInterval(() => setTypeIdx(i => (i + 1) % EVENT_TYPES.length), 1600);
+    const t = setInterval(() => setTypeIdx(i => (i + 1) % EVENT_TYPES.length), 1800);
     return () => clearInterval(t);
   }, []);
 
-  // Typing animation
+  // Main animation timeline
   useEffect(() => {
-    if (phase === 'done') {
-      const t = setTimeout(() => {
-        setPhase('typing');
-        setFieldIdx(0);
-        setCharIdx(0);
-        setVals(CREATE_STAGES.map(() => ''));
-      }, 2000);
-      return () => clearTimeout(t);
+    let t1: ReturnType<typeof setTimeout>;
+    let t2: ReturnType<typeof setTimeout>;
+
+    if (animationPhase === 0) {
+      // Clean everything
+      setTypedTo('');
+      setTypedMsg('');
+      setTypedDate('');
+      setTypedTime('');
+      setTypedPlace('');
+      setSelectedFriendUid(null);
+
+      // Start selecting friend
+      t1 = setTimeout(() => {
+        setAnimationPhase(1);
+      }, 800);
+    } else if (animationPhase === 1) {
+      // Simulate clicking the "Андрій" chip
+      setSelectedFriendUid('f1');
+      setTypedTo('Андрій');
+
+      t1 = setTimeout(() => {
+        setAnimationPhase(2);
+      }, 700);
+    } else if (animationPhase === 2) {
+      // Type Message
+      const target = 'Кава разом ☕';
+      let char = 0;
+      const interval = setInterval(() => {
+        if (char < target.length) {
+          setTypedMsg(target.slice(0, char + 1));
+          char++;
+        } else {
+          clearInterval(interval);
+          t2 = setTimeout(() => setAnimationPhase(3), 400);
+        }
+      }, 60);
+      return () => {
+        clearInterval(interval);
+        clearTimeout(t2);
+      };
+    } else if (animationPhase === 3) {
+      // Type Date
+      const target = '12.07.2025';
+      let char = 0;
+      const interval = setInterval(() => {
+        if (char < target.length) {
+          setTypedDate(target.slice(0, char + 1));
+          char++;
+        } else {
+          clearInterval(interval);
+          t2 = setTimeout(() => setAnimationPhase(4), 400);
+        }
+      }, 60);
+      return () => {
+        clearInterval(interval);
+        clearTimeout(t2);
+      };
+    } else if (animationPhase === 4) {
+      // Type Time
+      const target = '18:30';
+      let char = 0;
+      const interval = setInterval(() => {
+        if (char < target.length) {
+          setTypedTime(target.slice(0, char + 1));
+          char++;
+        } else {
+          clearInterval(interval);
+          t2 = setTimeout(() => setAnimationPhase(5), 400);
+        }
+      }, 60);
+      return () => {
+        clearInterval(interval);
+        clearTimeout(t2);
+      };
+    } else if (animationPhase === 5) {
+      // Type Place
+      const target = 'Синій птах';
+      let char = 0;
+      const interval = setInterval(() => {
+        if (char < target.length) {
+          setTypedPlace(target.slice(0, char + 1));
+          char++;
+        } else {
+          clearInterval(interval);
+          t2 = setTimeout(() => setAnimationPhase(6), 600);
+        }
+      }, 60);
+      return () => {
+        clearInterval(interval);
+        clearTimeout(t2);
+      };
+    } else if (animationPhase === 6) {
+      // Done / Success -> Wait and restart
+      t1 = setTimeout(() => {
+        setAnimationPhase(0);
+      }, 2500);
     }
 
-    const target = CREATE_STAGES[fieldIdx].value;
-    if (charIdx < target.length) {
-      const t = setTimeout(() => {
-        setVals(prev => {
-          const next = [...prev];
-          next[fieldIdx] = target.slice(0, charIdx + 1);
-          return next;
-        });
-        setCharIdx(c => c + 1);
-      }, 60);
-      return () => clearTimeout(t);
-    } else if (fieldIdx < CREATE_STAGES.length - 1) {
-      const t = setTimeout(() => { setFieldIdx(fi => fi + 1); setCharIdx(0); }, 380);
-      return () => clearTimeout(t);
-    } else {
-      const t = setTimeout(() => setPhase('done'), 500);
-      return () => clearTimeout(t);
-    }
-  }, [phase, fieldIdx, charIdx]);
+    return () => clearTimeout(t1);
+  }, [animationPhase]);
 
   return (
     <div className="ob-screen">
@@ -256,10 +350,67 @@ function CreateStep() {
           </div>
         </div>
 
-        {/* Type picker */}
+        {/* 1. Отримувач Section (matches real create page) */}
         <div className="ob-form-section">
           <div className="ob-form-section-header">
-            <div className="ob-form-section-icon"><Icon name="confetti" size={13} /></div>
+            <div className="ob-form-section-icon"><Icon name="user" size={13} /></div>
+            <span className="ob-form-section-label">Отримувач</span>
+          </div>
+          <div className="ob-form-section-body">
+            <div className="ob-field">
+              <label className="ob-field-label">Кому</label>
+              <div className={`ob-input-mock ${animationPhase === 1 ? 'ob-input-active' : ''}`}>
+                <span>{typedTo || <span className="ob-input-placeholder">Ім'я отримувача</span>}</span>
+                {animationPhase === 1 && <span className="ob-cursor">|</span>}
+              </div>
+            </div>
+
+            {/* Friend Chips Grid (exactly as in create/page.tsx) */}
+            <div style={{ marginTop: '8px' }}>
+              <label className="ob-field-label" style={{ marginBottom: '6px', textTransform: 'none', letterSpacing: 'normal', fontSize: '0.78rem' }}>
+                Або обрати з друзів
+              </label>
+              <div className="ob-friends-grid">
+                {MOCK_FRIENDS.map(f => {
+                  const isSelected = selectedFriendUid === f.uid;
+                  return (
+                    <div
+                      key={f.uid}
+                      className={`ob-friend-chip ${isSelected ? 'ob-friend-chip-on' : ''}`}
+                    >
+                      <div className="ob-avatar ob-avatar-sm" style={{ width: '28px', height: '28px', fontSize: '0.75rem' }}>
+                        {f.letter}
+                      </div>
+                      <div className="ob-friend-chip-info">
+                        <span className="ob-friend-chip-name">{f.name}</span>
+                        <span className="ob-friend-chip-id">{f.uniqueId}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. Повідомлення Section */}
+        <div className="ob-form-section">
+          <div className="ob-form-section-header">
+            <div className="ob-form-section-icon"><Icon name="chat-circle-dots" size={13} /></div>
+            <span className="ob-form-section-label">Повідомлення</span>
+          </div>
+          <div className="ob-form-section-body">
+            <div className={`ob-input-mock ob-textarea-mock ${animationPhase === 2 ? 'ob-input-active' : ''}`}>
+              <span>{typedMsg || <span className="ob-input-placeholder">Напишіть своїми словами...</span>}</span>
+              {animationPhase === 2 && <span className="ob-cursor">|</span>}
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Тип події Section */}
+        <div className="ob-form-section">
+          <div className="ob-form-section-header">
+            <div className="ob-form-section-icon"><Icon name="sparkle" size={13} /></div>
             <span className="ob-form-section-label">Тип події</span>
           </div>
           <div className="ob-form-section-body">
@@ -274,73 +425,43 @@ function CreateStep() {
           </div>
         </div>
 
-        {/* Recipient + Message section */}
-        <div className="ob-form-section">
-          <div className="ob-form-section-header">
-            <div className="ob-form-section-icon"><Icon name="user" size={13} /></div>
-            <span className="ob-form-section-label">Отримувач</span>
-          </div>
-          <div className="ob-form-section-body">
-            {CREATE_STAGES.slice(0, 2).map((f, i) => (
-              <div key={f.field} className="ob-field">
-                <label className="ob-field-label">
-                  <Icon name={f.icon} size={11} /> {f.label}
-                </label>
-                <div className={`ob-input-mock ${fieldIdx === i && phase === 'typing' ? 'ob-input-active' : ''}`}>
-                  <span>{vals[i] || <span className="ob-input-placeholder">{f.placeholder}</span>}</span>
-                  {fieldIdx === i && phase === 'typing' && <span className="ob-cursor">|</span>}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Date/Time/Place section */}
+        {/* 4. Коли та де Section */}
         <div className="ob-form-section">
           <div className="ob-form-section-header">
             <div className="ob-form-section-icon"><Icon name="calendar-blank" size={13} /></div>
-            <span className="ob-form-section-label">Деталі зустрічі</span>
+            <span className="ob-form-section-label">Коли та де</span>
           </div>
           <div className="ob-form-section-body">
-            {/* Date + Time in a row */}
             <div className="ob-datetime-row">
-              {CREATE_STAGES.slice(2, 4).map((f, ri) => {
-                const i = ri + 2;
-                return (
-                  <div key={f.field} className="ob-field">
-                    <label className="ob-field-label">
-                      <Icon name={f.icon} size={11} /> {f.label}
-                    </label>
-                    <div className={`ob-input-mock ${fieldIdx === i && phase === 'typing' ? 'ob-input-active' : ''}`}>
-                      <span>{vals[i] || <span className="ob-input-placeholder">{f.placeholder}</span>}</span>
-                      {fieldIdx === i && phase === 'typing' && <span className="ob-cursor">|</span>}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            {/* Place */}
-            {(() => {
-              const f = CREATE_STAGES[4];
-              const i = 4;
-              return (
-                <div className="ob-field">
-                  <label className="ob-field-label">
-                    <Icon name={f.icon} size={11} /> {f.label}
-                  </label>
-                  <div className={`ob-input-mock ${fieldIdx === i && phase === 'typing' ? 'ob-input-active' : ''}`}>
-                    <span>{vals[i] || <span className="ob-input-placeholder">{f.placeholder}</span>}</span>
-                    {fieldIdx === i && phase === 'typing' && <span className="ob-cursor">|</span>}
-                  </div>
+              <div className="ob-field">
+                <label className="ob-field-label">Дата</label>
+                <div className={`ob-input-mock ${animationPhase === 3 ? 'ob-input-active' : ''}`}>
+                  <span>{typedDate || <span className="ob-input-placeholder">дд.мм.рррр</span>}</span>
+                  {animationPhase === 3 && <span className="ob-cursor">|</span>}
                 </div>
-              );
-            })()}
+              </div>
+              <div className="ob-field">
+                <label className="ob-field-label">Час</label>
+                <div className={`ob-input-mock ${animationPhase === 4 ? 'ob-input-active' : ''}`}>
+                  <span>{typedTime || <span className="ob-input-placeholder">гг:хх</span>}</span>
+                  {animationPhase === 4 && <span className="ob-cursor">|</span>}
+                </div>
+              </div>
+            </div>
+
+            <div className="ob-field" style={{ marginTop: '8px' }}>
+              <label className="ob-field-label">Місце</label>
+              <div className={`ob-input-mock ${animationPhase === 5 ? 'ob-input-active' : ''}`}>
+                <span>{typedPlace || <span className="ob-input-placeholder">Де зустрічаємось?</span>}</span>
+                {animationPhase === 5 && <span className="ob-cursor">|</span>}
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Submit */}
-        <div className={`ob-create-submit ${phase === 'done' ? 'ob-submit-pulse' : ''}`}>
-          {phase === 'done'
+        <div className={`ob-create-submit ${animationPhase === 6 ? 'ob-submit-pulse' : ''}`}>
+          {animationPhase === 6
             ? <><Icon name="confetti" size={16} /> Запрошення створено!</>
             : <><Icon name="paper-plane-tilt" size={15} /> Надіслати запрошення</>
           }
@@ -468,7 +589,7 @@ function FriendsStep() {
    STEP 5 — Notifications
 ════════════════════════════════════════════ */
 function NotificationsStep() {
-  const [notifState, setNotifState] = useState<'idle' | 'arriving' | 'shown' | 'accepted'>('idle');
+  const [notifState, setNotifState] = useState<'idle' | 'arriving' | 'accepted'>('idle');
   const [bellPulse, setBellPulse] = useState(false);
 
   useEffect(() => {
@@ -477,9 +598,8 @@ function NotificationsStep() {
       setBellPulse(false);
       setTimeout(() => setBellPulse(true), 600);
       setTimeout(() => setNotifState('arriving'), 900);
-      setTimeout(() => setNotifState('shown'), 1500);
-      setTimeout(() => setNotifState('accepted'), 3000);
-      setTimeout(cycle, 4600);
+      setTimeout(() => setNotifState('accepted'), 2500);
+      setTimeout(cycle, 4500);
     };
     const t = setTimeout(cycle, 300);
     return () => clearTimeout(t);
@@ -507,7 +627,7 @@ function NotificationsStep() {
         <div className="ob-notif-group-label">СЬОГОДНІ</div>
 
         {/* Incoming invite notif */}
-        {(notifState === 'arriving' || notifState === 'shown' || notifState === 'accepted') && (
+        {(notifState === 'arriving' || notifState === 'accepted') && (
           <div className={`ob-notif-item ob-notif-unread ${notifState === 'arriving' ? 'ob-anim-slide-in' : ''} ${notifState === 'accepted' ? 'ob-notif-processed' : ''}`}>
             <div className="ob-notif-icon-wrap ob-notif-type-invite">
               <Icon name="paper-plane-tilt" size={18} />
@@ -515,12 +635,6 @@ function NotificationsStep() {
             <div className="ob-notif-body">
               <div className="ob-notif-title">Нове запрошення від Олени!</div>
               <div className="ob-notif-text">Кава · 15 лип о 14:00 · Парк Шевченка</div>
-              {notifState === 'shown' && (
-                <div className="ob-notif-actions ob-anim-fade-in">
-                  <div className="ob-btn-accept"><Icon name="check" size={12} /> Прийняти</div>
-                  <div className="ob-btn-decline"><Icon name="x" size={12} /> Відхилити</div>
-                </div>
-              )}
               {notifState === 'accepted' && (
                 <div className="ob-status-text ob-anim-fade-in">
                   <Icon name="check" size={13} /> Прийнято
