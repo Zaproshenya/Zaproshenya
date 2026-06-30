@@ -1178,6 +1178,27 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   white-space: nowrap;
 }
 
+/* Copy button — identical to real .home-copy-btn */
+.ob-copy-btn {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--warm); border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s var(--ease);
+  flex-shrink: 0;
+}
+.ob-copy-btn:hover {
+  background: var(--gold-dim);
+  color: var(--gold);
+  border-color: var(--gold);
+}
+.ob-copy-ok {
+  background: var(--green-bg) !important;
+  color: var(--green) !important;
+  border-color: var(--green) !important;
+  animation: obSubmitPop .3s cubic-bezier(.34,1.56,.64,1) both;
+}
+
 /* ═══════════════════════════════════════════════════════
    STEP 3 — CREATE
    ═══════════════════════════════════════════════════════ */
@@ -1245,6 +1266,13 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
 .ob-form-section-body {
   padding: 14px 16px;
   display: flex; flex-direction: column; gap: 12px;
+}
+
+/* Date + Time in a 2-column row */
+.ob-datetime-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
 /* Type picker — identical to real .type-picker */
