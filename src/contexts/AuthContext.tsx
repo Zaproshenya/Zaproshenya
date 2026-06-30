@@ -7,6 +7,7 @@ import { loadProfile, UserProfile } from '@/lib/firebase/auth';
 import { ref, set, get, update, query, orderByChild, limitToLast, onValue } from 'firebase/database';
 import { toast } from '@/components/Toast';
 import { Icon } from '@/components/Icon';
+import { OnboardingGuide } from '@/components/OnboardingGuide';
 
 interface AuthContextType {
   user: User | null | undefined;
@@ -32,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const [adminUnreadCount, setAdminUnreadCount] = useState(0);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -748,9 +750,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
   }
 
+  // Show onboarding guide on first login
+  useEffect(() => {
+    if (!user || !profile || loading) return;
+    // Don't show if still in a blocking modal state
+    if (is2faPending || isRegistrationIncomplete || isEmailVerificationPending) return;
+    const key = `onboarding_done_${user.uid}`;
+    if (typeof window !== 'undefined' && !localStorage.getItem(key)) {
+      setShowOnboarding(true);
+    }
+  }, [user, profile, loading, is2faPending, isRegistrationIncomplete, isEmailVerificationPending]);
+
+  const handleOnboardingComplete = () => {
+    if (user) {
+      localStorage.setItem(`onboarding_done_${user.uid}`, 'true');
+    }
+    setShowOnboarding(false);
+  };
+
   return (
     <AuthContext.Provider value={{ user, profile, loading, updateProfile, unreadCount, adminUnreadCount }}>
       {children}
+      {showOnboarding && user && profile && (
+        <OnboardingGuide
+          userName={profile.name || user.displayName || 'Друже'}
+          onComplete={handleOnboardingComplete}
+        />
+      )}
     </AuthContext.Provider>
   );
 }
