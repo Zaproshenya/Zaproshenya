@@ -100,15 +100,17 @@ export default function ClientInvitePage({ id }: { id: string }) {
 
     try {
       const { saveReschedule, addNotification } = await import('@/lib/firebase/db');
-      await saveReschedule(id, { date: rescheduleDate, time: rescheduleTime });
+      await saveReschedule(id, { date: rescheduleDate, time: rescheduleTime }, invData?.creatorUid);
 
       // Notify creator
       if (invData?.creatorUid) {
         const responderName = profile?.name || invData.to || 'Хтось';
+        const formattedDate = rescheduleDate.split('-').reverse().join('.'); // DD.MM.YYYY
+        const timeStr = rescheduleTime ? ` о ${rescheduleTime}` : '';
         await addNotification(invData.creatorUid, {
           type: 'invite-reschedule',
           title: `Запит на перенесення`,
-          body: `${responderName} хоче перенести зустріч`,
+          body: `${responderName} хоче перенести зустріч на ${formattedDate}${timeStr}`,
           inviteId: id,
         });
       }
@@ -122,6 +124,77 @@ export default function ClientInvitePage({ id }: { id: string }) {
       toast('Сталася помилка при збереженні', 'error');
     }
   };
+
+  const handleAcceptReschedule = async () => {
+    if (!rescheduleData) return;
+    try {
+      const { ref, update } = await import('firebase/database');
+      const { db } = await import('@/lib/firebase/config');
+      const { updateInviteStatus, addNotification } = await import('@/lib/firebase/db');
+      
+      // 1. Update invites/id with new date and time
+      await update(ref(db, 'invites/' + id), {
+        date: rescheduleData.date,
+        time: rescheduleData.time
+      });
+      
+      // 2. Update user-invites/creatorUid/id with new date and time
+      await update(ref(db, 'user-invites/' + invData.creatorUid + '/' + id), {
+        date: rescheduleData.date,
+        time: rescheduleData.time,
+      });
+
+      // 3. Update status in both places (statuses/id and user-invites/creatorUid/id/status)
+      await updateInviteStatus(id, 'accepted', invData.creatorUid);
+      
+      // 4. Notify recipient
+      if (invData.recipientUid) {
+        await addNotification(invData.recipientUid, {
+          type: 'invite-response',
+          title: 'Перенесення прийнято',
+          body: `${profile?.name || 'Відправник'} прийняв вашу пропозицію перенести зустріч`,
+          inviteId: id,
+        });
+      }
+      
+      setAnswered(true);
+      setAnswerStatus('accepted');
+      toast('Зустріч перенесено та підтверджено! ✦', 'success');
+      setInvData((prev: any) => ({
+        ...prev,
+        date: rescheduleData.date,
+        time: rescheduleData.time
+      }));
+    } catch (e) {
+      console.error(e);
+      toast('Сталася помилка при перенесенні', 'error');
+    }
+  };
+
+  const handleDeclineReschedule = async () => {
+    try {
+      const { updateInviteStatus, addNotification } = await import('@/lib/firebase/db');
+      await updateInviteStatus(id, 'declined', invData.creatorUid);
+      
+      // Notify recipient
+      if (invData.recipientUid) {
+        await addNotification(invData.recipientUid, {
+          type: 'invite-response',
+          title: 'Перенесення відхилено',
+          body: `${profile?.name || 'Відправник'} відхилив вашу пропозицію перенести зустріч`,
+          inviteId: id,
+        });
+      }
+      
+      setAnswered(true);
+      setAnswerStatus('declined');
+      toast('Пропозицію відхилено', 'info');
+    } catch (e) {
+      console.error(e);
+      toast('Сталася помилка', 'error');
+    }
+  };
+
 
   const getCalendarDates = (dateStr: string, timeStr: string) => {
     if (!dateStr) return { start: '', end: '' };
@@ -397,15 +470,62 @@ export default function ClientInvitePage({ id }: { id: string }) {
                   <>
                     <span className="result-icon"><Icon name="calendar-blank" size={32}/></span>
                     <div className="result-title" style={{color:'var(--gold)'}}>Запит на перенесення</div>
-                    <div className="result-sub">
+                    <div className="result-sub" style={{ marginBottom: '16px' }}>
                       {rescheduleData === undefined ? (
                         'Завантаження...'
                       ) : rescheduleData ? (
-                        `Отримувач пропонує перенести на: ${rescheduleData.date || '—'}${rescheduleData.time ? ` о ${rescheduleData.time}` : ''}`
+                        <>
+                          Отримувач пропонує перенести на: <strong>{rescheduleData.date.split('-').reverse().join('.')}</strong>
+                          {rescheduleData.time ? ` о ${rescheduleData.time}` : ''}
+                        </>
                       ) : (
                         'Отримувач запропонував перенести зустріч.'
                       )}
                     </div>
+                    {rescheduleData && (
+                      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '14px' }}>
+                        <button 
+                          onClick={handleAcceptReschedule} 
+                          className="btn btn-green"
+                          style={{ 
+                            padding: '10px 18px', 
+                            fontSize: '0.85rem', 
+                            borderRadius: '20px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            background: 'var(--green)',
+                            color: '#fff',
+                            border: 'none',
+                            fontWeight: 600
+                          }}
+                        >
+                          <Icon name="check" size={14}/>
+                          Прийняти новий час
+                        </button>
+                        <button 
+                          onClick={handleDeclineReschedule} 
+                          className="btn btn-outline"
+                          style={{ 
+                            padding: '10px 18px', 
+                            fontSize: '0.85rem', 
+                            borderRadius: '20px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            border: '1px solid var(--border)',
+                            color: 'var(--ink)',
+                            background: 'none',
+                            fontWeight: 500
+                          }}
+                        >
+                          <Icon name="x" size={14}/>
+                          Відхилити
+                        </button>
+                      </div>
+                    )}
                   </>
                 ) : (
                   <>

@@ -173,9 +173,12 @@ export async function deleteInvite(invId: string, uid?: string, isGroup?: boolea
   }
 }
 
-export async function saveReschedule(invId: string, data: { date: string; time: string }) {
+export async function saveReschedule(invId: string, data: { date: string; time: string }, creatorUid?: string) {
   await set(ref(db, 'reschedule/' + invId), { ...data, ts: Date.now() });
   await set(ref(db, 'statuses/' + invId), 'reschedule');
+  if (creatorUid) {
+    await set(ref(db, 'user-invites/' + creatorUid + '/' + invId + '/status'), 'reschedule');
+  }
 }
 
 export async function getReschedule(invId: string) {
