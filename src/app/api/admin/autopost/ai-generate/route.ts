@@ -29,13 +29,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Помилка розшифрування ШІ API ключа" }, { status: 500 });
     }
 
-    // Map and normalize model name, default to gemma-4-31b-it as requested
+    // Map and normalize model name
     let model = aiConfig.model || "gemma-4-31b-it";
     if (model.startsWith("models/")) {
       model = model.replace("models/", "");
     }
     
-    // Normalize Gemma 4 models: 31B (gemma-4-31b-it) and 26B (gemma-4-26b-a4b-it)
+    // Normalize Gemma 4 models
     const lowerModel = model.toLowerCase().trim();
     if (lowerModel.includes("26b") || lowerModel.includes("26")) {
       model = "gemma-4-26b-a4b-it";
@@ -54,16 +54,22 @@ export async function POST(req: NextRequest) {
 Ваше завдання:
 На основі вхідного запиту користувача розробити високоестетичний, захоплюючий та грамотний промо-текст (опис) для публікацій у соціальних мережах (Instagram, TikTok, YouTube Shorts, Facebook) та підібрати ефективний пакет хештегов.
 
-Вхідний запит користувача: "${prompt}"
-
 ПРАВИЛА ФОРМУВАННЯ ВІДПОВІДІ:
 1. Ви ПОВИННІ згенерувати відповідь СУВОРО у форматі JSON із двома полями:
    - "description": Емоційний, структурований текст опису українською мовою. Використовуйте абзаци, списки (замість стандартних маркерів використовуйте тематичні преміальні емодзі), чіткий заклик до дії (CTA).
-   - "hashtags": Рядок релевантних хештегов, розділених пробілами (наприклад: "#Запрошення #ВесілляУкраїна #СучаснеСвято").
+   - "hashtags": Рядок релевантних хештегов, розділених пробілами.
 2. ЩОБ УНИКНУТИ ПОМИЛОК ПАРСИНГУ JSON:
-   - Усі внутрішні подвійні лапки всередині тексту "description" обов'язково замінюйте на українські кутові лапки (« »). Ніколи не залишайте неекранвані подвійні лапки всередині значень JSON.
-   - Символи переносу рядка в полі "description" записуйте як "\\n".
-3. Повертайте ТІЛЬКИ чистий код JSON без будь-яких вступних слів, привітань, пояснень чи розмітки типу \`\`\`json ... \`\`\`.`;
+   - Усі внутрішні подвійні лапки всередині тексту "description" обов'язково замінюйте на українські кутові лапки « » або одинарні лапки. Ніколи не залишайте неекранвані подвійні лапки всередині значень JSON.
+   - Символи переносу рядка в полі "description" записуйте як "\\n" (символ бекслешу та n). Не робіть реальних розривів рядків всередині значень JSON!
+3. Повертайте ТІЛЬКИ чистий код JSON без будь-яких вступних слів, привітань, пояснень чи розмітки типу \`\`\`json ... \`\`\`.
+
+ПРИКЛАД ОЧІКУВАНОЇ ВІДПОВІДІ:
+{
+  "description": "Мистецтво організації починається з першого дотику.\\n\\n«Запрошення ✦» — це більше, ніж digital-платформа. Це новий стандарт естетики та комфорту для ваших особливих подій: від приватних весіль до масштабних бізнес-форумів.\\n\\nЧому це змінює ваш досвід:\\n\\n✦ Безумовна естетика — створення візуального образу події, що вражає з першої секунди.\\n✦ Кінець епохи хаосу — забудьте про сотні повідомлень у месенджерах. Одне вишукане посилання замінює всі організаційні питання.\\n✦ Інтерактивний RSVP — гості підтверджують присутність, обирають меню та вказують побажання у зручному інтефейсі.\\n✦ Повний контроль — аналітика в реальному часі дозволяє планувати захід з хірургічною точністю.\\n\\nПеретворіть підготовку до свята на акт творчості, а не на джерело стресу. Дозвольте собі розкіш спокою та бездоганного стилю.\\n\\n✦ Створіть своє ідеальне запрошення за посиланням у профілі.",
+  "hashtags": "#Запрошення #DigitalInvitations #ЕстетикаПодій #СучаснеВесілля #EventManagement #ПреміумСервіс #ОрганізаціяСвят"
+}
+
+Вхідний запит користувача: "${prompt}"`;
 
     // Gemma models do not support responseMimeType: "application/json" in Google's API,
     // so we construct the request body conditionally.
@@ -111,7 +117,10 @@ export async function POST(req: NextRequest) {
     try {
       let cleanedText = rawText.trim();
       
-      // 1. Strip any conversational prefix/suffix text by extracting only the JSON curly brace object
+      // 1. Remove markdown code block wraps before processing
+      cleanedText = cleanedText.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
+      
+      // 2. Strip any conversational prefix/suffix text by extracting only the JSON curly brace object
       const firstBrace = cleanedText.indexOf("{");
       const lastBrace = cleanedText.lastIndexOf("}");
       
@@ -119,13 +128,7 @@ export async function POST(req: NextRequest) {
         cleanedText = cleanedText.substring(firstBrace, lastBrace + 1);
       }
 
-      // 2. Clean possible markdown code blocks or escaped characters
-      if (cleanedText.startsWith("```")) {
-        cleanedText = cleanedText.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
-      }
-
-      // Replace any literal/raw newlines inside JSON strings with escaped \n
-      // to prevent JSON.parse syntax errors.
+      // Replace literal raw newlines inside the JSON string before parsing to prevent JSON.parse errors
       const parsedResult = JSON.parse(cleanedText);
       
       return NextResponse.json({
@@ -133,14 +136,14 @@ export async function POST(req: NextRequest) {
         hashtags: parsedResult.hashtags || ""
       });
     } catch (parseError) {
-      console.warn("Standard JSON.parse failed. Executing bulletproof regex-based parser...", parseError);
+      console.warn("Standard JSON.parse failed. Executing bulletproof parser...", parseError);
       
-      // 3. Bulletproof Regex Fallback Parser:
-      // Extracts keys independently of JSON well-formedness, even with raw newlines and unescaped quotes!
       let description = "";
       let hashtags = "";
 
-      const descMatch = rawText.match(/"description"\s*:\s*"([\s\S]*?)"(?=\s*,\s*"hashtags"|\s*})/i);
+      // Try matching using single or multi-line greedy regex extraction
+      const descMatch = rawText.match(/"description"\s*:\s*"([\s\S]*?)"\s*(?:,\s*"hashtags"|,\s*\}|\s*\}$|\s*,\s*$)/i)
+                     || rawText.match(/"description"\s*:\s*"([\s\S]*?)"/i);
       const hashMatch = rawText.match(/"hashtags"\s*:\s*"([\s\S]*?)"/i);
 
       if (descMatch) {
@@ -150,17 +153,30 @@ export async function POST(req: NextRequest) {
         hashtags = hashMatch[1].replace(/\\"/g, '"');
       }
 
-      if (description) {
-        return NextResponse.json({
-          description,
-          hashtags
-        });
+      // If regex failed, let's do plain-text extraction of hashtags at the end of the block
+      if (!description) {
+        const hashtagRegex = /(#[a-zA-Z0-9\u0400-\u04FF_]+\s*)+$/g;
+        const hashMatches = rawText.match(hashtagRegex);
+        if (hashMatches) {
+          hashtags = hashMatches[0].trim();
+          description = rawText.replace(hashtagRegex, "").trim();
+        } else {
+          description = rawText;
+        }
+
+        // Strip any JSON keys or raw JSON characters if the text was wrapped
+        description = description
+          .replace(/^\{\s*/, "")
+          .replace(/\s*\}$/, "")
+          .replace(/"description"\s*:\s*"/i, "")
+          .replace(/"\s*,\s*"hashtags"\s*:\s*"[\s\S]*$/i, "")
+          .replace(/"\s*\}$/i, "")
+          .trim();
       }
 
-      // Fallback in case everything else failed — put the entire raw text into description
       return NextResponse.json({
-        description: rawText,
-        hashtags: ""
+        description: description || rawText,
+        hashtags: hashtags || ""
       });
     }
   } catch (error: any) {
