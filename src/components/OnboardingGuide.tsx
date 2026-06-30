@@ -234,30 +234,26 @@ function CreateStep() {
   const detailsSectionRef = useRef<HTMLDivElement>(null);
   const submitSectionRef = useRef<HTMLDivElement>(null);
 
-  // Cycle selected event type
-  useEffect(() => {
-    const t = setInterval(() => setTypeIdx(i => (i + 1) % EVENT_TYPES.length), 1800);
-    return () => clearInterval(t);
-  }, []);
-
   // Main animation timeline
   useEffect(() => {
     let t1: ReturnType<typeof setTimeout>;
     let t2: ReturnType<typeof setTimeout>;
 
     if (animationPhase === 0) {
+      // Clear all fields and set default event type to 'Party' (index 1)
       setTypedTo('');
       setTypedMsg('');
       setTypedDate('');
       setTypedTime('');
       setTypedPlace('');
       setSelectedFriendUid(null);
+      setTypeIdx(1);
 
       t1 = setTimeout(() => {
         setAnimationPhase(1);
       }, 800);
     } else if (animationPhase === 1) {
-      // Choose "Андрій"
+      // Phase 1: Choose friend "Андрій"
       setSelectedFriendUid('f1');
       setTypedTo('Андрій');
 
@@ -265,7 +261,17 @@ function CreateStep() {
         setAnimationPhase(2);
       }, 1000);
     } else if (animationPhase === 2) {
-      // Type Message
+      // Phase 2: Select event type "Кава" (index 0)
+      t1 = setTimeout(() => {
+        setTypeIdx(0);
+        t2 = setTimeout(() => setAnimationPhase(3), 900);
+      }, 300);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    } else if (animationPhase === 3) {
+      // Phase 3: Type Message
       const target = 'Кава разом ☕';
       let char = 0;
       const interval = setInterval(() => {
@@ -274,24 +280,7 @@ function CreateStep() {
           char++;
         } else {
           clearInterval(interval);
-          t2 = setTimeout(() => setAnimationPhase(3), 500);
-        }
-      }, 60);
-      return () => {
-        clearInterval(interval);
-        clearTimeout(t2);
-      };
-    } else if (animationPhase === 3) {
-      // Type Date
-      const target = '12.07.2025';
-      let char = 0;
-      const interval = setInterval(() => {
-        if (char < target.length) {
-          setTypedDate(target.slice(0, char + 1));
-          char++;
-        } else {
-          clearInterval(interval);
-          t2 = setTimeout(() => setAnimationPhase(4), 400);
+          t2 = setTimeout(() => setAnimationPhase(4), 500);
         }
       }, 60);
       return () => {
@@ -299,12 +288,12 @@ function CreateStep() {
         clearTimeout(t2);
       };
     } else if (animationPhase === 4) {
-      // Type Time
-      const target = '18:30';
+      // Phase 4: Type Date
+      const target = '12.07.2025';
       let char = 0;
       const interval = setInterval(() => {
         if (char < target.length) {
-          setTypedTime(target.slice(0, char + 1));
+          setTypedDate(target.slice(0, char + 1));
           char++;
         } else {
           clearInterval(interval);
@@ -316,7 +305,24 @@ function CreateStep() {
         clearTimeout(t2);
       };
     } else if (animationPhase === 5) {
-      // Type Place
+      // Phase 5: Type Time
+      const target = '18:30';
+      let char = 0;
+      const interval = setInterval(() => {
+        if (char < target.length) {
+          setTypedTime(target.slice(0, char + 1));
+          char++;
+        } else {
+          clearInterval(interval);
+          t2 = setTimeout(() => setAnimationPhase(6), 400);
+        }
+      }, 60);
+      return () => {
+        clearInterval(interval);
+        clearTimeout(t2);
+      };
+    } else if (animationPhase === 6) {
+      // Phase 6: Type Place
       const target = 'Синій птах';
       let char = 0;
       const interval = setInterval(() => {
@@ -325,14 +331,15 @@ function CreateStep() {
           char++;
         } else {
           clearInterval(interval);
-          t2 = setTimeout(() => setAnimationPhase(6), 650);
+          t2 = setTimeout(() => setAnimationPhase(7), 650);
         }
       }, 60);
       return () => {
         clearInterval(interval);
         clearTimeout(t2);
       };
-    } else if (animationPhase === 6) {
+    } else if (animationPhase === 7) {
+      // Phase 7: Done state
       t1 = setTimeout(() => {
         setAnimationPhase(0);
       }, 2500);
@@ -354,14 +361,17 @@ function CreateStep() {
         targetElement = recipientSectionRef.current;
         break;
       case 2:
-        targetElement = messageSectionRef.current;
+        targetElement = typeSectionRef.current;
         break;
       case 3:
+        targetElement = messageSectionRef.current;
+        break;
       case 4:
       case 5:
+      case 6:
         targetElement = detailsSectionRef.current;
         break;
-      case 6:
+      case 7:
         targetElement = submitSectionRef.current;
         break;
     }
@@ -442,15 +452,15 @@ function CreateStep() {
             <span className="ob-form-section-label">Повідомлення</span>
           </div>
           <div className="ob-form-section-body">
-            <div className={`ob-input-mock ob-textarea-mock ${animationPhase === 2 ? 'ob-input-active' : ''}`}>
+            <div className={`ob-input-mock ob-textarea-mock ${animationPhase === 3 ? 'ob-input-active' : ''}`}>
               <span>{typedMsg || <span className="ob-input-placeholder">Напишіть своїми словами...</span>}</span>
-              {animationPhase === 2 && <span className="ob-cursor">|</span>}
+              {animationPhase === 3 && <span className="ob-cursor">|</span>}
             </div>
           </div>
         </div>
 
         {/* 3. Тип події Section */}
-        <div className="ob-form-section" ref={typeSectionRef}>
+        <div className={`ob-form-section ${animationPhase === 2 ? 'ob-input-active' : ''}`} ref={typeSectionRef}>
           <div className="ob-form-section-header">
             <div className="ob-form-section-icon"><Icon name="sparkle" size={13} /></div>
             <span className="ob-form-section-label">Тип події</span>
@@ -477,33 +487,33 @@ function CreateStep() {
             <div className="ob-datetime-row">
               <div className="ob-field">
                 <label className="ob-field-label">Дата</label>
-                <div className={`ob-input-mock ${animationPhase === 3 ? 'ob-input-active' : ''}`}>
+                <div className={`ob-input-mock ${animationPhase === 4 ? 'ob-input-active' : ''}`}>
                   <span>{typedDate || <span className="ob-input-placeholder">дд.мм.рррр</span>}</span>
-                  {animationPhase === 3 && <span className="ob-cursor">|</span>}
+                  {animationPhase === 4 && <span className="ob-cursor">|</span>}
                 </div>
               </div>
               <div className="ob-field">
                 <label className="ob-field-label">Час</label>
-                <div className={`ob-input-mock ${animationPhase === 4 ? 'ob-input-active' : ''}`}>
+                <div className={`ob-input-mock ${animationPhase === 5 ? 'ob-input-active' : ''}`}>
                   <span>{typedTime || <span className="ob-input-placeholder">гг:хх</span>}</span>
-                  {animationPhase === 4 && <span className="ob-cursor">|</span>}
+                  {animationPhase === 5 && <span className="ob-cursor">|</span>}
                 </div>
               </div>
             </div>
 
             <div className="ob-field" style={{ marginTop: '8px' }}>
               <label className="ob-field-label">Місце</label>
-              <div className={`ob-input-mock ${animationPhase === 5 ? 'ob-input-active' : ''}`}>
+              <div className={`ob-input-mock ${animationPhase === 6 ? 'ob-input-active' : ''}`}>
                 <span>{typedPlace || <span className="ob-input-placeholder">Де зустрічаємось?</span>}</span>
-                {animationPhase === 5 && <span className="ob-cursor">|</span>}
+                {animationPhase === 6 && <span className="ob-cursor">|</span>}
               </div>
             </div>
           </div>
         </div>
 
         {/* Submit */}
-        <div className={`ob-create-submit ${animationPhase === 6 ? 'ob-submit-pulse' : ''}`} ref={submitSectionRef} style={{ marginBottom: '24px' }}>
-          {animationPhase === 6
+        <div className={`ob-create-submit ${animationPhase === 7 ? 'ob-submit-pulse' : ''}`} ref={submitSectionRef} style={{ marginBottom: '24px' }}>
+          {animationPhase === 7
             ? <><Icon name="confetti" size={16} /> Запрошення створено!</>
             : <><Icon name="paper-plane-tilt" size={15} /> Надіслати запрошення</>
           }
