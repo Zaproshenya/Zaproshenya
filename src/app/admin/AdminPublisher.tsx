@@ -358,8 +358,33 @@ export default function AdminPublisher() {
 
   return (
     <div className="publisher-container" style={{ color: 'var(--ink)' }}>
+      {/* Local responsive styling */}
+      <style>{`
+        @media (max-width: 900px) {
+          .tab-content-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .tabs-header-scroll::-webkit-scrollbar {
+            display: none;
+          }
+          .tabs-header-scroll {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+        }
+      `}</style>
+
       {/* Tab Navigation with Premium High-Contrast segmented design */}
-      <div className="tabs-header" style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '1.5px solid var(--border)', paddingBottom: '14px' }}>
+      <div className="tabs-header tabs-header-scroll" style={{ 
+        display: 'flex', 
+        gap: '8px', 
+        marginBottom: '24px', 
+        borderBottom: '1.5px solid var(--border)', 
+        paddingBottom: '14px',
+        overflowX: 'auto',
+        flexWrap: 'nowrap',
+        WebkitOverflowScrolling: 'touch'
+      }}>
         <button 
           className={`btn-tab ${activeTab === 'publish' ? 'active' : ''}`} 
           onClick={() => setActiveTab('publish')} 
@@ -375,7 +400,8 @@ export default function AdminPublisher() {
             alignItems: 'center', 
             gap: '8px',
             boxShadow: activeTab === 'publish' ? '0 4px 12px rgba(201,146,42,0.25)' : 'none',
-            transition: 'all .2s var(--ease)'
+            transition: 'all .2s var(--ease)',
+            flexShrink: 0
           }}
         >
           <Icon name="paper-plane-tilt" size={18} color={activeTab === 'publish' ? '#ffffff' : 'var(--gold)'} />
@@ -396,7 +422,8 @@ export default function AdminPublisher() {
             alignItems: 'center', 
             gap: '8px',
             boxShadow: activeTab === 'settings' ? '0 4px 12px rgba(201,146,42,0.25)' : 'none',
-            transition: 'all .2s var(--ease)'
+            transition: 'all .2s var(--ease)',
+            flexShrink: 0
           }}
         >
           <Icon name="gear" size={18} color={activeTab === 'settings' ? '#ffffff' : 'var(--gold)'} />
@@ -417,7 +444,8 @@ export default function AdminPublisher() {
             alignItems: 'center', 
             gap: '8px',
             boxShadow: activeTab === 'guides' ? '0 4px 12px rgba(201,146,42,0.25)' : 'none',
-            transition: 'all .2s var(--ease)'
+            transition: 'all .2s var(--ease)',
+            flexShrink: 0
           }}
         >
           <Icon name="book" size={18} color={activeTab === 'guides' ? '#ffffff' : 'var(--gold)'} />
@@ -427,13 +455,13 @@ export default function AdminPublisher() {
 
       {/* ── Tab 1: PUBLISH PANEL ── */}
       {activeTab === 'publish' && (
-        <div className="tab-content" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px' }}>
+        <div className="tab-content tab-content-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px' }}>
           <div className="panel-left" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             
             {/* Content Type Selector */}
             <div className="field-group">
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '.85rem', fontWeight: 600, color: 'var(--ink)' }}>Оберіть тип контенту</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
                 <button 
                   className={`selector-card ${contentType === 'post' ? 'active' : ''}`} 
                   onClick={() => setContentType('post')} 

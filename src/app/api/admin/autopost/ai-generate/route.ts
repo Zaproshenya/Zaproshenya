@@ -30,17 +30,23 @@ export async function POST(req: NextRequest) {
     }
 
     // Map and normalize model name
-    let model = aiConfig.model || "gemma-4-31b-it";
+    let model = aiConfig.model || "gemini-1.5-flash";
     if (model.startsWith("models/")) {
       model = model.replace("models/", "");
     }
     
-    // Normalize Gemma 4 models
+    // Normalize Gemma models if used, but preserve standard Gemini models
     const lowerModel = model.toLowerCase().trim();
-    if (lowerModel.includes("26b") || lowerModel.includes("26")) {
-      model = "gemma-4-26b-a4b-it";
+    if (lowerModel.includes("gemini")) {
+      // Keep standard gemini models as configured
+    } else if (lowerModel.includes("gemma")) {
+      if (lowerModel.includes("26b") || lowerModel.includes("26")) {
+        model = "gemma-4-26b-a4b-it";
+      } else {
+        model = "gemma-4-31b-it";
+      }
     } else {
-      model = "gemma-4-31b-it";
+      model = "gemini-1.5-flash"; // default fallback
     }
 
     const systemPrompt = `Ви є старшим копірайтером, SMM-стратегом та брендовим голосом преміального українського сервісу «Запрошення ✦» (Zaproshenya).
@@ -54,19 +60,21 @@ export async function POST(req: NextRequest) {
 Ваше завдання:
 На основі вхідного запиту користувача розробити високоестетичний, захоплюючий та грамотний промо-текст (опис) для публікацій у соціальних мережах (Instagram, TikTok, YouTube Shorts, Facebook) та підібрати ефективний пакет хештегов.
 
-ПРАВИЛА ФОРМУВАННЯ ВІДПОВІДІ:
-1. Ви ПОВИННІ згенерувати відповідь СУВОРО у форматі JSON із двома полями:
+СУВОРІ СИСТЕМНІ ПРАВИЛА (ПОРУШЕННЯ ЗАБОРОНЕНО):
+1. Ви ПОВИННІ згенерувати відповідь ВИКЛЮЧНО та СУВОРО у форматі JSON з двома полями:
    - "description": Емоційний, структурований текст опису українською мовою. Використовуйте абзаци, списки (замість стандартних маркерів використовуйте тематичні преміальні емодзі), чіткий заклик до дії (CTA).
    - "hashtags": Рядок релевантних хештегов, розділених пробілами.
-2. ЩОБ УНИКНУТИ ПОМИЛОК ПАРСИНГУ JSON:
+2. ЗАБОРОНЕНО виводити будь-який супровідний текст, привітання, пояснення, аналіз чи коментарі до або після JSON-об'єкта. Відповідь має починатися з '{' та закінчуватися на '}'.
+3. ЗАБОРОНЕНО використовувати розмітку Markdown на кшталт \`\`\`json ... \`\`\`. Повертайте ЛИШЕ чистий сирий текст JSON-об'єкта.
+4. ЩОБ УНИКНУТИ ПОМИЛОК ПАРСИНГУ JSON:
    - Усі внутрішні подвійні лапки всередині тексту "description" обов'язково замінюйте на українські кутові лапки « » або одинарні лапки. Ніколи не залишайте неекранвані подвійні лапки всередині значень JSON.
    - Символи переносу рядка в полі "description" записуйте як "\\n" (символ бекслешу та n). Не робіть реальних розривів рядків всередині значень JSON!
-3. Повертайте ТІЛЬКИ чистий код JSON без будь-яких вступних слів, привітань, пояснень чи розмітки типу \`\`\`json ... \`\`\`.
+5. Текст опису має бути завершеним і повністю готовим до публікації. Будьте максимально лаконічними та професійними, не пишіть зайвої "води".
 
-ПРИКЛАД ОЧІКУВАНОЇ ВІДПОВІДІ:
+ПРИКЛАД ОЧІКУВАНОЇ ВІДПОВІДІ (ПОВЕРТАЙТЕ СУВОРО ТАКИЙ ФОРМАТ):
 {
-  "description": "Мистецтво організації починається з першого дотику.\\n\\n«Запрошення ✦» — це більше, ніж digital-платформа. Це новий стандарт естетики та комфорту для ваших особливих подій: від приватних весіль до масштабних бізнес-форумів.\\n\\nЧому це змінює ваш досвід:\\n\\n✦ Безумовна естетика — створення візуального образу події, що вражає з першої секунди.\\n✦ Кінець епохи хаосу — забудьте про сотні повідомлень у месенджерах. Одне вишукане посилання замінює всі організаційні питання.\\n✦ Інтерактивний RSVP — гості підтверджують присутність, обирають меню та вказують побажання у зручному інтефейсі.\\n✦ Повний контроль — аналітика в реальному часі дозволяє планувати захід з хірургічною точністю.\\n\\nПеретворіть підготовку до свята на акт творчості, а не на джерело стресу. Дозвольте собі розкіш спокою та бездоганного стилю.\\n\\n✦ Створіть своє ідеальне запрошення за посиланням у профілі.",
-  "hashtags": "#Запрошення #DigitalInvitations #ЕстетикаПодій #СучаснеВесілля #EventManagement #ПреміумСервіс #ОрганізаціяСвят"
+  "description": "Мистецтво організації починається з першого дотику.\\n\\n«Запрошення ✦» — це більше, ніж digital-платформа. Це новий стандарт естетики та комфорту для ваших особливих подій: від приватних весіль до масштабних бізнес-форумів.\\n\\n✦ Безумовна естетика — створення візуального образу події, що вражає з першої секунди.\\n✦ Кінець епохи хаосу — одне вишукане посилання замінює всі організаційні питання.\\n✦ RSVP-трекінг — гості підтверджують присутність, обирають меню та вказують побажання.\\n\\n✦ Створіть своє ідеальне запрошення за посиланням у профілі.",
+  "hashtags": "#Запрошення #DigitalInvitations #ЕстетикаПодій #СучаснеВесілля #EventManagement"
 }
 
 Вхідний запит користувача: "${prompt}"`;
@@ -113,47 +121,77 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "ШІ повернув пусту відповідь" }, { status: 500 });
     }
 
-    // Parse the generated JSON block robustly
+    // Parse the generated JSON block with robust string scanning (bulletproof)
+    let description = "";
+    let hashtags = "";
+
+    let cleanedText = rawText.trim();
+    // Remove markdown code block wraps before processing
+    cleanedText = cleanedText.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
+
     try {
-      let cleanedText = rawText.trim();
-      
-      // 1. Remove markdown code block wraps before processing
-      cleanedText = cleanedText.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
-      
-      // 2. Strip any conversational prefix/suffix text by extracting only the JSON curly brace object
-      const firstBrace = cleanedText.indexOf("{");
-      const lastBrace = cleanedText.lastIndexOf("}");
-      
-      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-        cleanedText = cleanedText.substring(firstBrace, lastBrace + 1);
-      }
-
-      // Replace literal raw newlines inside the JSON string before parsing to prevent JSON.parse errors
       const parsedResult = JSON.parse(cleanedText);
-      
-      return NextResponse.json({
-        description: parsedResult.description || "",
-        hashtags: parsedResult.hashtags || ""
-      });
+      description = parsedResult.description || "";
+      hashtags = parsedResult.hashtags || "";
     } catch (parseError) {
-      console.warn("Standard JSON.parse failed. Executing bulletproof parser...", parseError);
-      
-      let description = "";
-      let hashtags = "";
+      console.warn("Standard JSON.parse failed. Executing bulletproof split-and-scan parser...", parseError);
 
-      // Try matching using single or multi-line greedy regex extraction
-      const descMatch = rawText.match(/"description"\s*:\s*"([\s\S]*?)"\s*(?:,\s*"hashtags"|,\s*\}|\s*\}$|\s*,\s*$)/i)
-                     || rawText.match(/"description"\s*:\s*"([\s\S]*?)"/i);
-      const hashMatch = rawText.match(/"hashtags"\s*:\s*"([\s\S]*?)"/i);
+      // Robust split-and-scan:
+      // Look for the boundaries of keys "description" and "hashtags".
+      // Since "hashtags" follows "description", splitting on the ", "hashtags": " pattern is extremely reliable.
+      const descKeyIndex = cleanedText.search(/"description"\s*:\s*"/i);
+      if (descKeyIndex !== -1) {
+        const match = cleanedText.substring(descKeyIndex).match(/"description"\s*:\s*"/i);
+        if (match) {
+          const valueStartIndex = descKeyIndex + match[0].length;
+          const boundaryRegex = /",\s*"hashtags"\s*:\s*"/i;
+          const boundaryMatch = cleanedText.substring(valueStartIndex).match(boundaryRegex);
 
-      if (descMatch) {
-        description = descMatch[1].replace(/\\n/g, "\n").replace(/\\"/g, '"');
+          if (boundaryMatch && boundaryMatch.index !== undefined) {
+            description = cleanedText.substring(valueStartIndex, valueStartIndex + boundaryMatch.index);
+            const hashtagsStartIndex = valueStartIndex + boundaryMatch.index + boundaryMatch[0].length;
+            const endingQuoteIndex = cleanedText.substring(hashtagsStartIndex).lastIndexOf('"');
+            if (endingQuoteIndex !== -1) {
+              hashtags = cleanedText.substring(hashtagsStartIndex, hashtagsStartIndex + endingQuoteIndex);
+            } else {
+              hashtags = cleanedText.substring(hashtagsStartIndex).replace(/\s*\}\s*$/, "").trim();
+            }
+          } else {
+            const endingQuoteIndex = cleanedText.substring(valueStartIndex).lastIndexOf('"');
+            if (endingQuoteIndex !== -1) {
+              description = cleanedText.substring(valueStartIndex, valueStartIndex + endingQuoteIndex);
+            } else {
+              description = cleanedText.substring(valueStartIndex).replace(/\s*\}\s*$/, "").trim();
+            }
+          }
+        }
       }
-      if (hashMatch) {
-        hashtags = hashMatch[1].replace(/\\"/g, '"');
+
+      // If split-and-scan was unable to extract the description, fallback to regex and heuristic parsing
+      if (!description) {
+        const descMatch = cleanedText.match(/"description"\s*:\s*"([\s\S]*?)"\s*(?:,\s*"hashtags"|,\s*\}|\s*\}$|\s*,\s*$)/i)
+                       || cleanedText.match(/"description"\s*:\s*"([\s\S]*?)"/i);
+        const hashMatch = cleanedText.match(/"hashtags"\s*:\s*"([\s\S]*?)"/i);
+
+        if (descMatch) {
+          description = descMatch[1];
+        } else {
+          // Plain text fallback with keys removed
+          description = cleanedText
+            .replace(/^\{\s*/, "")
+            .replace(/\s*\}$/, "")
+            .replace(/"description"\s*:\s*"/i, "")
+            .replace(/"\s*,\s*"hashtags"\s*:\s*"[\s\S]*$/i, "")
+            .replace(/"\s*\}$/i, "")
+            .trim();
+        }
+
+        if (hashMatch) {
+          hashtags = hashMatch[1];
+        }
       }
 
-      // If regex failed, let's do plain-text extraction of hashtags at the end of the block
+      // If all else fails, use hashtag scanner heuristic at the end of raw text
       if (!description) {
         const hashtagRegex = /(#[a-zA-Z0-9\u0400-\u04FF_]+\s*)+$/g;
         const hashMatches = rawText.match(hashtagRegex);
@@ -163,22 +201,28 @@ export async function POST(req: NextRequest) {
         } else {
           description = rawText;
         }
-
-        // Strip any JSON keys or raw JSON characters if the text was wrapped
-        description = description
-          .replace(/^\{\s*/, "")
-          .replace(/\s*\}$/, "")
-          .replace(/"description"\s*:\s*"/i, "")
-          .replace(/"\s*,\s*"hashtags"\s*:\s*"[\s\S]*$/i, "")
-          .replace(/"\s*\}$/i, "")
-          .trim();
       }
 
-      return NextResponse.json({
-        description: description || rawText,
-        hashtags: hashtags || ""
-      });
+      // Final unescaping of quotes and control sequences
+      description = description
+        .replace(/\\n/g, "\n")
+        .replace(/\\"/g, '"')
+        .replace(/\\'/g, "'")
+        .replace(/\\\\/g, "\\")
+        .trim();
+
+      hashtags = hashtags
+        .replace(/\\n/g, " ")
+        .replace(/\\"/g, '"')
+        .replace(/\\'/g, "'")
+        .replace(/\\\\/g, "\\")
+        .trim();
     }
+
+    return NextResponse.json({
+      description: description || rawText,
+      hashtags: hashtags || ""
+    });
   } catch (error: any) {
     console.error("Error in AI generate route:", error);
     return NextResponse.json({ message: error.message || "Внутрішня помилка сервера" }, { status: 500 });

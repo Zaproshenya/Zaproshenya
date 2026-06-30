@@ -65,9 +65,16 @@ async function runPublishWorkflow(jobId: string, payload: any, token: string) {
       // YouTube Upload logic
       // In a production app, we fetch the file as a buffer, and upload it via standard YouTube resumable uploads.
       // If we are in a sandbox developer account or have quotas/scopes limitations, we run a query and handle potential errors.
-      const title = isShorts 
-        ? `${config.title || "Публікація"} #Shorts`.substring(0, 100)
-        : (config.title || "Публікація").substring(0, 100);
+      let title = config.title || "Публікація";
+      if (isShorts) {
+        if (!title.toLowerCase().includes("#shorts")) {
+          title = `${title.substring(0, 92)} #Shorts`;
+        } else {
+          title = title.substring(0, 100);
+        }
+      } else {
+        title = title.substring(0, 100);
+      }
 
       const descriptionWithShorts = isShorts
         ? `${caption}\n\n#Shorts`
@@ -77,10 +84,12 @@ async function runPublishWorkflow(jobId: string, payload: any, token: string) {
         snippet: {
           title,
           description: descriptionWithShorts,
-          categoryId: "22"
+          categoryId: "22", // People & Blogs
+          tags: isShorts ? ["Shorts", "shorts", "Zaproshenya"] : []
         },
         status: {
-          privacyStatus: config.privacy || "public"
+          privacyStatus: config.privacy || "public",
+          selfDeclaredMadeForKids: false
         }
       };
 
@@ -89,7 +98,15 @@ async function runPublishWorkflow(jobId: string, payload: any, token: string) {
       if (!mediaResponse.ok) throw new Error("Не вдалося завантажити медіафайл з хмари для YouTube.");
       const fileBuffer = await mediaResponse.arrayBuffer();
       const fileSize = fileBuffer.byteLength;
-      const fileType = mediaResponse.headers.get("content-type") || "video/mp4";
+      
+      let fileType = mediaResponse.headers.get("content-type") || "video/mp4";
+      if (fileType === "application/octet-stream" || !fileType.startsWith("video/")) {
+        if (mediaUrl.includes(".mov") || mediaUrl.includes(".MOV")) {
+          fileType = "video/quicktime";
+        } else {
+          fileType = "video/mp4";
+        }
+      }
 
       // Perform Google API call to initiate resumable upload session
       const initRes = await fetch("https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status", {
