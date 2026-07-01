@@ -73,7 +73,7 @@ export default function AdminSupport({
     return (
       <div key={t.id} className={`support-card ${isResolved ? 'resolved' : ''} ${t.unreadBySupport ? 'unread' : ''}`} onClick={() => setOpenTicket(t)}>
         <div className="support-card-icon">
-          <Icon name="chat-circle-dots" size={22}/>
+          {t.type === 'bug' ? <Icon name="bug" size={22}/> : t.type === 'idea' ? <Icon name="lightbulb" size={22}/> : t.type === 'question' ? <Icon name="question" size={22}/> : <Icon name="chat-circle" size={22}/>}
         </div>
         <div className="support-card-body">
           <div className="support-card-header">
@@ -340,17 +340,24 @@ export default function AdminSupport({
                       )}
                     </div>
                     <div className="chat-msg-content" style={{maxWidth: '85%'}}>
-                      <div className="chat-bubble" style={{padding: '12px 16px', borderRadius: '16px', fontSize: '.95rem', lineHeight: '1.5', boxShadow: '0 2px 8px rgba(0,0,0,0.04)'}}>
-                        {m.text}
+                      <div className="chat-bubble" style={{padding: m.imageUrls || m.imageUrl ? '8px 8px 12px' : '12px 16px', borderRadius: '16px', fontSize: '.95rem', lineHeight: '1.5', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display:'flex', flexDirection:'column', gap:'8px'}}>
+                        {/* Images on top */}
                         {m.imageUrls ? (
-                          <div style={{display:'flex', gap:'8px', flexWrap:'wrap', marginTop:'8px'}}>
+                          <div style={{display:'flex', gap:'6px', flexWrap:'wrap'}}>
                             {m.imageUrls.map((url: string, idx: number) => (
                               <img key={idx} src={url} className="chat-bubble-img" alt="attachment" style={{borderRadius: '8px', maxHeight: '120px', cursor: 'pointer', margin: 0}} onClick={() => setLightboxImage(url)} />
                             ))}
                           </div>
                         ) : m.imageUrl ? (
-                          <img src={m.imageUrl} className="chat-bubble-img" alt="attachment" style={{borderRadius: '8px', marginTop: '8px', cursor: 'pointer'}} onClick={() => setLightboxImage(m.imageUrl)} />
+                          <img src={m.imageUrl} className="chat-bubble-img" alt="attachment" style={{borderRadius: '8px', cursor: 'pointer', margin: 0, maxHeight: '160px'}} onClick={() => setLightboxImage(m.imageUrl)} />
                         ) : null}
+                        
+                        {/* Text below */}
+                        {m.text && (
+                          <div style={{padding: m.imageUrls || m.imageUrl ? '0 8px' : '0'}}>
+                            {m.text}
+                          </div>
+                        )}
                       </div>
                       <div className="chat-msg-time" style={{marginTop: '6px', fontSize: '.75rem'}}>
                         {timeAgo(m.createdAt)}

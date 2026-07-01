@@ -703,13 +703,13 @@ export default function ProfilePage() {
         </div>
         <div className="support-action-grid">
           <button className="support-action-btn" onClick={() => { setTicketType('bug'); setNewTicketOpen(true); }}>
-            <span className="sa-icon">🐛</span>Знайшов баг
+            <span className="sa-icon"><Icon name="bug" size={20}/></span>Знайшов баг
           </button>
           <button className="support-action-btn" onClick={() => { setTicketType('idea'); setNewTicketOpen(true); }}>
-            <span className="sa-icon">💡</span>Є ідея
+            <span className="sa-icon"><Icon name="lightbulb" size={20}/></span>Є ідея
           </button>
           <button className="support-action-btn" onClick={() => { setTicketType('question'); setNewTicketOpen(true); }}>
-            <span className="sa-icon">❓</span>Питання
+            <span className="sa-icon"><Icon name="question" size={20}/></span>Питання
           </button>
         </div>
 
@@ -722,7 +722,7 @@ export default function ProfilePage() {
             {tickets.map(t => (
               <div key={t.id} className="ticket-item" onClick={() => openChat(t.id)}>
                 <div className={`ticket-item-icon ${t.type || 'other'}`}>
-                  {t.type === 'bug' ? '🐛' : t.type === 'idea' ? '💡' : t.type === 'question' ? '❓' : '💬'}
+                  {t.type === 'bug' ? <Icon name="bug" size={16}/> : t.type === 'idea' ? <Icon name="lightbulb" size={16}/> : t.type === 'question' ? <Icon name="question" size={16}/> : <Icon name="chat-circle" size={16}/>}
                 </div>
                 <div className="ticket-item-body">
                   <div className="ticket-item-subject">{t.subject || t.type}</div>
@@ -911,13 +911,13 @@ export default function ProfilePage() {
             </div>
             <div className="ticket-type-grid">
               {[
-                { v: 'bug', i: '🐛', l: 'Знайшов баг', d: 'Помилка у роботі' },
-                { v: 'idea', i: '💡', l: 'Є ідея', d: 'Пропозиція' },
-                { v: 'question', i: '❓', l: 'Питання', d: 'Потрібна відповідь' },
-                { v: 'other', i: '💬', l: 'Інше', d: 'Загальне' },
+                { v: 'bug', i: 'bug', l: 'Знайшов баг', d: 'Помилка у роботі' },
+                { v: 'idea', i: 'lightbulb', l: 'Є ідея', d: 'Пропозиція' },
+                { v: 'question', i: 'question', l: 'Питання', d: 'Потрібна відповідь' },
+                { v: 'other', i: 'chat-circle', l: 'Інше', d: 'Загальне' },
               ].map(t => (
                 <button key={t.v} className={`ticket-type-option ${ticketType === t.v ? 'selected' : ''}`} onClick={() => setTicketType(t.v)}>
-                  <span className="tt-icon">{t.i}</span>
+                  <span className="tt-icon"><Icon name={t.i} size={20}/></span>
                   <span>{t.l}</span>
                   <span style={{fontSize:'.7rem', color:'var(--muted)', fontWeight:400}}>{t.d}</span>
                 </button>
@@ -975,7 +975,7 @@ export default function ProfilePage() {
               </button>
               <div className="chat-modal-info">
                 <div className="chat-modal-title">
-                  {chatTicket?.type === 'bug' ? '🐛' : chatTicket?.type === 'idea' ? '💡' : chatTicket?.type === 'question' ? '❓' : '💬'} 
+                  {chatTicket?.type === 'bug' ? <Icon name="bug" size={16}/> : chatTicket?.type === 'idea' ? <Icon name="lightbulb" size={16}/> : chatTicket?.type === 'question' ? <Icon name="question" size={16}/> : <Icon name="chat-circle" size={16}/>} 
                   {' · '}
                   {chatTicket?.subject || 'Звернення'}
                 </div>
@@ -1013,20 +1013,25 @@ export default function ProfilePage() {
                         )}
                       </div>
                       <div className="chat-msg-content">
-                        {msg.text && <div className="chat-bubble">{msg.text}</div>}
-                        {msg.imageUrls ? (
-                          <div style={{display:'flex', gap:'8px', flexWrap:'wrap', marginTop:'4px'}}>
-                            {msg.imageUrls.map((url: string, idx: number) => (
-                              <div key={idx} className="chat-bubble image" style={{padding: '4px', maxWidth: '150px', background:'none', border:'none', boxShadow:'none'}}>
-                                <img src={url} alt="Attached" style={{width:'100%', borderRadius:'8px', display:'block', cursor:'pointer'}} onClick={() => setLightboxImage(url)} />
-                              </div>
-                            ))}
-                          </div>
-                        ) : msg.imageUrl ? (
-                          <div className="chat-bubble image" style={{padding: '4px', maxWidth: '200px', background:'none', border:'none', boxShadow:'none', marginTop:'4px'}}>
-                            <img src={msg.imageUrl} alt="Attached" style={{width:'100%', borderRadius:'8px', display:'block', cursor:'pointer'}} onClick={() => setLightboxImage(msg.imageUrl)} />
-                          </div>
-                        ) : null}
+                        <div className="chat-bubble" style={{display:'flex', flexDirection:'column', gap:'8px', padding: msg.imageUrls || msg.imageUrl ? '8px 8px 12px' : undefined}}>
+                          {/* Images on top */}
+                          {msg.imageUrls ? (
+                            <div style={{display:'flex', gap:'6px', flexWrap:'wrap'}}>
+                              {msg.imageUrls.map((url: string, idx: number) => (
+                                <img key={idx} src={url} alt="Attached" style={{maxWidth: '180px', borderRadius:'8px', display:'block', cursor:'pointer'}} onClick={() => setLightboxImage(url)} />
+                              ))}
+                            </div>
+                          ) : msg.imageUrl ? (
+                            <img src={msg.imageUrl} alt="Attached" style={{maxWidth: '180px', borderRadius:'8px', display:'block', cursor:'pointer'}} onClick={() => setLightboxImage(msg.imageUrl)} />
+                          ) : null}
+                          
+                          {/* Text below */}
+                          {msg.text && (
+                            <div style={{padding: msg.imageUrls || msg.imageUrl ? '2px 8px 0' : '0'}}>
+                              {msg.text}
+                            </div>
+                          )}
+                        </div>
                         <div className="chat-msg-time">{!isUser && 'Підтримка · '} {time}</div>
                       </div>
                     </div>
