@@ -6,9 +6,11 @@ service firebase.storage {
       // Ticket author and moderators can read
       allow read: if request.auth != null;
       // Only authenticated users can upload, max 10MB, images only
-      allow write: if request.auth != null
+      allow create, update: if request.auth != null
         && request.resource.size < 10 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
+      // Only authenticated users can delete files
+      allow delete: if request.auth != null;
     }
 
     // Avatar uploads — users can only write their own avatar

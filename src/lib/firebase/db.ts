@@ -492,7 +492,7 @@ export async function resolveSupportTicket(ticketId: string, action: string, res
 }
 
 export async function uploadSupportImage(ticketId: string, file: File | Blob, fileName: string): Promise<string> {
-  const filePath = `support_tickets/${ticketId}/${Date.now()}_${fileName}`;
+  const filePath = `support-chat/${ticketId}/${Date.now()}_${fileName}`;
   const fileRef = sRef(storage, filePath);
   await uploadBytes(fileRef, file);
   return getDownloadURL(fileRef);
@@ -503,7 +503,7 @@ export async function deleteSupportTicket(ticketId: string) {
 
   // Delete all images associated with this ticket in Firebase Storage
   try {
-    const folderRef = sRef(storage, `support_tickets/${ticketId}`);
+    const folderRef = sRef(storage, `support-chat/${ticketId}`);
     const res = await listAll(folderRef);
     const deletePromises = res.items.map(item => deleteObject(item));
     await Promise.all(deletePromises);
