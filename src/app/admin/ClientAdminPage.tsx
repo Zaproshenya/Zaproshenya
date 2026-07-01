@@ -25,6 +25,28 @@ import Link from 'next/link';
 import { TYPE_MAP, timeAgo } from '@/lib/utils';
 import { toast } from '@/components/Toast';
 
+function compressImage(file: File, maxSize = 800): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > h) { if (w > maxSize) { h = h * maxSize / w; w = maxSize; } }
+        else { if (h > maxSize) { w = w * maxSize / h; h = maxSize; } }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d')?.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 import AdminOverview from './AdminOverview';
 import AdminUsers from './AdminUsers';
 import AdminModeration from './AdminModeration';
@@ -246,6 +268,32 @@ export default function ClientAdminPage() {
     }
   };
 
+  const sendSupportReplyImage = async (file: File) => {
+    if (!openTicket) return;
+    toast('Завантаження фото...', 'info');
+    try {
+      const base64Url = await compressImage(file);
+      await sendTicketMessage(openTicket.id, {
+        uid: user?.uid,
+        name: profile?.name,
+        role: profile?.role,
+        avatar: profile?.avatar || null,
+        text: '',
+        imageUrl: base64Url,
+      });
+      // Log the reply action
+      logStaffAction(
+        user?.uid || '', profile?.name || '',
+        `Надіслав зображення у зверненні: ${openTicket.subject || openTicket.id}`,
+        openTicket.authorUid,
+        openTicket.authorName
+      ).catch(() => {});
+      toast('Фото надіслано!', 'success');
+    } catch (e) {
+      toast('Помилка відправки фото', 'error');
+    }
+  };
+
   if (!profile) return null;
   if (profile.role !== 'founder' && profile.role !== 'tech-admin' && profile.role !== 'moderator') {
     return <div className="wrap"><div className="empty"><Icon name="lock" size={20}/><p>Доступ заборонено</p></div></div>;
@@ -346,6 +394,7 @@ export default function ClientAdminPage() {
                   ticketReply={ticketReply} 
                   setTicketReply={setTicketReply} 
                   sendSupportReply={sendSupportReply} 
+                  sendSupportReplyImage={sendSupportReplyImage}
                 />
               )}
             </>

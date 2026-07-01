@@ -16,6 +16,7 @@ export default function AdminSupport({
   ticketReply, 
   setTicketReply, 
   sendSupportReply,
+  sendSupportReplyImage,
   users,
   profile
 }: any) {
@@ -337,7 +338,14 @@ export default function AdminSupport({
             </div>
 
             {openTicket.status !== 'resolved' && openTicket.status !== 'dismissed' ? (
-              <div style={{padding:'20px',borderTop:'1px solid var(--border)',display:'flex',gap:'12px', flexShrink: 0, background: 'var(--card)'}}>
+              <div style={{padding:'20px',borderTop:'1px solid var(--border)',display:'flex',gap:'12px',alignItems:'center', flexShrink: 0, background: 'var(--card)'}}>
+                <label className="chat-attach-btn" style={{cursor:'pointer', padding:'8px 12px', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--muted)', background:'var(--warm)', borderRadius:'12px', border:'1px solid var(--border)', height:'42px'}} title="Прикріпити фото">
+                  <Icon name="camera" size={20}/>
+                  <input type="file" accept="image/*" style={{display:'none'}} onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) await sendSupportReplyImage?.(file);
+                  }} />
+                </label>
                 <textarea 
                   placeholder="Написати відповідь користувачу..." 
                   style={{flex:1,padding:'10px 14px',border:'1.5px solid var(--border)',borderRadius:'12px',resize:'none',height:'42px',minHeight:'42px',fontSize:'.88rem',fontFamily:'inherit',outline:'none',boxSizing:'border-box',overflowY:'hidden',lineHeight:'1.4'}}
@@ -345,7 +353,7 @@ export default function AdminSupport({
                   onChange={e => setTicketReply(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSupportReply(); } }}
                 ></textarea>
-                <button className="btn btn-dark" style={{padding:'0 20px', borderRadius:'14px'}} onClick={sendSupportReply}>
+                <button className="btn btn-dark" style={{padding:'0 20px', borderRadius:'14px', height:'42px', display:'flex', alignItems:'center', justifyContent:'center'}} onClick={sendSupportReply}>
                   <Icon name="paper-plane-right" size={20}/>
                 </button>
               </div>

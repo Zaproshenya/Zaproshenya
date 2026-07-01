@@ -369,7 +369,7 @@ export async function createSupportTicket(ticket: any) {
     status: 'open',
     createdAt: Date.now(),
     lastMessageAt: Date.now(),
-    lastMessageText: ticket.firstMessage,
+    lastMessageText: ticket.firstMessage || (ticket.imageUrl ? '📷 Зображення' : ''),
     unreadBySupport: true,
   };
   await set(refObj, ticketData);
@@ -380,8 +380,8 @@ export async function createSupportTicket(ticket: any) {
     uid: ticket.authorUid,
     name: ticket.authorName,
     role: 'user',
-    text: ticket.firstMessage,
-    imageUrl: null,
+    text: ticket.firstMessage || null,
+    imageUrl: ticket.imageUrl || null,
     createdAt: Date.now(),
   });
   return key;

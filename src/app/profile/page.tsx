@@ -10,6 +10,28 @@ import { toast } from '@/components/Toast';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import Link from 'next/link';
 
+function compressImage(file: File, maxSize = 800): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > h) { if (w > maxSize) { h = h * maxSize / w; w = maxSize; } }
+        else { if (h > maxSize) { w = w * maxSize / h; h = maxSize; } }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d')?.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function ProfilePage() {
   const router = useRouter();
   const { user, profile, updateProfile } = useAuth();
@@ -64,6 +86,8 @@ export default function ProfilePage() {
   
   const [newTicketOpen, setNewTicketOpen] = useState(false);
   const [ticketType, setTicketType] = useState('bug');
+  const [attachedImage, setAttachedImage] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   
   const [chatTicketId, setChatTicketId] = useState<string | null>(null);
   const [chatTicket, setChatTicket] = useState<any>(null);
@@ -271,7 +295,7 @@ export default function ProfilePage() {
     const subj = ticketSubjectRef.current?.value.trim();
     const msg = ticketMsgRef.current?.value.trim();
     if (!subj) return setEditError("Введіть тему");
-    if (!msg) return setEditError("Введіть повідомлення");
+    if (!msg && !attachedImage) return setEditError("Введіть повідомлення або прикріпіть фото");
 
     setSaving(true);
     try {
@@ -280,9 +304,11 @@ export default function ProfilePage() {
         subject: subj,
         firstMessage: msg,
         authorUid: user.uid,
-        authorName: profile.name
+        authorName: profile.name,
+        imageUrl: attachedImage
       });
       toast('Звернення створено!', 'success');
+      setAttachedImage(null);
       setNewTicketOpen(false);
       if (tid) {
         const tkts = await getUserTickets(user.uid);
@@ -367,6 +393,30 @@ export default function ProfilePage() {
       });
     } catch (e) {
       toast('Помилка відправки', 'error');
+    }
+  };
+
+  const handleChatImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user || !profile || !chatTicketId) return;
+    if (!file.type.startsWith('image/')) {
+      toast('Недійсний файл', 'error');
+      return;
+    }
+    toast('Завантаження фото...', 'info');
+    try {
+      const base64Url = await compressImage(file);
+      await sendTicketMessage(chatTicketId, {
+        uid: user.uid,
+        name: profile.name,
+        role: 'user',
+        avatar: profile.avatar || null,
+        text: '',
+        imageUrl: base64Url
+      });
+      toast('Фото надіслано!', 'success');
+    } catch (err: any) {
+      toast('Помилка завантаження фото', 'error');
     }
   };
 
@@ -808,8 +858,36 @@ export default function ProfilePage() {
               <textarea ref={ticketMsgRef} rows={5} maxLength={300} placeholder="Детально опишіть... (до 300 символів)" 
                 style={{width:'100%', padding:'12px', borderRadius:'10px', border:'1px solid var(--border)', background:'var(--input-bg, var(--paper))', color:'var(--ink)', resize:'vertical', fontFamily:'var(--font-body)', fontSize:'.88rem', lineHeight:1.5}}></textarea>
             </div>
+            <div className="form-group">
+              <label className="lbl">Додати фото / скріншот</label>
+              <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
+                <label className="btn btn-outline" style={{cursor:'pointer', padding:'8px 16px', display:'inline-flex', alignItems:'center', gap:'6px', fontSize:'.85rem'}}>
+                  <Icon name="camera" size={16}/> Обрати фото
+                  <input type="file" accept="image/*" style={{display:'none'}} onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setUploadingImage(true);
+                    try {
+                      const base64Url = await compressImage(file);
+                      setAttachedImage(base64Url);
+                    } catch (err) {
+                      toast('Помилка завантаження зображення', 'error');
+                    } finally {
+                      setUploadingImage(false);
+                    }
+                  }} />
+                </label>
+                {uploadingImage && <span style={{fontSize:'.8rem', color:'var(--muted)'}}>Стиснення...</span>}
+              </div>
+              {attachedImage && (
+                <div style={{marginTop:'12px', position:'relative', display:'inline-block'}}>
+                  <img src={attachedImage} alt="Preview" style={{maxWidth:'100%', maxHeight:'120px', borderRadius:'8px', border:'1px solid var(--border)'}} />
+                  <button onClick={() => setAttachedImage(null)} style={{position:'absolute', top:'-6px', right:'-6px', width:'20px', height:'20px', borderRadius:'50%', background:'var(--red)', color:'#fff', border:'none', display:'flex', alignItems:'center', justifyItems:'center', justifyContent:'center', cursor:'pointer', fontSize:'.8rem', fontWeight:'bold', boxShadow:'0 2px 6px rgba(0,0,0,0.2)'}}>×</button>
+                </div>
+              )}
+            </div>
             {editError && <div className="form-error show">{editError}</div>}
-            <button className="btn btn-dark btn-full" disabled={saving} onClick={handleCreateTicket}>
+            <button className="btn btn-dark btn-full" disabled={saving || uploadingImage} onClick={handleCreateTicket}>
               {saving ? 'Надсилання...' : <><Icon name="paper-plane-tilt" size={16}/> Надіслати</>}
             </button>
           </div>
@@ -865,6 +943,11 @@ export default function ProfilePage() {
                       </div>
                       <div className="chat-msg-content">
                         {msg.text && <div className="chat-bubble">{msg.text}</div>}
+                        {msg.imageUrl && (
+                          <div className="chat-bubble image" style={{padding: '4px', maxWidth: '200px', background:'none', border:'none', boxShadow:'none', marginTop:'4px'}}>
+                            <img src={msg.imageUrl} alt="Attached" style={{width:'100%', borderRadius:'8px', display:'block', cursor:'pointer'}} onClick={() => window.open(msg.imageUrl, '_blank')} />
+                          </div>
+                        )}
                         <div className="chat-msg-time">{!isUser && 'Підтримка · '} {time}</div>
                       </div>
                     </div>
@@ -881,13 +964,18 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="chat-input-area">
-                  <div className="chat-input-row">
+                  <div className="chat-input-row" style={{display:'flex', alignItems:'center', gap:'8px'}}>
+                    <label className="chat-attach-btn" style={{cursor:'pointer', padding:'8px', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--muted)', background:'var(--warm)', borderRadius:'10px', border:'1px solid var(--border)'}} title="Прикріпити фото">
+                      <Icon name="camera" size={20}/>
+                      <input type="file" accept="image/*" style={{display:'none'}} onChange={handleChatImageUpload} />
+                    </label>
                     <textarea 
                       ref={chatInputRef}
                       className="chat-text-input" 
                       maxLength={300}
                       placeholder="Написати повідомлення..."
                       rows={1}
+                      style={{flex:1}}
                       onKeyDown={e => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault();
