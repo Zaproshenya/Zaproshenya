@@ -16,11 +16,27 @@ export default function AdminSupport({
   ticketReply, 
   setTicketReply, 
   sendSupportReply,
-  sendSupportReplyImage,
+  compressImage,
   users,
   profile
 }: any) {
   const [confirmModal, setConfirmModal] = useState<{ show: boolean; title: string; message: string; onConfirm: () => void; isDanger?: boolean }>({ show: false, title: '', message: '', onConfirm: () => {} });
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [replyAttachedImage, setReplyAttachedImage] = useState<string | null>(null);
+  const [replyUploadingImage, setReplyUploadingImage] = useState(false);
+
+  const handleSendReply = async () => {
+    setReplyUploadingImage(true);
+    try {
+      await sendSupportReply(replyAttachedImage);
+      setReplyAttachedImage(null);
+    } catch (err) {
+      // Parent handles error toast
+    } finally {
+      setReplyUploadingImage(false);
+    }
+  };
+
   const pending = supportTickets.filter((t: any) => t.status === 'pending' || (t.status === 'open' && t.unreadBySupport));
   const active = supportTickets.filter((t: any) => t.status === 'open' && !t.unreadBySupport);
   const closed = supportTickets.filter((t: any) => t.status === 'resolved' || t.status === 'dismissed');
@@ -326,7 +342,7 @@ export default function AdminSupport({
                     <div className="chat-msg-content" style={{maxWidth: '85%'}}>
                       <div className="chat-bubble" style={{padding: '12px 16px', borderRadius: '16px', fontSize: '.95rem', lineHeight: '1.5', boxShadow: '0 2px 8px rgba(0,0,0,0.04)'}}>
                         {m.text}
-                        {m.imageUrl && <img src={m.imageUrl} className="chat-bubble-img" alt="attachment" style={{borderRadius: '8px', marginTop: '8px'}}/>}
+                        {m.imageUrl && <img src={m.imageUrl} className="chat-bubble-img" alt="attachment" style={{borderRadius: '8px', marginTop: '8px', cursor: 'pointer'}} onClick={() => setLightboxImage(m.imageUrl)} />}
                       </div>
                       <div className="chat-msg-time" style={{marginTop: '6px', fontSize: '.75rem'}}>
                         {timeAgo(m.createdAt)}
@@ -338,24 +354,44 @@ export default function AdminSupport({
             </div>
 
             {openTicket.status !== 'resolved' && openTicket.status !== 'dismissed' ? (
-              <div style={{padding:'20px',borderTop:'1px solid var(--border)',display:'flex',gap:'12px',alignItems:'center', flexShrink: 0, background: 'var(--card)'}}>
-                <label className="chat-attach-btn" style={{cursor:'pointer', padding:'8px 12px', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--muted)', background:'var(--warm)', borderRadius:'12px', border:'1px solid var(--border)', height:'42px'}} title="Прикріпити фото">
-                  <Icon name="camera" size={20}/>
-                  <input type="file" accept="image/*" style={{display:'none'}} onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (file) await sendSupportReplyImage?.(file);
-                  }} />
-                </label>
-                <textarea 
-                  placeholder="Написати відповідь користувачу..." 
-                  style={{flex:1,padding:'10px 14px',border:'1.5px solid var(--border)',borderRadius:'12px',resize:'none',height:'42px',minHeight:'42px',fontSize:'.88rem',fontFamily:'inherit',outline:'none',boxSizing:'border-box',overflowY:'hidden',lineHeight:'1.4'}}
-                  value={ticketReply}
-                  onChange={e => setTicketReply(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSupportReply(); } }}
-                ></textarea>
-                <button className="btn btn-dark" style={{padding:'0 20px', borderRadius:'14px', height:'42px', display:'flex', alignItems:'center', justifyContent:'center'}} onClick={sendSupportReply}>
-                  <Icon name="paper-plane-right" size={20}/>
-                </button>
+              <div style={{borderTop:'1px solid var(--border)', display:'flex', flexDirection:'column', flexShrink: 0, background: 'var(--card)'}}>
+                {replyAttachedImage && (
+                  <div style={{padding:'10px 20px 0'}}>
+                    <div className="chat-attach-preview-wrap" style={{margin: 0}}>
+                      <img src={replyAttachedImage} alt="Attachment preview" className="chat-attach-preview-img" style={{maxHeight:'60px'}} />
+                      <button className="chat-attach-preview-remove" onClick={() => setReplyAttachedImage(null)}>×</button>
+                    </div>
+                  </div>
+                )}
+                <div style={{padding:'20px',display:'flex',gap:'12px',alignItems:'center'}}>
+                  <label className="chat-attach-btn" style={{cursor:'pointer', padding:'8px 12px', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--muted)', background:'var(--warm)', borderRadius:'12px', border:'1px solid var(--border)', height:'42px'}} title="Прикріпити фото">
+                    <Icon name="camera" size={20}/>
+                    <input type="file" accept="image/*" style={{display:'none'}} onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setReplyUploadingImage(true);
+                      try {
+                        const base64Url = await compressImage(file);
+                        setReplyAttachedImage(base64Url);
+                      } catch (err) {
+                        toast('Помилка завантаження зображення', 'error');
+                      } finally {
+                        setReplyUploadingImage(false);
+                      }
+                    }} />
+                  </label>
+                  <textarea 
+                    placeholder={replyUploadingImage ? "Опрацювання..." : "Написати відповідь користувачу..."} 
+                    style={{flex:1,padding:'10px 14px',border:'1.5px solid var(--border)',borderRadius:'12px',resize:'none',height:'42px',minHeight:'42px',fontSize:'.88rem',fontFamily:'inherit',outline:'none',boxSizing:'border-box',overflowY:'hidden',lineHeight:'1.4'}}
+                    value={ticketReply}
+                    disabled={replyUploadingImage}
+                    onChange={e => setTicketReply(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendReply(); } }}
+                  ></textarea>
+                  <button className="btn btn-dark" style={{padding:'0 20px', borderRadius:'14px', height:'42px', display:'flex', alignItems:'center', justifyContent:'center'}} onClick={handleSendReply} disabled={replyUploadingImage}>
+                    {replyUploadingImage ? <Icon name="circle-notch" size={20} /> : <Icon name="paper-plane-right" size={20}/>}
+                  </button>
+                </div>
               </div>
             ) : (
               <div style={{padding:'20px',textAlign:'center',color:'var(--muted)',fontStyle:'italic',borderTop:'1px solid var(--border)', flexShrink: 0, background: 'var(--card)'}}>
@@ -378,6 +414,12 @@ export default function AdminSupport({
         }}
         onCancel={() => setConfirmModal(prev => ({ ...prev, show: false }))}
       />
+      {lightboxImage && (
+        <div className="lightbox-overlay" style={{zIndex: 999999}} onClick={() => setLightboxImage(null)}>
+          <button className="lightbox-close" onClick={() => setLightboxImage(null)}>×</button>
+          <img src={lightboxImage} alt="Enlarged support ticket attachment" className="lightbox-img" onClick={e => e.stopPropagation()} />
+        </div>
+      )}
     </>
   );
 }

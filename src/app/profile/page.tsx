@@ -104,6 +104,9 @@ export default function ProfilePage() {
   const [chatTicketId, setChatTicketId] = useState<string | null>(null);
   const [chatTicket, setChatTicket] = useState<any>(null);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [chatAttachedImage, setChatAttachedImage] = useState<string | null>(null);
+  const [chatUploadingImage, setChatUploadingImage] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Form refs
@@ -399,20 +402,31 @@ export default function ProfilePage() {
   const handleSendChat = async () => {
     if (!user || !profile || !chatTicketId) return;
     const text = chatInputRef.current?.value.trim();
-    if (!text) return;
+    if (!text && !chatAttachedImage) return;
     
     if (chatInputRef.current) chatInputRef.current.value = '';
     
+    setChatUploadingImage(true);
     try {
+      let imageUrl = null;
+      if (chatAttachedImage) {
+        const blob = dataURLtoBlob(chatAttachedImage);
+        imageUrl = await uploadSupportImage(chatTicketId, blob, 'chat_attachment.jpg');
+      }
+
       await sendTicketMessage(chatTicketId, {
         uid: user.uid,
         name: profile.name,
         role: 'user',
         avatar: profile.avatar || null,
-        text
+        text: text || null,
+        imageUrl: imageUrl || null
       });
+      setChatAttachedImage(null);
     } catch (e) {
       toast('Помилка відправки', 'error');
+    } finally {
+      setChatUploadingImage(false);
     }
   };
 
@@ -423,22 +437,14 @@ export default function ProfilePage() {
       toast('Недійсний файл', 'error');
       return;
     }
-    toast('Завантаження фото...', 'info');
+    setChatUploadingImage(true);
     try {
       const base64Url = await compressImage(file);
-      const blob = dataURLtoBlob(base64Url);
-      const downloadUrl = await uploadSupportImage(chatTicketId, blob, file.name || 'image.jpg');
-      await sendTicketMessage(chatTicketId, {
-        uid: user.uid,
-        name: profile.name,
-        role: 'user',
-        avatar: profile.avatar || null,
-        text: '',
-        imageUrl: downloadUrl
-      });
-      toast('Фото надіслано!', 'success');
+      setChatAttachedImage(base64Url);
     } catch (err: any) {
-      toast('Помилка завантаження фото', 'error');
+      toast('Помилка стиснення фото', 'error');
+    } finally {
+      setChatUploadingImage(false);
     }
   };
 
@@ -967,7 +973,7 @@ export default function ProfilePage() {
                         {msg.text && <div className="chat-bubble">{msg.text}</div>}
                         {msg.imageUrl && (
                           <div className="chat-bubble image" style={{padding: '4px', maxWidth: '200px', background:'none', border:'none', boxShadow:'none', marginTop:'4px'}}>
-                            <img src={msg.imageUrl} alt="Attached" style={{width:'100%', borderRadius:'8px', display:'block', cursor:'pointer'}} onClick={() => window.open(msg.imageUrl, '_blank')} />
+                            <img src={msg.imageUrl} alt="Attached" style={{width:'100%', borderRadius:'8px', display:'block', cursor:'pointer'}} onClick={() => setLightboxImage(msg.imageUrl)} />
                           </div>
                         )}
                         <div className="chat-msg-time">{!isUser && 'Підтримка · '} {time}</div>
@@ -986,6 +992,12 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="chat-input-area">
+                  {chatAttachedImage && (
+                    <div className="chat-attach-preview-wrap">
+                      <img src={chatAttachedImage} alt="Attachment preview" className="chat-attach-preview-img" />
+                      <button className="chat-attach-preview-remove" onClick={() => setChatAttachedImage(null)}>×</button>
+                    </div>
+                  )}
                   <div className="chat-input-row" style={{display:'flex', alignItems:'center', gap:'8px'}}>
                     <label className="chat-attach-btn" style={{cursor:'pointer', padding:'8px', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--muted)', background:'var(--warm)', borderRadius:'10px', border:'1px solid var(--border)'}} title="Прикріпити фото">
                       <Icon name="camera" size={20}/>
@@ -995,9 +1007,10 @@ export default function ProfilePage() {
                       ref={chatInputRef}
                       className="chat-text-input" 
                       maxLength={300}
-                      placeholder="Написати повідомлення..."
+                      placeholder={chatUploadingImage ? "Опрацювання..." : "Написати повідомлення..."}
                       rows={1}
                       style={{flex:1}}
+                      disabled={chatUploadingImage}
                       onKeyDown={e => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault();
@@ -1005,8 +1018,8 @@ export default function ProfilePage() {
                         }
                       }}
                     />
-                    <button className="chat-send-btn" onClick={handleSendChat}>
-                      <Icon name="paper-plane-tilt" size={18}/>
+                    <button className="chat-send-btn" onClick={handleSendChat} disabled={chatUploadingImage}>
+                      {chatUploadingImage ? <Icon name="circle-notch" size={18} /> : <Icon name="paper-plane-tilt" size={18}/>}
                     </button>
                   </div>
                 </div>
@@ -1054,6 +1067,12 @@ export default function ProfilePage() {
         onConfirm={confirmModal.onConfirm}
         onCancel={() => setConfirmModal(prev => ({ ...prev, show: false }))}
       />
+      {lightboxImage && (
+        <div className="lightbox-overlay" onClick={() => setLightboxImage(null)}>
+          <button className="lightbox-close" onClick={() => setLightboxImage(null)}>×</button>
+          <img src={lightboxImage} alt="Enlarged support ticket attachment" className="lightbox-img" onClick={e => e.stopPropagation()} />
+        </div>
+      )}
     </>
   );
 }

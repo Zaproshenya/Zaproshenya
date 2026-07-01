@@ -2794,5 +2794,99 @@
 .sparkle-3 { bottom: 18%; left: 10%; animation: float 7s ease-in-out infinite 2s; font-size: 1.2rem; }
 .sparkle-4 { bottom: 12%; right: 12%; animation: float 5s ease-in-out infinite 1.5s; font-size: 1.5rem; }
 
+/* Lightbox zoom effect */
+.lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.25s var(--ease) forwards;
+}
+
+.lightbox-img {
+  max-width: 90%;
+  max-height: 80%;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  transform: scale(0.9);
+  animation: zoomIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: none;
+  font-size: 2rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.9); }
+  to { transform: scale(1); }
+}
+
+/* Chat attach preview area */
+.chat-attach-preview-wrap {
+  position: relative;
+  display: inline-block;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  padding: 4px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.chat-attach-preview-img {
+  max-height: 80px;
+  border-radius: 6px;
+  display: block;
+}
+
+.chat-attach-preview-remove {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: .85rem;
+  font-weight: bold;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
 
 

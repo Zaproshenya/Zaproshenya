@@ -258,54 +258,38 @@ export default function ClientAdminPage() {
     }
   }, [openTicket]);
 
-  const sendSupportReply = async () => {
-    if (!ticketReply.trim() || !openTicket) return;
+  const sendSupportReply = async (attachedImageBase64?: string | null) => {
+    if (!openTicket) return;
+    const text = ticketReply.trim();
+    if (!text && !attachedImageBase64) return;
     try {
+      let imageUrl = null;
+      if (attachedImageBase64) {
+        const blob = dataURLtoBlob(attachedImageBase64);
+        imageUrl = await uploadSupportImage(openTicket.id, blob, 'staff_reply.jpg');
+      }
+
       await sendTicketMessage(openTicket.id, {
         uid: user?.uid,
         name: profile?.name,
         role: profile?.role,
         avatar: profile?.avatar || null,
-        text: ticketReply.trim(),
+        text: text || null,
+        imageUrl: imageUrl || null,
       });
       // Log the reply action (fire-and-forget, never breaks send)
       logStaffAction(
         user?.uid || '', profile?.name || '',
-        `Відповів у зверненні: ${openTicket.subject || openTicket.id}`,
+        imageUrl
+          ? `Відповів з зображенням у зверненні: ${openTicket.subject || openTicket.id}`
+          : `Відповів у зверненні: ${openTicket.subject || openTicket.id}`,
         openTicket.authorUid,
         openTicket.authorName
       ).catch(() => {});
       setTicketReply('');
     } catch (e) {
       toast('Помилка відправки', 'error');
-    }
-  };
-
-  const sendSupportReplyImage = async (file: File) => {
-    if (!openTicket) return;
-    toast('Завантаження фото...', 'info');
-    try {
-      const base64Url = await compressImage(file);
-      const blob = dataURLtoBlob(base64Url);
-      const downloadUrl = await uploadSupportImage(openTicket.id, blob, file.name || 'image.jpg');
-      await sendTicketMessage(openTicket.id, {
-        uid: user?.uid,
-        name: profile?.name,
-        role: profile?.role,
-        avatar: profile?.avatar || null,
-        text: '',
-        imageUrl: downloadUrl,
-      });
-      // Log the reply action
-      logStaffAction(
-        user?.uid || '', profile?.name || '',
-        `Надіслав зображення у зверненні: ${openTicket.subject || openTicket.id}`,
-        openTicket.authorUid,
-        openTicket.authorName
-      ).catch(() => {});
-      toast('Фото надіслано!', 'success');
-    } catch (e) {
-      toast('Помилка відправки фото', 'error');
+      throw e;
     }
   };
 
@@ -409,7 +393,7 @@ export default function ClientAdminPage() {
                   ticketReply={ticketReply} 
                   setTicketReply={setTicketReply} 
                   sendSupportReply={sendSupportReply} 
-                  sendSupportReplyImage={sendSupportReplyImage}
+                  compressImage={compressImage}
                 />
               )}
             </>
