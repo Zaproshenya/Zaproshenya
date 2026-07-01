@@ -349,6 +349,13 @@
   font-weight: 500; letter-spacing: .01em;
 }
 .bn-item.on { color: var(--gold); }
+.bn-fab-wrap {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-self: center;
+}
 .bn-fab {
   width: 52px; height: 52px; border-radius: 50%;
   background: linear-gradient(135deg, #c9922a, #e0a830);

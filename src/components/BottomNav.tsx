@@ -30,9 +30,11 @@ export function BottomNav() {
       </Link>
 
       {/* Center FAB Button */}
-      <Link href="/create" className="bn-fab">
-        <Icon name="plus" size={24} />
-      </Link>
+      <div className="bn-fab-wrap">
+        <Link href="/create" className="bn-fab">
+          <Icon name="plus" size={24} />
+        </Link>
+      </div>
 
       <Link href="/notifications" className={`bn-item ${isActive('/notifications')}`} style={{ position: 'relative' }}>
         <div style={{ fontSize: '1.25rem' }}><Icon name="bell" size={22} /></div>

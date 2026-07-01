@@ -47,10 +47,13 @@ function dataURLtoBlob(dataurl: string): Blob {
 function renderLastMessageText(text: string) {
   if (!text) return '';
   if (text.includes('📷')) {
-    const cleanText = text.replace('📷', '').trim();
+    const parts = text.split('📷');
     return (
-      <span style={{display: 'inline-flex', alignItems: 'center', gap: '4px', verticalAlign: 'middle'}}>
-        <Icon name="camera" size={14} /> {cleanText}
+      <span style={{verticalAlign: 'middle'}}>
+        {parts.reduce((acc, part, index) => {
+          if (index === 0) return [part] as any[];
+          return [...acc, <span key={index} style={{margin: '0 4px', display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle'}}><Icon name="camera" size={14} /></span>, part];
+        }, [] as any[])}
       </span>
     );
   }

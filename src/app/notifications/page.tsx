@@ -11,10 +11,13 @@ import Link from 'next/link';
 function renderNotifBody(body: string) {
   if (!body) return '';
   if (body.includes('📷')) {
-    const cleanText = body.replace('📷', '').trim();
+    const parts = body.split('📷');
     return (
-      <span style={{display: 'inline-flex', alignItems: 'center', gap: '4px', verticalAlign: 'middle'}}>
-        <Icon name="camera" size={14} /> {cleanText}
+      <span style={{verticalAlign: 'middle'}}>
+        {parts.reduce((acc, part, index) => {
+          if (index === 0) return [part] as any[];
+          return [...acc, <span key={index} style={{margin: '0 4px', display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle'}}><Icon name="camera" size={14} /></span>, part];
+        }, [] as any[])}
       </span>
     );
   }
