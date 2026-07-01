@@ -18,7 +18,8 @@ import {
   listenAdminSupportTickets,
   listenAdminStatuses,
   listenAdminFriends,
-  logStaffAction
+  logStaffAction,
+  uploadSupportImage
 } from '@/lib/firebase/db';
 import { Icon } from '@/components/Icon';
 import Link from 'next/link';
@@ -45,6 +46,18 @@ function compressImage(file: File, maxSize = 800): Promise<string> {
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+}
+
+function dataURLtoBlob(dataurl: string): Blob {
+  const arr = dataurl.split(',');
+  const mime = arr[0].match(/:(.*?);/)![1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: mime });
 }
 
 import AdminOverview from './AdminOverview';
@@ -273,13 +286,15 @@ export default function ClientAdminPage() {
     toast('Завантаження фото...', 'info');
     try {
       const base64Url = await compressImage(file);
+      const blob = dataURLtoBlob(base64Url);
+      const downloadUrl = await uploadSupportImage(openTicket.id, blob, file.name || 'image.jpg');
       await sendTicketMessage(openTicket.id, {
         uid: user?.uid,
         name: profile?.name,
         role: profile?.role,
         avatar: profile?.avatar || null,
         text: '',
-        imageUrl: base64Url,
+        imageUrl: downloadUrl,
       });
       // Log the reply action
       logStaffAction(

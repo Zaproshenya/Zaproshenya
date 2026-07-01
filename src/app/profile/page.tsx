@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { logoutUser, updateProfileData, changeLogin, changePassword, deleteAccount, verifyAndChangeEmail } from '@/lib/firebase/auth';
 import { auth } from '@/lib/firebase/config';
-import { getUserInvites, getFriends, getUserTickets, createSupportTicket, listenTicketMessages, stopListeningTicket, listenTicket, stopListeningTicketMeta, sendTicketMessage, markTicketReadByUser, resolveSupportTicket, deleteSupportTicket } from '@/lib/firebase/db';
+import { getUserInvites, getFriends, getUserTickets, createSupportTicket, listenTicketMessages, stopListeningTicket, listenTicket, stopListeningTicketMeta, sendTicketMessage, markTicketReadByUser, resolveSupportTicket, deleteSupportTicket, uploadSupportImage, generateTicketId } from '@/lib/firebase/db';
 import { Icon } from '@/components/Icon';
 import { toast } from '@/components/Toast';
 import { ConfirmModal } from '@/components/ConfirmModal';
@@ -30,6 +30,18 @@ function compressImage(file: File, maxSize = 800): Promise<string> {
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+}
+
+function dataURLtoBlob(dataurl: string): Blob {
+  const arr = dataurl.split(',');
+  const mime = arr[0].match(/:(.*?);/)![1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: mime });
 }
 
 export default function ProfilePage() {
@@ -299,13 +311,21 @@ export default function ProfilePage() {
 
     setSaving(true);
     try {
-      const tid = await createSupportTicket({
+      let imageUrl = null;
+      const tid = generateTicketId();
+      if (attachedImage && tid) {
+        const blob = dataURLtoBlob(attachedImage);
+        imageUrl = await uploadSupportImage(tid, blob, 'attachment.jpg');
+      }
+
+      await createSupportTicket({
+        id: tid,
         type: ticketType,
         subject: subj,
         firstMessage: msg,
         authorUid: user.uid,
         authorName: profile.name,
-        imageUrl: attachedImage
+        imageUrl
       });
       toast('Звернення створено!', 'success');
       setAttachedImage(null);
@@ -406,13 +426,15 @@ export default function ProfilePage() {
     toast('Завантаження фото...', 'info');
     try {
       const base64Url = await compressImage(file);
+      const blob = dataURLtoBlob(base64Url);
+      const downloadUrl = await uploadSupportImage(chatTicketId, blob, file.name || 'image.jpg');
       await sendTicketMessage(chatTicketId, {
         uid: user.uid,
         name: profile.name,
         role: 'user',
         avatar: profile.avatar || null,
         text: '',
-        imageUrl: base64Url
+        imageUrl: downloadUrl
       });
       toast('Фото надіслано!', 'success');
     } catch (err: any) {

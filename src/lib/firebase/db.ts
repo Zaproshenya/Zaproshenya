@@ -1,5 +1,6 @@
 import { ref, get, set, update, remove, push, query, orderByChild, limitToLast, equalTo, onValue, off } from "firebase/database";
-import { db } from "./config";
+import { ref as sRef, uploadBytes, getDownloadURL, deleteObject, listAll } from "firebase/storage";
+import { db, storage } from "./config";
 import { UserProfile } from "./auth";
 
 // ── Users ──
@@ -356,10 +357,14 @@ export async function deleteNotification(uid: string, notifId: string) {
 }
 
 // ── Support Tickets ──
+export function generateTicketId(): string {
+  return push(ref(db, 'support_tickets')).key || '';
+}
+
 export async function createSupportTicket(ticket: any) {
-  const refObj = push(ref(db, 'support_tickets'));
-  const key = refObj.key;
+  const key = ticket.id || push(ref(db, 'support_tickets')).key;
   if (!key) return null;
+  const refObj = ref(db, 'support_tickets/' + key);
   const ticketData = {
     id: key,
     type: ticket.type,
@@ -486,8 +491,25 @@ export async function resolveSupportTicket(ticketId: string, action: string, res
   });
 }
 
+export async function uploadSupportImage(ticketId: string, file: File | Blob, fileName: string): Promise<string> {
+  const filePath = `support_tickets/${ticketId}/${Date.now()}_${fileName}`;
+  const fileRef = sRef(storage, filePath);
+  await uploadBytes(fileRef, file);
+  return getDownloadURL(fileRef);
+}
+
 export async function deleteSupportTicket(ticketId: string) {
   await remove(ref(db, 'support_tickets/' + ticketId));
+
+  // Delete all images associated with this ticket in Firebase Storage
+  try {
+    const folderRef = sRef(storage, `support_tickets/${ticketId}`);
+    const res = await listAll(folderRef);
+    const deletePromises = res.items.map(item => deleteObject(item));
+    await Promise.all(deletePromises);
+  } catch (err) {
+    console.error('Failed to delete support ticket files from storage:', err);
+  }
 }
 
 export async function getSupportTickets() {
