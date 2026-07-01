@@ -370,9 +370,9 @@ export default function AdminSupport({
 
             {openTicket.status !== 'resolved' && openTicket.status !== 'dismissed' ? (
               <div style={{borderTop:'1px solid var(--border)', display:'flex', flexDirection:'column', flexShrink: 0, background: 'var(--card)'}}>
-                {replyAttachedImages.length === 3 && (
+                {replyAttachedImages.length === 2 && (
                   <div style={{color:'var(--red)', fontSize:'.78rem', padding:'10px 20px 0', fontWeight:500}}>
-                    Досягнуто ліміт прикріплених файлів (макс. 3)
+                    Досягнуто ліміт прикріплених файлів (макс. 2)
                   </div>
                 )}
                 {replyAttachedImages.length > 0 && (
@@ -386,13 +386,13 @@ export default function AdminSupport({
                   </div>
                 )}
                 <div style={{padding:'20px',display:'flex',gap:'12px',alignItems:'center'}}>
-                  <label className="chat-attach-btn" style={{cursor:replyAttachedImages.length >= 3 ? 'not-allowed' : 'pointer', padding:'8px 12px', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--muted)', background:'var(--warm)', borderRadius:'12px', border:'1px solid var(--border)', height:'42px', opacity:replyAttachedImages.length >= 3 ? 0.6 : 1}} title="Прикріпити фото">
+                  <label className="chat-attach-btn" style={{cursor:replyAttachedImages.length >= 2 ? 'not-allowed' : 'pointer', padding:'8px 12px', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--muted)', background:'var(--warm)', borderRadius:'12px', border:'1px solid var(--border)', height:'42px', opacity:replyAttachedImages.length >= 2 ? 0.6 : 1}} title="Прикріпити фото">
                     <Icon name="camera" size={20}/>
-                    <input type="file" accept="image/*" multiple style={{display:'none'}} disabled={replyAttachedImages.length >= 3} onChange={async (e) => {
+                    <input type="file" accept="image/*" multiple style={{display:'none'}} disabled={replyAttachedImages.length >= 2} onChange={async (e) => {
                       const files = Array.from(e.target.files || []);
                       if (files.length === 0) return;
-                      if (replyAttachedImages.length + files.length > 3) {
-                        toast('Не вдалося прикріпити зображення: ліміт 3 фото', 'error');
+                      if (replyAttachedImages.length + files.length > 2) {
+                        toast('Не вдалося прикріпити зображення: ліміт 2 фото', 'error');
                         e.target.value = '';
                         return;
                       }

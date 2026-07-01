@@ -8,6 +8,19 @@ import { Icon } from '@/components/Icon';
 import { toast } from '@/components/Toast';
 import Link from 'next/link';
 
+function renderNotifBody(body: string) {
+  if (!body) return '';
+  if (body.includes('📷')) {
+    const cleanText = body.replace('📷', '').trim();
+    return (
+      <span style={{display: 'inline-flex', alignItems: 'center', gap: '4px', verticalAlign: 'middle'}}>
+        <Icon name="camera" size={14} /> {cleanText}
+      </span>
+    );
+  }
+  return body;
+}
+
 export default function NotificationsPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -126,7 +139,7 @@ export default function NotificationsPage() {
                 </div>
                 <div className="notif-body">
                   <div className="notif-title">{n.title}</div>
-                  <div className="notif-text">{n.body}</div>
+                  <div className="notif-text">{renderNotifBody(n.body)}</div>
                   <div className="notif-time">{timeAgo(n.createdAt)}</div>
                 </div>
                 <div className="notif-actions">

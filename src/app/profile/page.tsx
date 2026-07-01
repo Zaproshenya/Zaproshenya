@@ -44,6 +44,19 @@ function dataURLtoBlob(dataurl: string): Blob {
   return new Blob([u8arr], { type: mime });
 }
 
+function renderLastMessageText(text: string) {
+  if (!text) return '';
+  if (text.includes('📷')) {
+    const cleanText = text.replace('📷', '').trim();
+    return (
+      <span style={{display: 'inline-flex', alignItems: 'center', gap: '4px', verticalAlign: 'middle'}}>
+        <Icon name="camera" size={14} /> {cleanText}
+      </span>
+    );
+  }
+  return text;
+}
+
 export default function ProfilePage() {
   const router = useRouter();
   const { user, profile, updateProfile } = useAuth();
@@ -442,8 +455,8 @@ export default function ProfilePage() {
     const files = Array.from(e.target.files || []);
     if (files.length === 0 || !user || !profile || !chatTicketId) return;
     
-    if (chatAttachedImages.length + files.length > 3) {
-      toast('Не вдалося прикріпити зображення: ліміт 3 фото', 'error');
+    if (chatAttachedImages.length + files.length > 2) {
+      toast('Не вдалося прикріпити зображення: ліміт 2 фото', 'error');
       e.target.value = '';
       return;
     }
@@ -470,8 +483,8 @@ export default function ProfilePage() {
     const files = Array.from(e.target.files || []);
     if (files.length === 0 || !user || !profile) return;
     
-    if (attachedImages.length + files.length > 3) {
-      toast('Не вдалося прикріпити зображення: ліміт 3 фото', 'error');
+    if (attachedImages.length + files.length > 2) {
+      toast('Не вдалося прикріпити зображення: ліміт 2 фото', 'error');
       e.target.value = '';
       return;
     }
@@ -726,7 +739,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="ticket-item-body">
                   <div className="ticket-item-subject">{t.subject || t.type}</div>
-                  <div className="ticket-item-preview">{(t.lastMessageText || '').slice(0, 50)}</div>
+                  <div className="ticket-item-preview">{renderLastMessageText(t.lastMessageText || '')}</div>
                 </div>
                 <div className="ticket-item-meta">
                   <span className={`ticket-status ${t.status || 'open'}`}>
@@ -933,17 +946,17 @@ export default function ProfilePage() {
                 style={{width:'100%', padding:'12px', borderRadius:'10px', border:'1px solid var(--border)', background:'var(--input-bg, var(--paper))', color:'var(--ink)', resize:'vertical', fontFamily:'var(--font-body)', fontSize:'.88rem', lineHeight:1.5}}></textarea>
             </div>
             <div className="form-group">
-              <label className="lbl">Додати фото / скріншот (макс. 3)</label>
+              <label className="lbl">Додати фото / скріншот (макс. 2)</label>
               <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
-                <label className="btn btn-outline" style={{cursor:attachedImages.length >= 3 ? 'not-allowed' : 'pointer', padding:'8px 16px', display:'inline-flex', alignItems:'center', gap:'6px', fontSize:'.85rem', opacity:attachedImages.length >= 3 ? 0.6 : 1}}>
+                <label className="btn btn-outline" style={{cursor:attachedImages.length >= 2 ? 'not-allowed' : 'pointer', padding:'8px 16px', display:'inline-flex', alignItems:'center', gap:'6px', fontSize:'.85rem', opacity:attachedImages.length >= 2 ? 0.6 : 1}}>
                   <Icon name="camera" size={16}/> Обрати фото
-                  <input type="file" accept="image/*" multiple style={{display:'none'}} disabled={attachedImages.length >= 3} onChange={handleNewTicketImageUpload} />
+                  <input type="file" accept="image/*" multiple style={{display:'none'}} disabled={attachedImages.length >= 2} onChange={handleNewTicketImageUpload} />
                 </label>
                 {uploadingImage && <span style={{fontSize:'.8rem', color:'var(--muted)'}}>Стиснення...</span>}
               </div>
-              {attachedImages.length === 3 && (
+              {attachedImages.length === 2 && (
                 <div style={{color:'var(--red)', fontSize:'.82rem', marginTop:'8px', fontWeight:500}}>
-                  Досягнуто ліміт прикріплених файлів (макс. 3)
+                  Досягнуто ліміт прикріплених файлів (макс. 2)
                 </div>
               )}
               {attachedImages.length > 0 && (
@@ -1048,9 +1061,9 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="chat-input-area">
-                  {chatAttachedImages.length === 3 && (
+                  {chatAttachedImages.length === 2 && (
                     <div style={{color:'var(--red)', fontSize:'.78rem', marginBottom:'6px', fontWeight:500}}>
-                      Досягнуто ліміт прикріплених файлів (макс. 3)
+                      Досягнуто ліміт прикріплених файлів (макс. 2)
                     </div>
                   )}
                   {chatAttachedImages.length > 0 && (
@@ -1064,9 +1077,9 @@ export default function ProfilePage() {
                     </div>
                   )}
                   <div className="chat-input-row" style={{display:'flex', alignItems:'center', gap:'8px'}}>
-                    <label className="chat-attach-btn" style={{cursor:chatAttachedImages.length >= 3 ? 'not-allowed' : 'pointer', padding:'8px', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--muted)', background:'var(--warm)', borderRadius:'10px', border:'1px solid var(--border)', opacity:chatAttachedImages.length >= 3 ? 0.6 : 1}} title="Прикріпити фото">
+                    <label className="chat-attach-btn" style={{cursor:chatAttachedImages.length >= 2 ? 'not-allowed' : 'pointer', padding:'8px', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--muted)', background:'var(--warm)', borderRadius:'10px', border:'1px solid var(--border)', opacity:chatAttachedImages.length >= 2 ? 0.6 : 1}} title="Прикріпити фото">
                       <Icon name="camera" size={20}/>
-                      <input type="file" accept="image/*" multiple style={{display:'none'}} disabled={chatAttachedImages.length >= 3} onChange={handleChatImageUpload} />
+                      <input type="file" accept="image/*" multiple style={{display:'none'}} disabled={chatAttachedImages.length >= 2} onChange={handleChatImageUpload} />
                     </label>
                     <textarea 
                       ref={chatInputRef}
