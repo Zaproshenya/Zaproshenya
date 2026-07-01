@@ -98,13 +98,13 @@ export default function ProfilePage() {
   
   const [newTicketOpen, setNewTicketOpen] = useState(false);
   const [ticketType, setTicketType] = useState('bug');
-  const [attachedImage, setAttachedImage] = useState<string | null>(null);
+  const [attachedImages, setAttachedImages] = useState<string[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
   
   const [chatTicketId, setChatTicketId] = useState<string | null>(null);
   const [chatTicket, setChatTicket] = useState<any>(null);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
-  const [chatAttachedImage, setChatAttachedImage] = useState<string | null>(null);
+  const [chatAttachedImages, setChatAttachedImages] = useState<string[]>([]);
   const [chatUploadingImage, setChatUploadingImage] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -310,15 +310,18 @@ export default function ProfilePage() {
     const subj = ticketSubjectRef.current?.value.trim();
     const msg = ticketMsgRef.current?.value.trim();
     if (!subj) return setEditError("Введіть тему");
-    if (!msg && !attachedImage) return setEditError("Введіть повідомлення або прикріпіть фото");
+    if (msg === '' && attachedImages.length === 0) return setEditError("Введіть повідомлення або прикріпіть фото");
 
     setSaving(true);
     try {
-      let imageUrl = null;
+      let imageUrls: string[] = [];
       const tid = generateTicketId();
-      if (attachedImage && tid) {
-        const blob = dataURLtoBlob(attachedImage);
-        imageUrl = await uploadSupportImage(tid, blob, 'attachment.jpg');
+      if (attachedImages.length > 0 && tid) {
+        const uploadPromises = attachedImages.map((base64, index) => {
+          const blob = dataURLtoBlob(base64);
+          return uploadSupportImage(tid, blob, `attachment_${index}.jpg`);
+        });
+        imageUrls = await Promise.all(uploadPromises);
       }
 
       await createSupportTicket({
@@ -328,10 +331,11 @@ export default function ProfilePage() {
         firstMessage: msg,
         authorUid: user.uid,
         authorName: profile.name,
-        imageUrl
+        imageUrl: imageUrls[0] || null,
+        imageUrls: imageUrls
       });
       toast('Звернення створено!', 'success');
-      setAttachedImage(null);
+      setAttachedImages([]);
       setNewTicketOpen(false);
       if (tid) {
         const tkts = await getUserTickets(user.uid);
@@ -402,16 +406,19 @@ export default function ProfilePage() {
   const handleSendChat = async () => {
     if (!user || !profile || !chatTicketId) return;
     const text = chatInputRef.current?.value.trim();
-    if (!text && !chatAttachedImage) return;
+    if (!text && chatAttachedImages.length === 0) return;
     
     if (chatInputRef.current) chatInputRef.current.value = '';
     
     setChatUploadingImage(true);
     try {
-      let imageUrl = null;
-      if (chatAttachedImage) {
-        const blob = dataURLtoBlob(chatAttachedImage);
-        imageUrl = await uploadSupportImage(chatTicketId, blob, 'chat_attachment.jpg');
+      let imageUrls: string[] = [];
+      if (chatAttachedImages.length > 0) {
+        const uploadPromises = chatAttachedImages.map((base64, index) => {
+          const blob = dataURLtoBlob(base64);
+          return uploadSupportImage(chatTicketId, blob, `chat_attachment_${index}.jpg`);
+        });
+        imageUrls = await Promise.all(uploadPromises);
       }
 
       await sendTicketMessage(chatTicketId, {
@@ -420,9 +427,10 @@ export default function ProfilePage() {
         role: 'user',
         avatar: profile.avatar || null,
         text: text || null,
-        imageUrl: imageUrl || null
+        imageUrl: imageUrls[0] || null,
+        imageUrls: imageUrls
       });
-      setChatAttachedImage(null);
+      setChatAttachedImages([]);
     } catch (e) {
       toast('Помилка відправки', 'error');
     } finally {
@@ -431,20 +439,58 @@ export default function ProfilePage() {
   };
 
   const handleChatImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user || !profile || !chatTicketId) return;
-    if (!file.type.startsWith('image/')) {
-      toast('Недійсний файл', 'error');
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0 || !user || !profile || !chatTicketId) return;
+    
+    if (chatAttachedImages.length + files.length > 3) {
+      toast('Не вдалося прикріпити зображення: ліміт 3 фото', 'error');
+      e.target.value = '';
       return;
     }
+
     setChatUploadingImage(true);
     try {
-      const base64Url = await compressImage(file);
-      setChatAttachedImage(base64Url);
+      const compressPromises = files.map(async (file) => {
+        if (!file.type.startsWith('image/')) {
+          throw new Error('Недійсний файл');
+        }
+        return compressImage(file);
+      });
+      const base64Urls = await Promise.all(compressPromises);
+      setChatAttachedImages(prev => [...prev, ...base64Urls]);
     } catch (err: any) {
-      toast('Помилка стиснення фото', 'error');
+      toast(err.message || 'Помилка стиснення фото', 'error');
     } finally {
       setChatUploadingImage(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleNewTicketImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0 || !user || !profile) return;
+    
+    if (attachedImages.length + files.length > 3) {
+      toast('Не вдалося прикріпити зображення: ліміт 3 фото', 'error');
+      e.target.value = '';
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const compressPromises = files.map(async (file) => {
+        if (!file.type.startsWith('image/')) {
+          throw new Error('Недійсний файл');
+        }
+        return compressImage(file);
+      });
+      const base64Urls = await Promise.all(compressPromises);
+      setAttachedImages(prev => [...prev, ...base64Urls]);
+    } catch (err: any) {
+      toast(err.message || 'Помилка стиснення фото', 'error');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
     }
   };
 
@@ -887,30 +933,27 @@ export default function ProfilePage() {
                 style={{width:'100%', padding:'12px', borderRadius:'10px', border:'1px solid var(--border)', background:'var(--input-bg, var(--paper))', color:'var(--ink)', resize:'vertical', fontFamily:'var(--font-body)', fontSize:'.88rem', lineHeight:1.5}}></textarea>
             </div>
             <div className="form-group">
-              <label className="lbl">Додати фото / скріншот</label>
+              <label className="lbl">Додати фото / скріншот (макс. 3)</label>
               <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
-                <label className="btn btn-outline" style={{cursor:'pointer', padding:'8px 16px', display:'inline-flex', alignItems:'center', gap:'6px', fontSize:'.85rem'}}>
+                <label className="btn btn-outline" style={{cursor:attachedImages.length >= 3 ? 'not-allowed' : 'pointer', padding:'8px 16px', display:'inline-flex', alignItems:'center', gap:'6px', fontSize:'.85rem', opacity:attachedImages.length >= 3 ? 0.6 : 1}}>
                   <Icon name="camera" size={16}/> Обрати фото
-                  <input type="file" accept="image/*" style={{display:'none'}} onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    setUploadingImage(true);
-                    try {
-                      const base64Url = await compressImage(file);
-                      setAttachedImage(base64Url);
-                    } catch (err) {
-                      toast('Помилка завантаження зображення', 'error');
-                    } finally {
-                      setUploadingImage(false);
-                    }
-                  }} />
+                  <input type="file" accept="image/*" multiple style={{display:'none'}} disabled={attachedImages.length >= 3} onChange={handleNewTicketImageUpload} />
                 </label>
                 {uploadingImage && <span style={{fontSize:'.8rem', color:'var(--muted)'}}>Стиснення...</span>}
               </div>
-              {attachedImage && (
-                <div style={{marginTop:'12px', position:'relative', display:'inline-block'}}>
-                  <img src={attachedImage} alt="Preview" style={{maxWidth:'100%', maxHeight:'120px', borderRadius:'8px', border:'1px solid var(--border)'}} />
-                  <button onClick={() => setAttachedImage(null)} style={{position:'absolute', top:'-6px', right:'-6px', width:'20px', height:'20px', borderRadius:'50%', background:'var(--red)', color:'#fff', border:'none', display:'flex', alignItems:'center', justifyItems:'center', justifyContent:'center', cursor:'pointer', fontSize:'.8rem', fontWeight:'bold', boxShadow:'0 2px 6px rgba(0,0,0,0.2)'}}>×</button>
+              {attachedImages.length === 3 && (
+                <div style={{color:'var(--red)', fontSize:'.82rem', marginTop:'8px', fontWeight:500}}>
+                  Досягнуто ліміт прикріплених файлів (макс. 3)
+                </div>
+              )}
+              {attachedImages.length > 0 && (
+                <div style={{display:'flex', gap:'10px', flexWrap:'wrap', marginTop:'12px'}}>
+                  {attachedImages.map((img, index) => (
+                    <div key={index} style={{position:'relative', display:'inline-block'}}>
+                      <img src={img} alt="Preview" style={{width:'80px', height:'80px', objectFit:'cover', borderRadius:'8px', border:'1px solid var(--border)'}} />
+                      <button onClick={() => setAttachedImages(prev => prev.filter((_, i) => i !== index))} style={{position:'absolute', top:'-6px', right:'-6px', width:'20px', height:'20px', borderRadius:'50%', background:'var(--red)', color:'#fff', border:'none', display:'flex', alignItems:'center', justifyItems:'center', justifyContent:'center', cursor:'pointer', fontSize:'.8rem', fontWeight:'bold', boxShadow:'0 2px 6px rgba(0,0,0,0.2)'}}>×</button>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -971,11 +1014,19 @@ export default function ProfilePage() {
                       </div>
                       <div className="chat-msg-content">
                         {msg.text && <div className="chat-bubble">{msg.text}</div>}
-                        {msg.imageUrl && (
+                        {msg.imageUrls ? (
+                          <div style={{display:'flex', gap:'8px', flexWrap:'wrap', marginTop:'4px'}}>
+                            {msg.imageUrls.map((url: string, idx: number) => (
+                              <div key={idx} className="chat-bubble image" style={{padding: '4px', maxWidth: '150px', background:'none', border:'none', boxShadow:'none'}}>
+                                <img src={url} alt="Attached" style={{width:'100%', borderRadius:'8px', display:'block', cursor:'pointer'}} onClick={() => setLightboxImage(url)} />
+                              </div>
+                            ))}
+                          </div>
+                        ) : msg.imageUrl ? (
                           <div className="chat-bubble image" style={{padding: '4px', maxWidth: '200px', background:'none', border:'none', boxShadow:'none', marginTop:'4px'}}>
                             <img src={msg.imageUrl} alt="Attached" style={{width:'100%', borderRadius:'8px', display:'block', cursor:'pointer'}} onClick={() => setLightboxImage(msg.imageUrl)} />
                           </div>
-                        )}
+                        ) : null}
                         <div className="chat-msg-time">{!isUser && 'Підтримка · '} {time}</div>
                       </div>
                     </div>
@@ -992,16 +1043,25 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="chat-input-area">
-                  {chatAttachedImage && (
-                    <div className="chat-attach-preview-wrap">
-                      <img src={chatAttachedImage} alt="Attachment preview" className="chat-attach-preview-img" />
-                      <button className="chat-attach-preview-remove" onClick={() => setChatAttachedImage(null)}>×</button>
+                  {chatAttachedImages.length === 3 && (
+                    <div style={{color:'var(--red)', fontSize:'.78rem', marginBottom:'6px', fontWeight:500}}>
+                      Досягнуто ліміт прикріплених файлів (макс. 3)
+                    </div>
+                  )}
+                  {chatAttachedImages.length > 0 && (
+                    <div style={{display:'flex', gap:'8px', flexWrap:'wrap', marginBottom:'8px'}}>
+                      {chatAttachedImages.map((img, index) => (
+                        <div key={index} className="chat-attach-preview-wrap" style={{margin: 0}}>
+                          <img src={img} alt="Attachment preview" className="chat-attach-preview-img" style={{maxHeight:'60px'}} />
+                          <button className="chat-attach-preview-remove" onClick={() => setChatAttachedImages(prev => prev.filter((_, i) => i !== index))}>×</button>
+                        </div>
+                      ))}
                     </div>
                   )}
                   <div className="chat-input-row" style={{display:'flex', alignItems:'center', gap:'8px'}}>
-                    <label className="chat-attach-btn" style={{cursor:'pointer', padding:'8px', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--muted)', background:'var(--warm)', borderRadius:'10px', border:'1px solid var(--border)'}} title="Прикріпити фото">
+                    <label className="chat-attach-btn" style={{cursor:chatAttachedImages.length >= 3 ? 'not-allowed' : 'pointer', padding:'8px', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--muted)', background:'var(--warm)', borderRadius:'10px', border:'1px solid var(--border)', opacity:chatAttachedImages.length >= 3 ? 0.6 : 1}} title="Прикріпити фото">
                       <Icon name="camera" size={20}/>
-                      <input type="file" accept="image/*" style={{display:'none'}} onChange={handleChatImageUpload} />
+                      <input type="file" accept="image/*" multiple style={{display:'none'}} disabled={chatAttachedImages.length >= 3} onChange={handleChatImageUpload} />
                     </label>
                     <textarea 
                       ref={chatInputRef}

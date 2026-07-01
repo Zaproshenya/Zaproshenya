@@ -22,14 +22,14 @@ export default function AdminSupport({
 }: any) {
   const [confirmModal, setConfirmModal] = useState<{ show: boolean; title: string; message: string; onConfirm: () => void; isDanger?: boolean }>({ show: false, title: '', message: '', onConfirm: () => {} });
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
-  const [replyAttachedImage, setReplyAttachedImage] = useState<string | null>(null);
+  const [replyAttachedImages, setReplyAttachedImages] = useState<string[]>([]);
   const [replyUploadingImage, setReplyUploadingImage] = useState(false);
 
   const handleSendReply = async () => {
     setReplyUploadingImage(true);
     try {
-      await sendSupportReply(replyAttachedImage);
-      setReplyAttachedImage(null);
+      await sendSupportReply(replyAttachedImages);
+      setReplyAttachedImages([]);
     } catch (err) {
       // Parent handles error toast
     } finally {
@@ -342,7 +342,15 @@ export default function AdminSupport({
                     <div className="chat-msg-content" style={{maxWidth: '85%'}}>
                       <div className="chat-bubble" style={{padding: '12px 16px', borderRadius: '16px', fontSize: '.95rem', lineHeight: '1.5', boxShadow: '0 2px 8px rgba(0,0,0,0.04)'}}>
                         {m.text}
-                        {m.imageUrl && <img src={m.imageUrl} className="chat-bubble-img" alt="attachment" style={{borderRadius: '8px', marginTop: '8px', cursor: 'pointer'}} onClick={() => setLightboxImage(m.imageUrl)} />}
+                        {m.imageUrls ? (
+                          <div style={{display:'flex', gap:'8px', flexWrap:'wrap', marginTop:'8px'}}>
+                            {m.imageUrls.map((url: string, idx: number) => (
+                              <img key={idx} src={url} className="chat-bubble-img" alt="attachment" style={{borderRadius: '8px', maxHeight: '120px', cursor: 'pointer', margin: 0}} onClick={() => setLightboxImage(url)} />
+                            ))}
+                          </div>
+                        ) : m.imageUrl ? (
+                          <img src={m.imageUrl} className="chat-bubble-img" alt="attachment" style={{borderRadius: '8px', marginTop: '8px', cursor: 'pointer'}} onClick={() => setLightboxImage(m.imageUrl)} />
+                        ) : null}
                       </div>
                       <div className="chat-msg-time" style={{marginTop: '6px', fontSize: '.75rem'}}>
                         {timeAgo(m.createdAt)}
@@ -355,28 +363,47 @@ export default function AdminSupport({
 
             {openTicket.status !== 'resolved' && openTicket.status !== 'dismissed' ? (
               <div style={{borderTop:'1px solid var(--border)', display:'flex', flexDirection:'column', flexShrink: 0, background: 'var(--card)'}}>
-                {replyAttachedImage && (
-                  <div style={{padding:'10px 20px 0'}}>
-                    <div className="chat-attach-preview-wrap" style={{margin: 0}}>
-                      <img src={replyAttachedImage} alt="Attachment preview" className="chat-attach-preview-img" style={{maxHeight:'60px'}} />
-                      <button className="chat-attach-preview-remove" onClick={() => setReplyAttachedImage(null)}>×</button>
-                    </div>
+                {replyAttachedImages.length === 3 && (
+                  <div style={{color:'var(--red)', fontSize:'.78rem', padding:'10px 20px 0', fontWeight:500}}>
+                    Досягнуто ліміт прикріплених файлів (макс. 3)
+                  </div>
+                )}
+                {replyAttachedImages.length > 0 && (
+                  <div style={{padding:'10px 20px 0', display:'flex', gap:'8px', flexWrap:'wrap'}}>
+                    {replyAttachedImages.map((img, index) => (
+                      <div key={index} className="chat-attach-preview-wrap" style={{margin: 0}}>
+                        <img src={img} alt="Attachment preview" className="chat-attach-preview-img" style={{maxHeight:'60px'}} />
+                        <button className="chat-attach-preview-remove" onClick={() => setReplyAttachedImages(prev => prev.filter((_, i) => i !== index))}>×</button>
+                      </div>
+                    ))}
                   </div>
                 )}
                 <div style={{padding:'20px',display:'flex',gap:'12px',alignItems:'center'}}>
-                  <label className="chat-attach-btn" style={{cursor:'pointer', padding:'8px 12px', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--muted)', background:'var(--warm)', borderRadius:'12px', border:'1px solid var(--border)', height:'42px'}} title="Прикріпити фото">
+                  <label className="chat-attach-btn" style={{cursor:replyAttachedImages.length >= 3 ? 'not-allowed' : 'pointer', padding:'8px 12px', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--muted)', background:'var(--warm)', borderRadius:'12px', border:'1px solid var(--border)', height:'42px', opacity:replyAttachedImages.length >= 3 ? 0.6 : 1}} title="Прикріпити фото">
                     <Icon name="camera" size={20}/>
-                    <input type="file" accept="image/*" style={{display:'none'}} onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
+                    <input type="file" accept="image/*" multiple style={{display:'none'}} disabled={replyAttachedImages.length >= 3} onChange={async (e) => {
+                      const files = Array.from(e.target.files || []);
+                      if (files.length === 0) return;
+                      if (replyAttachedImages.length + files.length > 3) {
+                        toast('Не вдалося прикріпити зображення: ліміт 3 фото', 'error');
+                        e.target.value = '';
+                        return;
+                      }
                       setReplyUploadingImage(true);
                       try {
-                        const base64Url = await compressImage(file);
-                        setReplyAttachedImage(base64Url);
-                      } catch (err) {
-                        toast('Помилка завантаження зображення', 'error');
+                        const compressPromises = files.map(async (file) => {
+                          if (!file.type.startsWith('image/')) {
+                            throw new Error('Недійсний файл');
+                          }
+                          return compressImage(file);
+                        });
+                        const base64Urls = await Promise.all(compressPromises);
+                        setReplyAttachedImages(prev => [...prev, ...base64Urls]);
+                      } catch (err: any) {
+                        toast(err.message || 'Помилка завантаження зображення', 'error');
                       } finally {
                         setReplyUploadingImage(false);
+                        e.target.value = '';
                       }
                     }} />
                   </label>

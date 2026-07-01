@@ -374,7 +374,7 @@ export async function createSupportTicket(ticket: any) {
     status: 'open',
     createdAt: Date.now(),
     lastMessageAt: Date.now(),
-    lastMessageText: ticket.firstMessage || (ticket.imageUrl ? '📷 Зображення' : ''),
+    lastMessageText: ticket.firstMessage || (ticket.imageUrl || ticket.imageUrls?.length ? '📷 Зображення' : ''),
     unreadBySupport: true,
   };
   await set(refObj, ticketData);
@@ -387,6 +387,7 @@ export async function createSupportTicket(ticket: any) {
     role: 'user',
     text: ticket.firstMessage || null,
     imageUrl: ticket.imageUrl || null,
+    imageUrls: ticket.imageUrls || null,
     createdAt: Date.now(),
   });
   return key;
@@ -416,6 +417,7 @@ export async function sendTicketMessage(ticketId: string, message: any) {
     avatar: message.avatar || null,
     text: message.text || null,
     imageUrl: message.imageUrl || null,
+    imageUrls: message.imageUrls || null,
     createdAt: Date.now(),
   });
   

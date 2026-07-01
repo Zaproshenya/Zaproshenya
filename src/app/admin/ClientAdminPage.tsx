@@ -258,15 +258,18 @@ export default function ClientAdminPage() {
     }
   }, [openTicket]);
 
-  const sendSupportReply = async (attachedImageBase64?: string | null) => {
+  const sendSupportReply = async (attachedImagesBase64?: string[] | null) => {
     if (!openTicket) return;
     const text = ticketReply.trim();
-    if (!text && !attachedImageBase64) return;
+    if (!text && (!attachedImagesBase64 || attachedImagesBase64.length === 0)) return;
     try {
-      let imageUrl = null;
-      if (attachedImageBase64) {
-        const blob = dataURLtoBlob(attachedImageBase64);
-        imageUrl = await uploadSupportImage(openTicket.id, blob, 'staff_reply.jpg');
+      let imageUrls: string[] = [];
+      if (attachedImagesBase64 && attachedImagesBase64.length > 0) {
+        const uploadPromises = attachedImagesBase64.map((base64, index) => {
+          const blob = dataURLtoBlob(base64);
+          return uploadSupportImage(openTicket.id, blob, `staff_reply_${index}.jpg`);
+        });
+        imageUrls = await Promise.all(uploadPromises);
       }
 
       await sendTicketMessage(openTicket.id, {
@@ -275,13 +278,14 @@ export default function ClientAdminPage() {
         role: profile?.role,
         avatar: profile?.avatar || null,
         text: text || null,
-        imageUrl: imageUrl || null,
+        imageUrl: imageUrls[0] || null,
+        imageUrls: imageUrls,
       });
       // Log the reply action (fire-and-forget, never breaks send)
       logStaffAction(
         user?.uid || '', profile?.name || '',
-        imageUrl
-          ? `Відповів з зображенням у зверненні: ${openTicket.subject || openTicket.id}`
+        imageUrls.length > 0
+          ? `Відповів з зображеннями у зверненні: ${openTicket.subject || openTicket.id}`
           : `Відповів у зверненні: ${openTicket.subject || openTicket.id}`,
         openTicket.authorUid,
         openTicket.authorName
