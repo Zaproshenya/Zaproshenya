@@ -467,7 +467,10 @@ export default function ProfilePage() {
           <div className="profile-hero-info">
             <div className="profile-hero-name">{profile.name}</div>
             <div className="profile-hero-meta">
-              {profile.role === 'founder' && <span className="role-badge founder">Founder</span>}
+              {profile.role === 'founder' && <span className="role-badge founder">Засновник</span>}
+              {profile.role === 'tech-admin' && <span className="role-badge tech-admin">Тех-адмін</span>}
+              {profile.role === 'moderator' && <span className="role-badge moderator">Модератор</span>}
+              {profile.role === 'support' && <span className="role-badge support">Підтримка</span>}
               <span className="profile-id">{profile.uniqueId}</span>
             </div>
             <div className="profile-hero-login">

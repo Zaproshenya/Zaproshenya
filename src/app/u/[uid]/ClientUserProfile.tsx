@@ -114,7 +114,7 @@ export default function ClientUserProfile({ uid }: { uid: string }) {
         <div className="profile-hero-inner">
           {/* Avatar with online ring */}
           <div className="profile-avatar-wrap">
-            <div className={`profile-avatar-ring ${isOnline ? 'online' : ''}`} style={isOnline ? {borderColor:'var(--green)'} : {}}>
+            <div className={`profile-avatar-ring ${isOnline ? 'online' : ''}`}>
               <div className="avatar avatar-xl">
                 {userData.avatar ? <img src={userData.avatar} alt="Avatar"/> : (userData.name||'?').charAt(0).toUpperCase()}
               </div>
@@ -127,9 +127,9 @@ export default function ClientUserProfile({ uid }: { uid: string }) {
             <div className="profile-hero-name" style={{color:'#fff'}}>{userData.name}</div>
             <div className="profile-hero-meta">
               {userData.role === 'founder' && <span className="role-badge founder">Засновник</span>}
-              {userData.role === 'tech-admin' && <span className="role-badge founder" style={{background:'var(--ink)',color:'#fff'}}>Тех-адмін</span>}
-              {userData.role === 'moderator' && <span className="role-badge founder" style={{background:'var(--blue)',color:'#fff'}}>Модератор</span>}
-              {userData.role === 'support' && <span className="role-badge founder" style={{background:'var(--purple)',color:'#fff'}}>Підтримка</span>}
+              {userData.role === 'tech-admin' && <span className="role-badge tech-admin">Тех-адмін</span>}
+              {userData.role === 'moderator' && <span className="role-badge moderator">Модератор</span>}
+              {userData.role === 'support' && <span className="role-badge support">Підтримка</span>}
               <span className="profile-id">{userData.uniqueId}</span>
             </div>
             

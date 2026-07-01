@@ -335,6 +335,16 @@
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
+.profile-avatar-ring.online {
+  background: linear-gradient(135deg, #56c68a, var(--green), #1d5c37);
+  box-shadow:
+    0 0 0 1px rgba(45, 122, 79, 0.25),
+    0 0 24px rgba(45, 122, 79, 0.4),
+    0 12px 40px rgba(0, 0, 0, 0.35);
+}
+.profile-avatar-ring.online::before {
+  background: conic-gradient(from 0deg, transparent 0%, rgba(45, 122, 79, 0.6) 25%, transparent 50%, rgba(86, 198, 138, 0.8) 75%, transparent 100%);
+}
 .profile-avatar-ring .avatar-xl {
   border: none;
   width: 100px; height: 100px;
@@ -370,6 +380,55 @@
 .profile-hero-meta {
   display: flex; align-items: center; gap: 8px;
   flex-wrap: wrap; margin-bottom: 6px;
+}
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 12px;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.role-badge.founder {
+  background: linear-gradient(135deg, #ffd54f 0%, #c9922a 100%);
+  color: #150f07;
+  border-color: rgba(255, 215, 0, 0.4);
+  box-shadow: 0 0 12px rgba(201, 146, 42, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  font-weight: 800;
+  animation: badgeGlow 3s ease-in-out infinite alternate;
+}
+@keyframes badgeGlow {
+  0% {
+    box-shadow: 0 0 8px rgba(201, 146, 42, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 16px rgba(201, 146, 42, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+}
+.role-badge.tech-admin {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.05);
+}
+.role-badge.moderator {
+  background: rgba(37, 99, 235, 0.2);
+  color: #60a5fa;
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.2);
+}
+.role-badge.support {
+  background: rgba(124, 58, 237, 0.25);
+  color: #c084fc;
+  border-color: rgba(124, 58, 237, 0.5);
+  box-shadow: 0 0 8px rgba(124, 58, 237, 0.2);
 }
 .profile-id {
   font-family: monospace; font-size: .72rem;
@@ -550,8 +609,7 @@
 .uprofile-wrap {
   max-width: 480px;
   margin: 0 auto;
-  padding-top: 40px;
-  padding-bottom: 32px;
+  padding: 40px 16px 32px;
 }
 .uprofile-back-btn {
   display: inline-flex; align-items: center; gap: 7px;
@@ -608,13 +666,18 @@
 .uprofile-avatar-ring .avatar-xl { margin: 0; }
 .uprofile-online-badge {
   position: absolute;
-  bottom: -2px; left: 50%; transform: translateX(-50%);
+  bottom: -4px; left: 50%; transform: translateX(-50%);
   background: var(--green); color: #fff;
   font-size: .6rem; font-weight: 700;
   letter-spacing: .06em; text-transform: uppercase;
-  padding: 2px 8px; border-radius: 10px;
+  padding: 2.5px 10px; border-radius: 10px;
   border: 2px solid var(--card);
   white-space: nowrap;
+  z-index: 15;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+.profile-avatar-wrap .uprofile-online-badge {
+  border-color: #100b05;
 }
 
 /* Name and badges */
