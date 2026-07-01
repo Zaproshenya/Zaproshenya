@@ -196,25 +196,32 @@
 .envelope-footer {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 16px;
   margin-top: 0; /* remove auto margin so it doesn't steal space from action-section-wrap */
-  padding: 13px 0;  /* symmetrical vertical padding */
+  padding: 16px 0;  /* symmetrical vertical padding, slightly taller for better tap targets */
   border-top: 1px solid var(--border);
 }
-.envelope-footer button {
+.envelope-footer button,
+.envelope-footer a {
   background: none; border: none;
   color: var(--muted); font-size: .74rem;
   cursor: pointer; text-decoration: underline;
   display: inline-flex; align-items: center; gap: 4px;
+  padding: 8px 12px; /* increase tap target area for mobile */
+  margin: -8px -12px; /* offset padding to maintain alignment */
+  transition: color 0.2s var(--ease);
 }
-.envelope-footer button:hover {
+.envelope-footer button:hover,
+.envelope-footer a:hover {
   color: var(--ink);
 }
 @media (min-width: 600px) {
   .envelope-footer {
     padding: 17px 0;
   }
-  .envelope-footer button {
+  .envelope-footer button,
+  .envelope-footer a {
     font-size: 0.77rem;
   }
 }

@@ -104,7 +104,7 @@ export default function ClientUserProfile({ uid }: { uid: string }) {
   return (
     <div className="uprofile-wrap">
       {/* Back button */}
-      <Link href="/" className="uprofile-back-btn" style={{textDecoration:'none',display:'inline-flex',alignItems:'center',gap:'8px',marginBottom:'24px',color:'var(--muted)',fontSize:'.9rem'}}>
+      <Link href="/friends" className="uprofile-back-btn" style={{textDecoration:'none',display:'inline-flex',alignItems:'center',gap:'8px',marginBottom:'24px',color:'var(--muted)',fontSize:'.9rem'}}>
         <Icon name="arrow-left" size={16}/> Назад
       </Link>
 
